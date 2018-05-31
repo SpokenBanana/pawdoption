@@ -1,0 +1,510 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/animation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'api.dart';
+import 'dart:async';
+import 'colors.dart';
+import 'settings.dart';
+import 'details.dart';
+import 'saved.dart';
+import 'animals.dart';
+
+void main() => runApp(new MyApp());
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return new MaterialApp(
+        title: 'Pawdoption',
+        theme: _buildTheme(),
+        debugShowCheckedModeBanner: false,
+        home: DefaultTabController(
+          length: 3,
+          child: Scaffold(
+            bottomNavigationBar: _buildTabBar(),
+            body: TabBarView(
+                physics: const NeverScrollableScrollPhysics(),
+                children: <Widget>[
+                  MyHomePage(title: 'Petdoption'),
+                  SavedPage(),
+                ]),
+          ),
+        ));
+  }
+
+  Widget _buildTabBar() {
+    return Container(
+      height: 60.0,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+      ),
+      child: TabBar(
+        indicatorWeight: 0.1,
+        labelColor: kPetThemecolor,
+        unselectedLabelColor: Colors.grey,
+        tabs: <Widget>[
+          Tab(
+              icon: ImageIcon(
+            AssetImage('assets/app_black_icon.png'),
+          )),
+          Tab(icon: Icon(Icons.favorite_border)),
+        ],
+      ),
+    );
+  }
+
+  ThemeData _buildTheme() {
+    final ThemeData base = ThemeData.light();
+    return base.copyWith(
+      primaryColor: kPetPrimary,
+      scaffoldBackgroundColor: kPetGray,
+      primaryIconTheme: base.iconTheme.copyWith(
+        color: Color(0xFF555555),
+      ),
+      primaryTextTheme: base.textTheme.copyWith().apply(
+            fontFamily: 'OpenSans',
+            displayColor: kPetPrimaryText,
+            bodyColor: kPetPrimaryText,
+          ),
+      textTheme: base.textTheme.copyWith().apply(
+            fontFamily: 'OpenSans',
+            displayColor: kPetPrimaryText,
+            bodyColor: kPetPrimaryText,
+          ),
+    );
+  }
+}
+
+/// The swiping page of the application.
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.title}) : super(key: key) {
+    feed = new AnimalFeed();
+  }
+
+  AnimalFeed feed;
+  final String title;
+
+  @override
+  _MyHomePageState createState() => new _MyHomePageState(this.feed);
+}
+
+class _MyHomePageState extends State<MyHomePage>
+    with SingleTickerProviderStateMixin {
+  AnimalFeed feed;
+  bool _hasInfo, _swipingRight;
+  AnimationController _controller;
+  Animation<double> _right;
+  Animation<double> _bottom;
+  Animation<double> _rotate;
+  double _screenWidth;
+  double _screenHeight;
+
+  _MyHomePageState(AnimalFeed feed) {
+    _hasInfo = false;
+    this.feed = feed;
+    _initializeAnimalList();
+    _updateLikedList();
+  }
+
+  _updateLikedList() {
+    SharedPreferences.getInstance().then((prefs) {
+      var liked = prefs.getStringList('liked') ?? List<String>();
+      if (liked.isNotEmpty) feed.liked = liked;
+    });
+  }
+
+  _initializeAnimalList() {
+    SharedPreferences.getInstance().then((prefs) {
+      String zip = prefs.getString('zip');
+      int miles = prefs.getInt('miles');
+      var animalType = prefs.getBool('animalType') ?? false;
+      if (zip == null || miles == null) {
+        _hasInfo = false;
+      } else {
+        setState(() {
+          _hasInfo = true;
+          if (zip != feed.zip ||
+              miles != feed.miles ||
+              animalType != (feed.animalType == 'cat')) {
+            feed.done = false;
+            _initializeFeed(zip, miles, animalType: animalType ? 'cat' : 'dog');
+          }
+        });
+      }
+    });
+  }
+
+  initState() {
+    super.initState();
+    _swipingRight = true;
+    _controller = AnimationController(
+      duration: const Duration(milliseconds: 500),
+      vsync: this,
+    );
+
+    Animation curve = CurvedAnimation(parent: _controller, curve: Curves.ease);
+
+    _rotate = new Tween<double>(
+      begin: -0.0,
+      end: -40.0,
+    ).animate(curve);
+    _rotate.addListener(() {
+      setState(() {
+        if (_rotate.isCompleted) {
+          _controller.reset();
+        }
+      });
+    });
+    _right = new Tween<double>(
+      begin: 0.0,
+      end: 400.0,
+    ).animate(curve);
+    _bottom = new Tween<double>(
+      begin: 15.0,
+      end: 100.0,
+    ).animate(curve);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    Size screenSize = MediaQuery.of(context).size;
+    _screenWidth = screenSize.width;
+    _screenHeight = screenSize.height;
+
+    return Scaffold(
+      appBar: AppBar(
+        elevation: 4.0,
+        title: Center(
+          child: Text("Pawdoption",
+              style: const TextStyle(
+                  fontFamily: "Lobster",
+                  fontSize: 25.0,
+                  color: kPetPrimaryText)),
+        ),
+      ),
+      body: Center(
+        child: this._hasInfo
+            ? this.feed.done
+                ? Column(
+                    children: [
+                      SizedBox(height: 20.0),
+                      Stack(
+                          alignment: Alignment.center,
+                          children: _buildCardsForPets(this.feed.currentList)),
+                      _buildButtonRow(),
+                    ],
+                  )
+                : CircularProgressIndicator()
+            : _buildNoInfoPage(),
+      ),
+    );
+  }
+
+  void _initializeFeed(String zip, int miles, {String animalType}) {
+    this.feed.initialize(zip, miles, animalType: animalType).then((done) {
+      setState(() {});
+    });
+  }
+
+  Future<Null> _runAnimation() async {
+    try {
+      await _controller.forward();
+    } on TickerCanceled {}
+  }
+
+  void _dogSwiped(DismissDirection direction, Animal dog) {
+    if (direction == DismissDirection.startToEnd) _saveDog(dog);
+    _removeDog(dog);
+  }
+
+  _saveDog(Animal dog) {
+    String repr = dog.toString();
+    if (!feed.liked.contains(repr)) {
+      feed.liked.add(repr);
+      SharedPreferences.getInstance().then((prefs) {
+        prefs.setStringList('liked', feed.liked);
+      });
+    }
+  }
+
+  _removeDog(Animal dog) {
+    setState(() {
+      widget.feed.currentList.remove(dog);
+      widget.feed.updateList();
+    });
+  }
+
+  _buildPetCardContaiiner(Widget child, Animal pet, {double elevation = 0.1}) {
+    return GestureDetector(
+      onTap: () => Navigator.push(context,
+          MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
+      child: Card(
+        margin: const EdgeInsets.all(0.0),
+        elevation: elevation,
+        child: Container(
+          height: _screenHeight / 1.65,
+          width: _screenWidth / 1.2,
+          child: child,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCardPositioning(Widget child, bool isActive) {
+    return Positioned(
+      right: !_swipingRight && isActive
+          ? _right.value != 0 ? _right.value : null
+          : null,
+      left: _swipingRight && isActive
+          ? _right.value != 0 ? _right.value : null
+          : null,
+      child: child,
+    );
+  }
+
+  Widget _buildActiveCard(Animal pet) {
+    return RotationTransition(
+      turns: AlwaysStoppedAnimation(
+          _swipingRight ? -_rotate.value / 360.0 : _rotate.value / 360),
+      child: _buildPetCardContaiiner(_buildPetInfo(pet), pet),
+    );
+  }
+
+  List<Widget> _buildCardsForPets(List<Animal> pets) {
+    int index = -1;
+    return pets.map((Animal pet) {
+      index += 1;
+      return _buildCardPositioning(
+          Dismissible(
+            // background: _buildDismissBackground(true),
+            // secondaryBackground:_buildDismissBackground(false),
+            movementDuration: Duration(milliseconds: 500),
+            key: ObjectKey(pet),
+            crossAxisEndOffset: -.2,
+            onDismissed: (direction) => _dogSwiped(direction, pet),
+            child: index == pets.length - 1
+                ? _buildActiveCard(pet)
+                : _buildPetCardContaiiner(_buildPetInfo(pet), pet),
+          ),
+          index == pets.length - 1);
+    }).toList();
+  }
+
+  Widget _buildDismissBackground(bool toRight) {
+    // Creates a background for dismissibles to tell user what swiping
+    // left/right does.
+    // Still deciding whether or not to do this.
+    var color = toRight
+        ? const Color.fromRGBO(140, 230, 140, .7)
+        : const Color(0x88ff0000);
+    var text = toRight ? 'SAVE' : 'SKIP';
+    var rotation = toRight ? -.25 : .25;
+    return Container(
+      color: color,
+      child: RotationTransition(
+        turns: AlwaysStoppedAnimation(rotation),
+        child: Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: Text(text,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Raleway',
+                  color: Colors.white,
+                  fontSize: 120.0)),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPetInfo(Animal pet) {
+    var sideInfo = TextStyle(
+      color: Colors.grey[600],
+    );
+    return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          Container(
+            height: _screenHeight / 1.65 - 110,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              image: DecorationImage(
+                fit: BoxFit.cover,
+                image: NetworkImage(pet.imgUrl),
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              children: <Widget>[
+                Text(
+                  '${pet.name},',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Raleway',
+                      fontSize: 22.0),
+                ),
+                SizedBox(width: 5.0),
+                Expanded(
+                  child: Text(
+                    pet.age,
+                    overflow: TextOverflow.fade,
+                    maxLines: 1,
+                    style:
+                        const TextStyle(fontFamily: 'Raleway', fontSize: 20.0),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(pet.gender, style: sideInfo),
+                Text(pet.cityState, style: sideInfo),
+              ],
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Text(pet.breed, style: sideInfo),
+            ),
+          ),
+        ]);
+  }
+
+  Widget _buildNoInfoPage() {
+    const infoStyle = TextStyle(fontSize: 15.0);
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text("You haven't set your location!", style: infoStyle),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              Text('Go to the ', style: infoStyle),
+              RaisedButton(
+                elevation: 5.0,
+                onPressed: () {
+                  Navigator
+                      .push(
+                          context,
+                          PageRouteBuilder(
+                              maintainState: false,
+                              pageBuilder: (context, _, __) =>
+                                  SettingsPage(feed: this.feed)))
+                      .then((result) {
+                    if (result == true) {
+                      setState(() {
+                        _hasInfo = true;
+                        _initializeAnimalList();
+                      });
+                    }
+                  });
+                },
+                color: Colors.white,
+                shape: CircleBorder(),
+                padding: const EdgeInsets.all(10.0),
+                child: Icon(
+                  Icons.settings,
+                  size: 15.0,
+                  color: Colors.grey,
+                ),
+              ),
+              Text("page and set your location", style: infoStyle),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildButtonRow() {
+    const EdgeInsets edge = EdgeInsets.all(12.0);
+    const num elevation = 5.0;
+    const num size = 35.0;
+    return ButtonBar(
+      alignment: MainAxisAlignment.center,
+      children: <Widget>[
+        SizedBox(
+          width: 60.0,
+        ),
+        RaisedButton(
+          elevation: elevation,
+          onPressed: () {
+            Animal pet = feed.currentList[feed.currentList.length - 1];
+            if (_swipingRight) setState(() => _swipingRight = false);
+            _runAnimation().then((_) {
+              _removeDog(pet);
+            });
+          },
+          padding: edge,
+          shape: CircleBorder(),
+          color: Colors.white,
+          child: Icon(
+            Icons.close,
+            size: size,
+            color: Colors.red,
+          ),
+        ),
+        RaisedButton(
+          elevation: elevation,
+          onPressed: () {
+            Animal pet = feed.currentList[feed.currentList.length - 1];
+            _saveDog(pet);
+            if (!_swipingRight) setState(() => _swipingRight = true);
+            _runAnimation().then((_) {
+              _removeDog(pet);
+            });
+          },
+          padding: edge,
+          shape: CircleBorder(),
+          color: Colors.white,
+          child: Icon(
+            Icons.favorite,
+            size: size,
+            color: Colors.green,
+          ),
+        ),
+        RaisedButton(
+          elevation: 5.0,
+          onPressed: () {
+            Navigator
+                .push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => SettingsPage(feed: this.feed)))
+                .then((result) {
+              if (result == true) {
+                _initializeAnimalList();
+              }
+            });
+          },
+          color: Colors.white,
+          shape: CircleBorder(),
+          padding: const EdgeInsets.all(10.0),
+          child: Icon(
+            Icons.settings,
+            size: size / 2,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+}

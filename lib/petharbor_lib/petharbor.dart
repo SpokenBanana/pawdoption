@@ -10,7 +10,7 @@ const String kSearchUrl = kBaseUrl + 'results.asp?';
 const String kShelterUrl = kBaseUrl + 'pick_shelter.asp?';
 
 const String kUrlRegex = r'(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]'
-        r'{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
+    r'{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
 
 const String kSearchParams = 'searchtype=ADOPT&stylesheet=include/default.css&'
     'frontdoor=1&grid=1&friends=1&samaritans=1&nosuccess=0'
@@ -38,7 +38,6 @@ Future<Document> _fetchAnimalSearchPage(
   return parser.parse(response.body);
 }
 
-
 Animal _scrapeAnimalData(Element e) {
   var text = e.getElementsByClassName('gridText');
   var img = e.getElementsByTagName('img')[0];
@@ -49,7 +48,6 @@ Animal _scrapeAnimalData(Element e) {
 }
 
 class PetHarborApi implements PetAPI {
-
   int _currentPage, _totalPages, _lastElement, _pageOffset;
   List<String> _shelters;
 
@@ -61,7 +59,7 @@ class PetHarborApi implements PetAPI {
     print('Setting location');
     Document doc = await _fetchShelterSearchPage(zip, miles);
     _shelters = List<String>();
-    for (Element e in doc.getElementsByTagName('input[type="CHECKBOX"]')) 
+    for (Element e in doc.getElementsByTagName('input[type="CHECKBOX"]'))
       _shelters.add('%27${e.attributes['name'].substring(3)}%27');
     print('shelters found ${_shelters.length}');
 
@@ -72,24 +70,24 @@ class PetHarborApi implements PetAPI {
 
   Future<List<Animal>> getAnimals(int amount, List<String> toSkip) async {
     // TODO: Maybe send an error message?
-    if (this._totalPages != -1 && this._currentPage > this._totalPages) 
+    if (this._totalPages != -1 && this._currentPage > this._totalPages)
       return List<Animal>();
 
     List<Animal> animals = List<Animal>();
     while (animals.length < amount) {
       Document doc = await _fetchAnimalSearchPage(
-        'dog', (this._currentPage + this._pageOffset) % this._totalPages,
-         this._shelters);
+          'dog',
+          (this._currentPage + this._pageOffset) % this._totalPages,
+          this._shelters);
 
       var results = doc.getElementsByClassName('gridResult');
       int i = this._lastElement;
-      int length = min(this._lastElement + (amount - animals.length),
-       results.length);
+      int length =
+          min(this._lastElement + (amount - animals.length), results.length);
       print('Going for $length starting at $i out of ${results.length}');
       for (; i < length; i++) {
         Animal animal = _scrapeAnimalData(results[i]);
-        if (!toSkip.contains(animal.toString())) 
-          animals.add(animal);
+        if (!toSkip.contains(animal.toString())) animals.add(animal);
       }
 
       if (i >= results.length) {
@@ -100,19 +98,21 @@ class PetHarborApi implements PetAPI {
         }
         print('Now at page ${this._currentPage}');
         this._lastElement = 0;
-      } else this._lastElement = i;
+      } else
+        this._lastElement = i;
     }
     print('Finished at element ${this._lastElement}');
     return animals;
   }
 
-  static Future<ShelterInformation> getShelterInformation(String location) async {
+  static Future<ShelterInformation> getShelterInformation(
+      String location) async {
     String url = '${kBaseUrl}site.asp?ID=${location}';
     var response = await http.get(url);
     var doc = parser.parse(response.body);
 
     RegExp phoneReg = RegExp(r'(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]'
-                             r'\d{3}[\s.-]\d{4}');
+        r'\d{3}[\s.-]\d{4}');
 
     String name = doc.getElementsByTagName('h1')[0].text;
     var locationInfo = doc.getElementsByClassName('contact');
@@ -129,13 +129,14 @@ class PetHarborApi implements PetAPI {
     String url = '${kBaseUrl}pet.asp?uaid=${animal.location}.'
         '${animal.id}';
     var respone = await http.get(url);
-    var details = parser.parse(respone.body)
+    var details = parser
+        .parse(respone.body)
         .getElementsByClassName('DetailTable')[1]
         .getElementsByTagName('td')[1];
 
     var results = new List<String>();
     results.add(details.text);
-    
+
     var urlMatches = RegExp(kUrlRegex).allMatches(results[0]);
     for (Match m in urlMatches) {
       results.add(m.group(0));
@@ -145,9 +146,7 @@ class PetHarborApi implements PetAPI {
   }
 
   void _getTotalPages(Document searchDoc) {
-    var pageParts = searchDoc.getElementsByTagName('center')[1]
-                             .text
-                             .split(' ');
+    var pageParts = searchDoc.getElementsByTagName('center')[1].text.split(' ');
     this._totalPages = int.parse(pageParts[pageParts.length - 1]);
     this._pageOffset = Random().nextInt(this._totalPages);
     print('Offset: $_pageOffset');

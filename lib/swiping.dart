@@ -116,7 +116,7 @@ class _SwipingPageState extends State<SwipingPage>
         title: Center(
           child: Text("Pawdoption",
               style: const TextStyle(
-                  fontFamily: "Lobster",
+                  fontFamily: "LobsterTwo",
                   fontSize: 25.0,
                   color: kPetPrimaryText)),
         ),

@@ -48,6 +48,9 @@ flutter:
     - family: Lobster 
       fonts:
           - asset: fonts/Lobster-Regular.ttf
+    - family: LobsterTwo 
+      fonts:
+          - asset: fonts/LobsterTwo-Regular.ttf
     - family: OpenSans 
       fonts:
         - asset: fonts/Open_Sans/OpenSans-Regular.ttf

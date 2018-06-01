@@ -130,6 +130,9 @@ class _SwipingPageState extends State<SwipingPage>
                       Stack(
                           alignment: Alignment.center,
                           children: _buildCardsForPets(this.feed.currentList)),
+                      SizedBox(
+                        height: 10.0,
+                      ),
                       _buildButtonRow(),
                     ],
                   )
@@ -151,13 +154,16 @@ class _SwipingPageState extends State<SwipingPage>
     } on TickerCanceled {}
   }
 
-  void _dogSwiped(DismissDirection direction, Animal dog) {
-    if (direction == DismissDirection.startToEnd) _saveDog(dog);
-    _removeDog(dog);
+  void _dogSwiped(DismissDirection direction, Animal pet) {
+    if (direction == DismissDirection.startToEnd)
+      _savePet(pet);
+    else
+      feed.skip(pet);
+    _removePet(pet);
   }
 
-  _saveDog(Animal dog) {
-    String repr = dog.toString();
+  _savePet(Animal pet) {
+    String repr = pet.toString();
     if (!feed.liked.contains(repr)) {
       feed.liked.add(repr);
       SharedPreferences.getInstance().then((prefs) {
@@ -166,9 +172,9 @@ class _SwipingPageState extends State<SwipingPage>
     }
   }
 
-  _removeDog(Animal dog) {
+  _removePet(Animal pet) {
     setState(() {
-      widget.feed.currentList.remove(dog);
+      widget.feed.currentList.remove(pet);
       widget.feed.updateList();
     });
   }
@@ -370,11 +376,25 @@ class _SwipingPageState extends State<SwipingPage>
     const EdgeInsets edge = EdgeInsets.all(12.0);
     const num elevation = 5.0;
     const num size = 35.0;
-    return ButtonBar(
-      alignment: MainAxisAlignment.center,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        SizedBox(
-          width: 60.0,
+        RaisedButton(
+          elevation: 5.0,
+          onPressed: () {
+            setState(() {
+              feed.getRecentlySkipped();
+            });
+          },
+          color: Colors.white,
+          shape: CircleBorder(),
+          padding: const EdgeInsets.all(10.0),
+          child: Icon(
+            Icons.replay,
+            size: size / 2,
+            color: Colors.yellow[700],
+          ),
         ),
         RaisedButton(
           elevation: elevation,
@@ -382,7 +402,7 @@ class _SwipingPageState extends State<SwipingPage>
             Animal pet = feed.currentList[feed.currentList.length - 1];
             if (_swipingRight) setState(() => _swipingRight = false);
             _runAnimation().then((_) {
-              _removeDog(pet);
+              _removePet(pet);
             });
           },
           padding: edge,
@@ -398,10 +418,10 @@ class _SwipingPageState extends State<SwipingPage>
           elevation: elevation,
           onPressed: () {
             Animal pet = feed.currentList[feed.currentList.length - 1];
-            _saveDog(pet);
+            _savePet(pet);
             if (!_swipingRight) setState(() => _swipingRight = true);
             _runAnimation().then((_) {
-              _removeDog(pet);
+              _removePet(pet);
             });
           },
           padding: edge,

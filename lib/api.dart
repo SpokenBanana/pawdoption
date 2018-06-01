@@ -5,15 +5,17 @@ import 'animals.dart';
 import 'petharbor_lib/petharbor.dart';
 import 'petfinder_lib/petfinder.dart';
 import 'constants.dart';
+import 'dart:collection';
 
 /// The main interface the app uses to get pet information.
 /// Made this extra layer so we can switch APIs and keep the same
 /// expected functionality.
 class AnimalFeed {
   List<Animal> currentList, storeList;
-  List<String> liked, skipped;
+  List<String> liked;
+  Queue<Animal> skipped;
   String zip, animalType;
-  int miles;
+  int miles, _undoMax = 20;
 
   int fetchMoreAt, serveLimit, storeLimit;
   bool done;
@@ -39,6 +41,7 @@ class AnimalFeed {
     // sacrafice of mememory).
     this.storeLimit = 40;
 
+    this.skipped = Queue<Animal>();
     this.currentList = List<Animal>();
     this.storeList = List<Animal>();
     this.done = false;
@@ -96,6 +99,16 @@ class AnimalFeed {
         });
       }
     }
+  }
+
+  void skip(Animal pet) {
+    if (this.skipped.length == _undoMax) this.skipped.removeFirst();
+    this.skipped.addLast(pet);
+  }
+
+  void getRecentlySkipped() {
+    if (this.skipped.isNotEmpty)
+      this.currentList.add(this.skipped.removeLast());
   }
 }
 

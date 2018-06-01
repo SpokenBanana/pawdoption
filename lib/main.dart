@@ -8,14 +8,15 @@ void main() => runApp(new MyApp());
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new MaterialApp(
+    final ThemeData mainTheme = _buildTheme();
+    return MaterialApp(
         title: 'Pawdoption',
-        theme: _buildTheme(),
+        theme: mainTheme,
         debugShowCheckedModeBanner: false,
         home: DefaultTabController(
           length: 3,
           child: Scaffold(
-            bottomNavigationBar: _buildTabBar(),
+            bottomNavigationBar: _buildTabBar(mainTheme),
             body: TabBarView(
                 physics: const NeverScrollableScrollPhysics(),
                 children: <Widget>[
@@ -26,12 +27,14 @@ class MyApp extends StatelessWidget {
         ));
   }
 
-  Widget _buildTabBar() {
+  Widget _buildTabBar(ThemeData theme) {
     return Container(
       height: 60.0,
       decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [BoxShadow(color: Colors.grey, blurRadius: 5.0)],
+        color: theme.bottomAppBarColor,
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(.4), blurRadius: 5.0)
+        ],
       ),
       child: TabBar(
         indicatorWeight: 0.1,
@@ -51,21 +54,99 @@ class MyApp extends StatelessWidget {
   ThemeData _buildTheme() {
     final ThemeData base = ThemeData.light();
     return base.copyWith(
-      primaryColor: kPetPrimary,
+      primaryColor: Colors.white,
+      primaryColorDark: kPetPrimaryText,
+      accentColor: Colors.black,
+      canvasColor: Colors.white,
       scaffoldBackgroundColor: kPetGray,
+      buttonColor: Colors.white,
       primaryIconTheme: base.iconTheme.copyWith(
         color: Color(0xFF555555),
       ),
-      primaryTextTheme: base.textTheme.copyWith().apply(
-            fontFamily: 'OpenSans',
-            displayColor: kPetPrimaryText,
-            bodyColor: kPetPrimaryText,
-          ),
-      textTheme: base.textTheme.copyWith().apply(
-            fontFamily: 'OpenSans',
-            displayColor: kPetPrimaryText,
-            bodyColor: kPetPrimaryText,
-          ),
+      primaryTextTheme: base.textTheme.copyWith(
+        title: TextStyle(
+          color: kPetPrimaryText,
+          fontFamily: "Raleway",
+          fontSize: 25.0,
+        ),
+        subhead: TextStyle(
+          color: Colors.grey[600],
+          fontFamily: 'Raleway',
+          fontSize: 22.0,
+        ),
+      ),
+      textTheme: base.textTheme.copyWith(
+        title: TextStyle(
+          color: kPetPrimaryText,
+          fontFamily: "LobsterTwo",
+          fontSize: 25.0,
+        ),
+        headline: TextStyle(
+          color: kPetPrimaryText,
+          fontFamily: 'Raleway',
+          fontSize: 22.0,
+          fontWeight: FontWeight.bold,
+        ),
+        subhead: TextStyle(
+          color: Colors.grey[600],
+          fontFamily: 'Raleway',
+          fontSize: 22.0,
+        ),
+        caption: TextStyle(
+          color: Colors.grey,
+          fontFamily: 'OpenSans',
+          fontSize: 14.0,
+        ),
+        body1: TextStyle(
+          color: kPetPrimaryText,
+          fontFamily: 'OpenSans',
+        ),
+      ),
+    );
+  }
+
+  ThemeData _buildDarkTheme() {
+    final ThemeData base = ThemeData.dark();
+    return base.copyWith(
+      indicatorColor: Colors.blue[600],
+      accentColor: Colors.white,
+      primaryTextTheme: base.primaryTextTheme.copyWith(
+        title: TextStyle(
+          color: Colors.grey[200],
+          fontFamily: "Raleway",
+          fontSize: 25.0,
+        ),
+      ),
+      textTheme: base.textTheme
+          .copyWith(
+              title: TextStyle(
+                color: Colors.grey[200],
+                fontFamily: "LobsterTwo",
+                fontSize: 25.0,
+              ),
+              headline: TextStyle(
+                fontFamily: 'Raleway',
+                fontSize: 22.0,
+                fontWeight: FontWeight.bold,
+                color: Colors.grey[300],
+              ),
+              subhead: TextStyle(
+                fontFamily: 'Raleway',
+                fontSize: 22.0,
+                color: Colors.grey[400],
+              ),
+              caption: TextStyle(
+                fontFamily: 'OpenSans',
+                fontSize: 14.0,
+                color: Colors.grey,
+              ),
+              body1: TextStyle(
+                fontFamily: 'OpenSans',
+                color: Colors.grey[300],
+              ))
+          .apply(),
+      buttonColor: Colors.grey[700],
+      buttonTheme: base.buttonTheme.copyWith(),
     );
   }
 }

@@ -22,7 +22,7 @@ class _DetailsPage extends State<DetailsPage> {
     final key = GlobalKey<ScaffoldState>();
     return Scaffold(
       key: key,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         title: Text(widget.pet.name,
             style: const TextStyle(fontFamily: 'Raleway')),
@@ -92,8 +92,7 @@ class _DetailsPage extends State<DetailsPage> {
                     child: RichText(
                       text: TextSpan(
                         text: snapshot.data[0],
-                        style: const TextStyle(
-                            fontFamily: 'OpenSans', color: kPetPrimaryText),
+                        style: Theme.of(context).textTheme.body1,
                       ),
                     ),
                   ),
@@ -167,9 +166,9 @@ class _DetailsPage extends State<DetailsPage> {
                   padding: const EdgeInsets.all(4.0),
                   child: Text(
                     url,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'OpenSans',
-                      color: Colors.blue,
+                      color: Theme.of(context).indicatorColor,
                       decoration: TextDecoration.underline,
                     ),
                   ),
@@ -189,12 +188,11 @@ class _DetailsPage extends State<DetailsPage> {
         child: Text("Shelter opted out of giving information :("),
       );
     }
-    const linkStyle = TextStyle(
+    var linkStyle = TextStyle(
       fontFamily: "OpenSans",
-      color: Colors.blue,
+      color: Theme.of(context).indicatorColor,
     );
-    const normalStyle =
-        TextStyle(fontFamily: 'OpenSans', color: kPetPrimaryText);
+    var normalStyle = Theme.of(context).textTheme.body1;
     return Padding(
       padding: const EdgeInsets.all(14.0),
       child: Column(

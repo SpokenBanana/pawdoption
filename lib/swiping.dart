@@ -115,10 +115,9 @@ class _SwipingPageState extends State<SwipingPage>
         elevation: 4.0,
         title: Center(
           child: Text("Pawdoption",
-              style: const TextStyle(
-                  fontFamily: "LobsterTwo",
-                  fontSize: 25.0,
-                  color: kPetPrimaryText)),
+              style: TextStyle(
+                fontFamily: 'LobsterTwo',
+              )),
         ),
       ),
       body: Center(
@@ -288,10 +287,7 @@ class _SwipingPageState extends State<SwipingPage>
                   '${pet.name},',
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Raleway',
-                      fontSize: 22.0),
+                  style: Theme.of(context).textTheme.headline,
                 ),
                 SizedBox(width: 5.0),
                 Expanded(
@@ -299,8 +295,7 @@ class _SwipingPageState extends State<SwipingPage>
                     pet.age,
                     overflow: TextOverflow.fade,
                     maxLines: 1,
-                    style:
-                        const TextStyle(fontFamily: 'Raleway', fontSize: 20.0),
+                    style: Theme.of(context).textTheme.subhead,
                   ),
                 ),
               ],
@@ -387,7 +382,6 @@ class _SwipingPageState extends State<SwipingPage>
               feed.getRecentlySkipped();
             });
           },
-          color: Colors.white,
           shape: CircleBorder(),
           padding: const EdgeInsets.all(10.0),
           child: Icon(
@@ -407,7 +401,6 @@ class _SwipingPageState extends State<SwipingPage>
           },
           padding: edge,
           shape: CircleBorder(),
-          color: Colors.white,
           child: Icon(
             Icons.close,
             size: size,
@@ -426,7 +419,6 @@ class _SwipingPageState extends State<SwipingPage>
           },
           padding: edge,
           shape: CircleBorder(),
-          color: Colors.white,
           child: Icon(
             Icons.favorite,
             size: size,
@@ -447,7 +439,6 @@ class _SwipingPageState extends State<SwipingPage>
               }
             });
           },
-          color: Colors.white,
           shape: CircleBorder(),
           padding: const EdgeInsets.all(10.0),
           child: Icon(

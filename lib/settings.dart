@@ -47,7 +47,6 @@ class _SettingsPage extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text("Settings"),
       ),
@@ -180,18 +179,28 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   Widget _buildZipTextField() {
-    return TextField(
-      controller: _textController,
-      keyboardType: TextInputType.number,
-      maxLength: 5,
-      onChanged: (text) {
-        _errorMessage = '';
-        _zip = text;
-      },
-      decoration: InputDecoration(
-        fillColor: Colors.white,
-        labelText: "Zip Code",
-        suffixIcon: Icon(Icons.location_on),
+    return Theme(
+      data: Theme.of(context).copyWith(
+            primaryColor: Theme.of(context).accentColor,
+          ),
+      child: TextField(
+        style: TextStyle(
+            fontFamily: 'OpenSans',
+            color: Theme.of(context).accentColor,
+            fontSize: 20.0),
+        controller: _textController,
+        keyboardType: TextInputType.number,
+        maxLength: 5,
+        onChanged: (text) {
+          _errorMessage = '';
+          _zip = text;
+        },
+        decoration: InputDecoration(
+          labelStyle: TextStyle(color: Theme.of(context).accentColor),
+          fillColor: Theme.of(context).accentColor,
+          labelText: "Zip Code",
+          suffixIcon: Icon(Icons.location_on),
+        ),
       ),
     );
   }

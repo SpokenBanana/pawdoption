@@ -34,8 +34,8 @@ class _SavedPage extends State<SavedPage> {
         elevation: 3.0,
         title: Text("Saved Pets"),
       ),
-      backgroundColor: Colors.white,
       body: Container(
+        color: Theme.of(context).canvasColor,
         alignment: Alignment.center,
         child: liked.isEmpty
             ? _buildNoSavedPage()
@@ -98,20 +98,13 @@ class _SavedPage extends State<SavedPage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Flexible(
-              child: Text(dog.name,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'Raleway',
-                      color: Color(0xFF555555),
-                      fontSize: 20.0)),
+              child:
+                  Text(dog.name, style: Theme.of(context).textTheme.headline),
             ),
             Flexible(
               child: Text(
                 dog.breed,
-                style: const TextStyle(
-                  color: Color(0xFF888888),
-                  fontSize: 14.0,
-                ),
+                style: Theme.of(context).textTheme.caption,
               ),
             ),
           ],

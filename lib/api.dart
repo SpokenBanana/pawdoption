@@ -35,7 +35,7 @@ class AnimalFeed {
     this.fetchMoreAt = 3;
 
     // Amount to send to front-end.
-    this.serveLimit = 10;
+    this.serveLimit = 5;
 
     // Amount to store in this class (reduce number of calls to website at the
     // sacrafice of mememory).

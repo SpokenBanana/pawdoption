@@ -74,9 +74,7 @@ class PetFinderApi implements PetAPI {
 
   static Future<ShelterInformation> getShelterInformation(
       String location) async {
-    if (_shelterCache.containsKey(location)) {
-      return _shelterCache[location];
-    }
+    if (_shelterCache.containsKey(location)) return _shelterCache[location];
     Map<String, String> params = {
       'key': kPetFinderToken,
       'id': location,
@@ -84,7 +82,10 @@ class PetFinderApi implements PetAPI {
     };
     var response = await http.get(_buildUrl('/shelter.get', params));
     var shelterMap = json.decode(response.body)['petfinder']['shelter'];
-    return _toShelterInformation(shelterMap);
+    // Cache it to not make this API call again.
+    ShelterInformation shelter = _toShelterInformation(shelterMap);
+    _shelterCache[location] = shelter;
+    return shelter;
   }
 
   static Future<List<String>> getAnimalDetails(Animal animal) async {

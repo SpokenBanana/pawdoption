@@ -12,9 +12,8 @@ Pawdoption allows you to choose between swiping through dogs or cats.
 (Option for both coming soon!)
 
 
-![screenshot](screenshots/home_ruffalo.png)
-![screenshot](screenshots/home_buddy.png)
-![screenshot](screenshots/saved.png)
+<img src="screenshots/home_ruffalo.png" height="500px"/> <img src="screenshots/home_buddy.png" height="500px"/>
+<img src="screenshots/saved.png" width="500px"/>
 
 
 
@@ -25,7 +24,7 @@ Pawdoption is currently live on the Google Play Store!
 
 <a href='https://play.google.com/store/apps/details?id=com.pybanana.pawdoption&pcampaignid=MKT-Other-global-all-co-prtnr-py-PartBadge-Mar2515-1'><img alt='Get it on Google Play' src='https://play.google.com/intl/en_gb/badges/images/generic/en_badge_web_generic.png'/></a>
 
-## Get in on iOS
+## Get it on iOS
 
 **Coming soon!**
 

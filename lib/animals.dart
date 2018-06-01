@@ -74,13 +74,16 @@ class Animal {
       this.apiId,
       this.description,
       this.cityState,
-      this.since) {
+      this.since,
+      optionMap) {
     name = name.toLowerCase();
     this.name = '${name[0].toUpperCase()}${name.substring(1)}';
     if (this.gender == 'F')
       this.gender = 'Female';
     else if (this.gender == 'M') this.gender = 'Male';
     lastUpdated = DateTime.parse(this.since);
+    this.options = Animal.parseOptions(optionMap);
+    readOptions();
   }
 
   Animal.fromBasicParams(
@@ -134,7 +137,7 @@ class Animal {
   }
 
   static List<String> parseOptions(Map options) {
-    if (options == null) return List<String>();
+    if (options.isEmpty) return List<String>();
     if (options['option'] is List) {
       List<String> strOptions = List<String>();
       for (var option in options['option']) strOptions.add(option['\$t']);

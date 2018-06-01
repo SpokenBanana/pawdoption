@@ -113,6 +113,8 @@ class PetFinderApi implements PetAPI {
 
       // Cache it so that we don't have to make this API call multiple times.
       animal.description = results[0];
+      // TODO: Maybe fill in the options tag while we're here? It isn't saved
+      //       yet.
     } else {
       results.add(animal.description);
     }
@@ -173,7 +175,8 @@ class PetFinderApi implements PetAPI {
         animalData['id']['\$t'],
         description,
         cityState,
-        animalData['lastUpdate']['\$t']);
+        animalData['lastUpdate']['\$t'],
+        animalData['options']);
   }
 }
 

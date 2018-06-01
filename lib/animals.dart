@@ -22,6 +22,11 @@ class Animal {
   // PetFinder specific.
   String apiId, description, location, cityState;
 
+  DateTime lastUpdated;
+
+  List<String> options;
+  bool spayedNeutered, hasShots, specialNeeds, noKids;
+
   /// Was used when the project scraped information from petharbor but now
   /// used.
   Animal(name, gender, color, breed, age, since, shelter, imgUrl) {
@@ -68,21 +73,74 @@ class Animal {
       this.location,
       this.apiId,
       this.description,
-      this.cityState) {
+      this.cityState,
+      this.since) {
     name = name.toLowerCase();
     this.name = '${name[0].toUpperCase()}${name.substring(1)}';
     if (this.gender == 'F')
       this.gender = 'Female';
     else if (this.gender == 'M') this.gender = 'Male';
+    lastUpdated = DateTime.parse(this.since);
+  }
+
+  Animal.fromBasicParams(
+      this.name,
+      this.gender,
+      this.color,
+      this.breed,
+      this.age,
+      this.since,
+      this.shelter,
+      this.imgUrl,
+      this.apiId,
+      this.location,
+      this.id) {}
+
+  factory Animal.fromString(String animalStr) {
+    List<String> parts = animalStr.split('|');
+    return Animal.fromBasicParams(parts[0], parts[1], parts[2], parts[3],
+        parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10]);
   }
 
   /// Used to reconstruct saved Animal objects. Can't be too big since we
   /// store the information locally which is limited, so we don't
   /// save description since that is usually a large string.
   String toString() {
+    // TODO: Incorporate the options into this format.
     return "${this.name}|${this.gender}|${this.color}|${this.breed}|"
         "${this.age}|${this.since}|${this.shelter}|${this.imgUrl}|"
         "${this.apiId}|${this.location}|${this.id}";
+  }
+
+  void readOptions() {
+    for (String option in options) {
+      switch (option) {
+        case 'specialNeeds':
+          specialNeeds = true;
+          break;
+        case 'hasShots':
+          hasShots = true;
+          break;
+        case 'altered':
+          spayedNeutered = true;
+          break;
+        case 'noKids':
+          noKids = true;
+          break;
+        default:
+          continue;
+      }
+    }
+  }
+
+  static List<String> parseOptions(Map options) {
+    if (options == null) return List<String>();
+    if (options['option'] is List) {
+      List<String> strOptions = List<String>();
+      for (var option in options['option']) strOptions.add(option['\$t']);
+      return strOptions;
+    }
+    return <String>[options['option']['\$t']];
   }
 }
 

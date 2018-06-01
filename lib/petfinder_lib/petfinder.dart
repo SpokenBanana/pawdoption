@@ -171,7 +171,8 @@ class PetFinderApi implements PetAPI {
         animalData['shelterId']['\$t'],
         animalData['id']['\$t'],
         description,
-        cityState);
+        cityState,
+        animalData['lastUpdate']['\$t']);
   }
 }
 

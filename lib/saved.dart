@@ -1,10 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'dart:async';
-import 'details.dart';
-import 'api.dart';
+
 import 'animals.dart';
-import 'constants.dart';
+import 'details.dart';
 
 /// Handles displaying the saved animals to later view.
 class SavedPage extends StatefulWidget {
@@ -39,13 +39,17 @@ class _SavedPage extends State<SavedPage> {
         alignment: Alignment.center,
         child: liked.isEmpty
             ? _buildNoSavedPage()
-            : ListView(
+            : ListView.builder(
+                itemCount: liked.length,
                 physics: const BouncingScrollPhysics(),
-                children: liked
-                    .map<Widget>((String repr) =>
-                        _buildDogPreview(Animal.fromString(repr)))
-                    .toList(),
-              ),
+                itemBuilder: (BuildContext context, int index) {
+                  Animal pet = Animal.fromString(liked[index]);
+                  return _buildDogPreview(pet);
+                }
+                //    .map<Widget>((String repr) =>
+                //        _buildDogPreview(Animal.fromString(repr)))
+                //    .toList(),
+                ),
       ),
     );
   }
@@ -89,7 +93,7 @@ class _SavedPage extends State<SavedPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: CircleAvatar(
-            radius: 35.0,
+            radius: 30.0,
             backgroundImage: NetworkImage(dog.imgUrl),
           ),
         ),
@@ -98,13 +102,19 @@ class _SavedPage extends State<SavedPage> {
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Flexible(
-              child:
-                  Text(dog.name, style: Theme.of(context).textTheme.headline),
+              child: Text(dog.name,
+                  style: Theme
+                      .of(context)
+                      .textTheme
+                      .headline
+                      .copyWith(fontSize: 18.0)),
             ),
             Flexible(
               child: Text(
                 dog.breed,
-                style: Theme.of(context).textTheme.caption,
+                style: Theme.of(context).textTheme.caption.copyWith(
+                      fontSize: 14.0,
+                    ),
               ),
             ),
           ],

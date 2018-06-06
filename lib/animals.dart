@@ -2,6 +2,9 @@ import 'dart:async';
 
 RegExp _animalIdExp = RegExp(r"ID=(\w+)&LOCATION=(\w+)");
 
+enum AnimalAge { Baby, Young, Adult, Senior, All }
+enum AnimalSize { S, M, L, XL, All }
+
 /// Used as sort of an abstract class. Probably a better way of doing this.
 /// This is so that if another API is found to be better or the current
 /// API stops working, then we can switch APIs without being so dependent
@@ -17,7 +20,7 @@ class PetAPI {
 }
 
 class Animal {
-  String name, gender, color, breed, shelter, age, since, imgUrl, id;
+  String name, gender, color, breed, shelter, age, since, imgUrl, id, size;
 
   // PetFinder specific.
   String apiId, description, location, cityState;
@@ -75,7 +78,8 @@ class Animal {
       this.description,
       this.cityState,
       this.since,
-      optionMap) {
+      optionMap,
+      this.size) {
     name = name.toLowerCase();
     this.name = '${name[0].toUpperCase()}${name.substring(1)}';
     if (this.gender == 'F')
@@ -148,7 +152,8 @@ class Animal {
 }
 
 class ShelterInformation {
-  String name, phone, location;
+  String name, phone, location, id;
+  double lat, lng;
   ShelterInformation(name, phone, location) {
     this.name = name;
     this.phone = phone;

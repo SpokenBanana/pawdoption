@@ -1,11 +1,12 @@
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
-import 'dart:math';
-import 'animals.dart';
-import 'petharbor_lib/petharbor.dart';
-import 'petfinder_lib/petfinder.dart';
-import 'constants.dart';
 import 'dart:collection';
+import 'dart:math';
+
+import 'package:shared_preferences/shared_preferences.dart';
+
+import 'animals.dart';
+import 'constants.dart';
+import 'petfinder_lib/petfinder.dart';
 
 /// The main interface the app uses to get pet information.
 /// Made this extra layer so we can switch APIs and keep the same
@@ -26,11 +27,7 @@ class AnimalFeed {
     this.zip = '';
     this.miles = -1;
 
-    // Not needed anymore, used to be used to decide which one is best.
-    if (kUsePetHarbor)
-      petApi = PetHarborApi();
-    else
-      petApi = PetFinderApi();
+    petApi = PetFinderApi();
 
     this.fetchMoreAt = 3;
 
@@ -113,15 +110,11 @@ class AnimalFeed {
 }
 
 Future<List<String>> getDetailsAbout(Animal animal) async {
-  List<String> info = kUsePetHarbor
-      ? await PetHarborApi.getAnimalDetails(animal)
-      : await PetFinderApi.getAnimalDetails(animal);
+  List<String> info = await PetFinderApi.getAnimalDetails(animal);
   return info;
 }
 
 Future<ShelterInformation> getShelterInformation(String location) async {
-  ShelterInformation info = kUsePetHarbor
-      ? await PetHarborApi.getShelterInformation(location)
-      : await PetFinderApi.getShelterInformation(location);
+  ShelterInformation info = await PetFinderApi.getShelterInformation(location);
   return info;
 }

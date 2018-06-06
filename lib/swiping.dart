@@ -72,13 +72,14 @@ class _SwipingPageState extends State<SwipingPage>
     _hasInfo = false;
     _initializeAnimalList();
     _updateLikedList();
-    _swipingRight = true;
+    _swipingRight = false;
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 300),
       vsync: this,
     );
 
-    Animation curve = CurvedAnimation(parent: _controller, curve: Curves.ease);
+    Animation curve =
+        CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _rotate = new Tween<double>(
       begin: -0.0,
@@ -151,6 +152,13 @@ class _SwipingPageState extends State<SwipingPage>
   Future<Null> _runAnimation() async {
     try {
       await _controller.forward();
+    } on TickerCanceled {}
+  }
+
+  Future<Null> _reverseAnimation() async {
+    try {
+      _controller.value = _controller.upperBound - 0.1;
+      await _controller.fling(velocity: -1.8);
     } on TickerCanceled {}
   }
 
@@ -381,7 +389,11 @@ class _SwipingPageState extends State<SwipingPage>
           elevation: 5.0,
           onPressed: () {
             setState(() {
-              feed.getRecentlySkipped();
+              if (feed.skipped.isNotEmpty) {
+                _swipingRight = false;
+                feed.getRecentlySkipped();
+                _reverseAnimation();
+              }
             });
           },
           shape: CircleBorder(),
@@ -398,6 +410,7 @@ class _SwipingPageState extends State<SwipingPage>
             Animal pet = feed.currentList[feed.currentList.length - 1];
             if (_swipingRight) setState(() => _swipingRight = false);
             _runAnimation().then((_) {
+              feed.skip(pet);
               _removePet(pet);
             });
           },

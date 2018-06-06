@@ -1,12 +1,13 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/animation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'api.dart';
 import 'dart:async';
-import 'colors.dart';
-import 'settings.dart';
-import 'details.dart';
+
+import 'package:flutter/animation.dart';
+import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'animals.dart';
+import 'api.dart';
+import 'details.dart';
+import 'settings.dart';
 
 /// The swiping page of the application.
 class SwipingPage extends StatefulWidget {
@@ -33,10 +34,7 @@ class _SwipingPageState extends State<SwipingPage>
   double _screenHeight;
 
   _SwipingPageState(AnimalFeed feed) {
-    _hasInfo = false;
     this.feed = feed;
-    _initializeAnimalList();
-    _updateLikedList();
   }
 
   _updateLikedList() {
@@ -54,21 +52,26 @@ class _SwipingPageState extends State<SwipingPage>
       if (zip == null || miles == null) {
         _hasInfo = false;
       } else {
-        setState(() {
-          _hasInfo = true;
-          if (zip != feed.zip ||
-              miles != feed.miles ||
-              animalType != (feed.animalType == 'cat')) {
-            feed.done = false;
-            _initializeFeed(zip, miles, animalType: animalType ? 'cat' : 'dog');
-          }
-        });
+        if (this.mounted)
+          setState(() {
+            _hasInfo = true;
+            if (zip != feed.zip ||
+                miles != feed.miles ||
+                animalType != (feed.animalType == 'cat')) {
+              feed.done = false;
+              _initializeFeed(zip, miles,
+                  animalType: animalType ? 'cat' : 'dog');
+            }
+          });
       }
     });
   }
 
-  initState() {
+  void initState() {
     super.initState();
+    _hasInfo = false;
+    _initializeAnimalList();
+    _updateLikedList();
     _swipingRight = true;
     _controller = AnimationController(
       duration: const Duration(milliseconds: 500),
@@ -113,12 +116,11 @@ class _SwipingPageState extends State<SwipingPage>
     return Scaffold(
       appBar: AppBar(
         elevation: 4.0,
-        title: Center(
-          child: Text("Pawdoption",
-              style: TextStyle(
-                fontFamily: 'LobsterTwo',
-              )),
-        ),
+        centerTitle: true,
+        title: Text("Pawdoption",
+            style: TextStyle(
+              fontFamily: 'LobsterTwo',
+            )),
       ),
       body: Center(
         child: this._hasInfo
@@ -129,9 +131,7 @@ class _SwipingPageState extends State<SwipingPage>
                       Stack(
                           alignment: Alignment.center,
                           children: _buildCardsForPets(this.feed.currentList)),
-                      SizedBox(
-                        height: 10.0,
-                      ),
+                      SizedBox(height: 10.0),
                       _buildButtonRow(),
                     ],
                   )
@@ -142,9 +142,10 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   void _initializeFeed(String zip, int miles, {String animalType}) {
-    this.feed.initialize(zip, miles, animalType: animalType).then((done) {
-      setState(() {});
-    });
+    if (!this.feed.done)
+      this.feed.initialize(zip, miles, animalType: animalType).then((done) {
+        if (this.mounted) setState(() {});
+      });
   }
 
   Future<Null> _runAnimation() async {
@@ -178,7 +179,7 @@ class _SwipingPageState extends State<SwipingPage>
     });
   }
 
-  _buildPetCardContaiiner(Widget child, Animal pet, {double elevation = 0.1}) {
+  _buildPetCardContainer(Widget child, Animal pet, {double elevation = 0.1}) {
     return GestureDetector(
       onTap: () => Navigator.push(context,
           MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
@@ -210,7 +211,7 @@ class _SwipingPageState extends State<SwipingPage>
     return RotationTransition(
       turns: AlwaysStoppedAnimation(
           _swipingRight ? -_rotate.value / 360.0 : _rotate.value / 360),
-      child: _buildPetCardContaiiner(_buildPetInfo(pet), pet),
+      child: _buildPetCardContainer(_buildPetInfo(pet), pet),
     );
   }
 
@@ -228,7 +229,7 @@ class _SwipingPageState extends State<SwipingPage>
             onDismissed: (direction) => _dogSwiped(direction, pet),
             child: index == pets.length - 1
                 ? _buildActiveCard(pet)
-                : _buildPetCardContaiiner(_buildPetInfo(pet), pet),
+                : _buildPetCardContainer(_buildPetInfo(pet), pet),
           ),
           index == pets.length - 1);
     }).toList();
@@ -345,6 +346,7 @@ class _SwipingPageState extends State<SwipingPage>
                     if (result == true) {
                       setState(() {
                         _hasInfo = true;
+                        this.feed.done = false;
                         _initializeAnimalList();
                       });
                     }
@@ -435,6 +437,7 @@ class _SwipingPageState extends State<SwipingPage>
                         builder: (context) => SettingsPage(feed: this.feed)))
                 .then((result) {
               if (result == true) {
+                this.feed.done = false;
                 _initializeAnimalList();
               }
             });

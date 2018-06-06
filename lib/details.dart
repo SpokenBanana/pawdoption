@@ -1,10 +1,10 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/gestures.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'api.dart';
-import 'colors.dart';
+
 import 'animals.dart';
+import 'api.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
@@ -29,31 +29,27 @@ class _DetailsPage extends State<DetailsPage> {
       ),
       body: ListView(
         children: <Widget>[
-          Container(
-            height: 300.0,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              image: DecorationImage(
-                fit: BoxFit.fitHeight,
-                image: NetworkImage(widget.pet.imgUrl),
+          Hero(
+            tag: widget.pet.id,
+            child: Container(
+              height: 300.0,
+              decoration: BoxDecoration(
+                color: Colors.black,
+                image: DecorationImage(
+                  fit: BoxFit.fitHeight,
+                  image: NetworkImage(widget.pet.imgUrl),
+                ),
               ),
             ),
           ),
-          // TOOD: Try not using a column here. Seems usless.
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              _buildDogInfo(widget.pet),
-              Divider(),
-              Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Text("Comments about ${widget.pet.name}:",
-                    style:
-                        const TextStyle(fontFamily: 'Raleway', fontSize: 20.0)),
-              ),
-              _buildComments(key),
-            ],
+          _buildDogInfo(widget.pet),
+          Divider(),
+          Padding(
+            padding: const EdgeInsets.only(left: 8.0),
+            child: Text("Comments about ${widget.pet.name}:",
+                style: const TextStyle(fontFamily: 'Raleway', fontSize: 20.0)),
           ),
+          _buildComments(key),
           Divider(),
           _buildAdoptInfo(),
           widget.pet.id == null || widget.pet.id == 'null'
@@ -82,8 +78,7 @@ class _DetailsPage extends State<DetailsPage> {
             return Text('Loading...');
           default:
             if (snapshot.hasError)
-              return new Text(
-                  'Couldn\'t get the comments :( ${snapshot.error}');
+              return new Text('Couldn\'t get the comments :(');
             else
               return Column(
                 children: <Widget>[

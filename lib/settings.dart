@@ -1,8 +1,8 @@
-import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'colors.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 import 'api.dart';
 
 /// Handles the settings of the application as well as providiing general
@@ -47,6 +47,7 @@ class _SettingsPage extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
         title: Text("Settings"),
       ),

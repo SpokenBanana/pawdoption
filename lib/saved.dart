@@ -13,18 +13,18 @@ class SavedPage extends StatefulWidget {
 }
 
 class _SavedPage extends State<SavedPage> {
-  List<String> liked;
+  List<Animal> liked;
 
   _SavedPage() {
-    liked = List<String>();
+    liked = List<Animal>();
     _getLiked();
   }
 
-  Future<List<String>> _getLiked() async {
+  Future<Null> _getLiked() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    liked = prefs.getStringList('liked') ?? List<String>();
+    var likedrepr = prefs.getStringList('liked') ?? List<String>();
+    this.liked = likedrepr.map((animal) => Animal.fromString(animal)).toList();
     if (this.mounted) setState(() {});
-    return liked;
   }
 
   @override
@@ -43,8 +43,7 @@ class _SavedPage extends State<SavedPage> {
                 itemCount: liked.length,
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (BuildContext context, int index) {
-                  Animal pet = Animal.fromString(liked[index]);
-                  return _buildDogPreview(pet);
+                  return _buildDogPreview(liked[index]);
                 }
                 //    .map<Widget>((String repr) =>
                 //        _buildDogPreview(Animal.fromString(repr)))
@@ -56,9 +55,10 @@ class _SavedPage extends State<SavedPage> {
 
   void _removeDog(Animal dog) {
     setState(() {
-      liked.remove(dog.toString());
+      liked.remove(dog);
       SharedPreferences.getInstance().then((prefs) {
-        prefs.setStringList("liked", liked);
+        prefs.setStringList(
+            "liked", liked.map((pet) => pet.toString()).toList());
       });
     });
   }

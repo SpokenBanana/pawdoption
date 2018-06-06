@@ -48,7 +48,7 @@ class PetFinderApi implements PetAPI {
     }
   }
 
-  Future<List<Animal>> getAnimals(int amount, List<String> toSkip) async {
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) async {
     List<Animal> animals = List<Animal>();
     while (animals.length < amount) {
       Map<String, String> params = {
@@ -67,7 +67,7 @@ class PetFinderApi implements PetAPI {
       if (petList == null) break;
       for (Map pet in petList) {
         Animal animal = toAnimal(pet);
-        if (!toSkip.contains(animal.toString())) animals.add(animal);
+        if (!toSkip.contains(animal)) animals.add(animal);
       }
     }
 
@@ -92,7 +92,9 @@ class PetFinderApi implements PetAPI {
 
   static Future<List<String>> getAnimalDetails(Animal animal) async {
     List<String> results = List<String>();
-    if (animal.description == '' || animal.description == null) {
+    if (animal.description == '' ||
+        animal.description == null ||
+        animal.options == null) {
       // Re-fetch the data.
       Map<String, String> params = {
         'key': kPetFinderToken,
@@ -115,8 +117,9 @@ class PetFinderApi implements PetAPI {
 
       // Cache it so that we don't have to make this API call multiple times.
       animal.description = results[0];
-      // TODO: Maybe fill in the options tag while we're here? It isn't saved
-      //       yet.
+      if (animal.options.isEmpty)
+        animal.options =
+            Animal.parseOptions(petDoc['petfinder']['pet']['options']);
     } else {
       results.add(animal.description);
     }

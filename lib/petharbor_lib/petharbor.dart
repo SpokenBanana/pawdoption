@@ -1,8 +1,10 @@
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as parser;
-import 'package:html/dom.dart';
 import 'dart:async';
 import 'dart:math';
+
+import 'package:html/dom.dart';
+import 'package:html/parser.dart' as parser;
+import 'package:http/http.dart' as http;
+
 import '../animals.dart';
 
 const String kBaseUrl = 'http://petharbor.com/';
@@ -68,7 +70,7 @@ class PetHarborApi implements PetAPI {
     this._currentPage = 1;
   }
 
-  Future<List<Animal>> getAnimals(int amount, List<String> toSkip) async {
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) async {
     // TODO: Maybe send an error message?
     if (this._totalPages != -1 && this._currentPage > this._totalPages)
       return List<Animal>();
@@ -87,7 +89,7 @@ class PetHarborApi implements PetAPI {
       print('Going for $length starting at $i out of ${results.length}');
       for (; i < length; i++) {
         Animal animal = _scrapeAnimalData(results[i]);
-        if (!toSkip.contains(animal.toString())) animals.add(animal);
+        if (!toSkip.contains(animal)) animals.add(animal);
       }
 
       if (i >= results.length) {

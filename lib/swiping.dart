@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'api.dart';
+import 'colors.dart';
 import 'details.dart';
 import 'settings.dart';
 
@@ -40,7 +41,8 @@ class _SwipingPageState extends State<SwipingPage>
   _updateLikedList() {
     SharedPreferences.getInstance().then((prefs) {
       var liked = prefs.getStringList('liked') ?? List<String>();
-      if (liked.isNotEmpty) feed.liked = liked;
+      if (liked.isNotEmpty)
+        feed.liked = liked.map((repr) => Animal.fromString(repr)).toList();
     });
   }
 
@@ -171,11 +173,11 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   _savePet(Animal pet) {
-    String repr = pet.toString();
-    if (!feed.liked.contains(repr)) {
-      feed.liked.add(repr);
+    if (!feed.liked.contains(pet)) {
+      feed.liked.add(pet);
       SharedPreferences.getInstance().then((prefs) {
-        prefs.setStringList('liked', feed.liked);
+        prefs.setStringList(
+            'liked', feed.liked.map((animal) => animal.toString()).toList());
       });
     }
   }
@@ -279,7 +281,7 @@ class _SwipingPageState extends State<SwipingPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            height: _screenHeight / 1.65 - 110,
+            height: _screenHeight / 1.65 - 130,
             decoration: BoxDecoration(
               color: Colors.black,
               image: DecorationImage(
@@ -323,7 +325,30 @@ class _SwipingPageState extends State<SwipingPage>
           Expanded(
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0),
-              child: Text(pet.breed, style: sideInfo),
+              child: Text(
+                pet.breed,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: sideInfo,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.all(8.0),
+            height: 50.0,
+            child: ListView(
+              physics: const BouncingScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              children: pet.options.map((option) {
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8.0),
+                  child: Text(
+                    Animal.parseOption(option, pet),
+                    style: TextStyle(
+                        color: kPetThemecolor, fontWeight: FontWeight.bold),
+                  ),
+                );
+              }).toList(),
             ),
           ),
         ]);

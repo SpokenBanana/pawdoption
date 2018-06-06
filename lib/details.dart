@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import 'animals.dart';
 import 'api.dart';
+import 'colors.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _DetailsPage extends State<DetailsPage> {
       body: ListView(
         children: <Widget>[
           Hero(
-            tag: widget.pet.id,
+            tag: widget.pet.apiId,
             child: Container(
               height: 300.0,
               decoration: BoxDecoration(
@@ -51,6 +52,7 @@ class _DetailsPage extends State<DetailsPage> {
           ),
           _buildComments(key),
           Divider(),
+          _buildOptionTagSection(),
           _buildAdoptInfo(),
           widget.pet.id == null || widget.pet.id == 'null'
               ? SizedBox()
@@ -78,8 +80,8 @@ class _DetailsPage extends State<DetailsPage> {
             return Text('Loading...');
           default:
             if (snapshot.hasError)
-              return new Text('Couldn\'t get the comments :(');
-            else
+              return new Text('Couldn\'t get the comments :( ');
+            else {
               return Column(
                 children: <Widget>[
                   Padding(
@@ -94,6 +96,7 @@ class _DetailsPage extends State<DetailsPage> {
                   _buildLinkSection(snapshot.data.sublist(1), key),
                 ],
               );
+            }
         }
       },
     );
@@ -135,11 +138,45 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
+  Widget _buildOptionTagSection() {
+    if (widget.pet.options == null || widget.pet.options.isEmpty)
+      return SizedBox();
+    return Column(
+      children: <Widget>[
+        Text("Pet Tags"),
+        _buildOptionTags(),
+        Divider(),
+      ],
+    );
+  }
+
+  Widget _buildOptionTags() {
+    return Container(
+      height: 30.0,
+      child: ListView(
+        physics: const BouncingScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        children: widget.pet.options.map((option) {
+          return Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Text(
+              Animal.parseOption(option, widget.pet),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: kPetThemecolor,
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Widget _buildUrlTags(List<String> urls, GlobalKey<ScaffoldState> key) {
     return Container(
       height: 50.0,
       child: ListView(
-        physics: BouncingScrollPhysics(),
+        physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
         children: urls.map((String url) {
           return Padding(

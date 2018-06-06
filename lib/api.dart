@@ -5,7 +5,6 @@ import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
-import 'constants.dart';
 import 'petfinder_lib/petfinder.dart';
 
 /// The main interface the app uses to get pet information.
@@ -13,7 +12,7 @@ import 'petfinder_lib/petfinder.dart';
 /// expected functionality.
 class AnimalFeed {
   List<Animal> currentList, storeList;
-  List<String> liked;
+  List<Animal> liked;
   Queue<Animal> skipped;
   String zip, animalType;
   int miles, _undoMax = 20;
@@ -44,6 +43,10 @@ class AnimalFeed {
     this.done = false;
   }
 
+  List<Animal> _toAnimalList(List<String> reprs) {
+    return reprs.map((repr) => Animal.fromString(repr)).toList();
+  }
+
   Future<bool> initialize(String zip, int miles, {String animalType}) async {
     this.zip = zip;
     this.miles = miles;
@@ -51,27 +54,9 @@ class AnimalFeed {
     this.currentList = List<Animal>();
     this.storeList = List<Animal>();
     var prefs = await SharedPreferences.getInstance();
-    var liked = prefs.getStringList('liked') ?? List<String>();
-    if (liked.isNotEmpty) {
-      var parts = liked[0].split('|');
-      if (kUsePetHarbor) {
-        if (parts[8] != '') {
-          print('reseting list');
-          liked = List<String>();
-          prefs.setStringList('liked', liked);
-        }
-      } else {
-        if (parts[8] == '') {
-          print('reseting list');
-          liked = List<String>();
-          prefs.setStringList('liked', liked);
-        }
-      }
-    }
-    this.liked = liked == null ? List<String>() : liked;
+    this.liked = _toAnimalList(prefs.getStringList('liked') ?? List<String>());
     await petApi.setLocation(zip, miles, animalType: animalType);
-    this.storeList =
-        await petApi.getAnimals(this.storeLimit, this.liked.toList());
+    this.storeList = await petApi.getAnimals(this.storeLimit, this.liked);
     this.storeList.shuffle();
     this.currentList.addAll(this.storeList.sublist(0, this.serveLimit));
     this.storeList = this.storeList.sublist(this.serveLimit);

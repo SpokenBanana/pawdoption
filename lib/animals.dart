@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:quiver/core.dart';
+
 RegExp _animalIdExp = RegExp(r"ID=(\w+)&LOCATION=(\w+)");
 
 enum AnimalAge { Baby, Young, Adult, Senior, All }
@@ -12,7 +14,7 @@ enum AnimalSize { S, M, L, XL, All }
 class PetAPI {
   void setLocation(String zip, int miles, {String animalType}) {}
   // ignore: missing_return
-  Future<List<Animal>> getAnimals(int amount, List<String> toSkip) {}
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) {}
   // ignore: missing_return
   static Future<List<String>> getAnimalDetails(Animal animal) {}
   // ignore: missing_return
@@ -66,6 +68,12 @@ class Animal {
     }
   }
 
+  bool operator ==(other) {
+    return other is Animal && other.id == this.id;
+  }
+
+  int get hashCode => hash2(this.apiId.hashCode, this.id.hashCode);
+
   Animal.fromPetFinder(
       String name,
       this.gender,
@@ -101,12 +109,18 @@ class Animal {
       this.imgUrl,
       this.apiId,
       this.location,
-      this.id) {}
+      this.id) {
+    this.options = List<String>();
+  }
 
   factory Animal.fromString(String animalStr) {
     List<String> parts = animalStr.split('|');
-    return Animal.fromBasicParams(parts[0], parts[1], parts[2], parts[3],
+    Animal pet = Animal.fromBasicParams(parts[0], parts[1], parts[2], parts[3],
         parts[4], parts[5], parts[6], parts[7], parts[8], parts[9], parts[10]);
+    if (parts.length > 11 && parts[11] != '') {
+      pet.options = parts[11].split(',');
+    }
+    return pet;
   }
 
   /// Used to reconstruct saved Animal objects. Can't be too big since we
@@ -116,7 +130,7 @@ class Animal {
     // TODO: Incorporate the options into this format.
     return "${this.name}|${this.gender}|${this.color}|${this.breed}|"
         "${this.age}|${this.since}|${this.shelter}|${this.imgUrl}|"
-        "${this.apiId}|${this.location}|${this.id}";
+        "${this.apiId}|${this.location}|${this.id}|${this.options.join(',')}";
   }
 
   void readOptions() {
@@ -140,6 +154,17 @@ class Animal {
     }
   }
 
+  static String parseOption(String option, Animal pet) {
+    switch (option) {
+      case 'altered':
+        return pet.gender == 'Male' ? 'Neutered' : 'Spayed';
+      case 'housebroken':
+        return 'Housebroken';
+      default:
+        return _splitCamelCase(option);
+    }
+  }
+
   static List<String> parseOptions(Map options) {
     if (options.isEmpty) return List<String>();
     if (options['option'] is List) {
@@ -149,6 +174,18 @@ class Animal {
     }
     return <String>[options['option']['\$t']];
   }
+}
+
+// TODO: This is pretty ugly, probably find a better way to do this.
+String _splitCamelCase(String option) {
+  for (int i = 0; i < option.length; i++) {
+    if (option[i] == option[i].toUpperCase()) {
+      String first = option.substring(0, i);
+      String second = option.substring(i);
+      return '${first[0].toUpperCase()}${first.substring(1)} $second';
+    }
+  }
+  return '${option[0].toUpperCase()}${option.substring(1)}';
 }
 
 class ShelterInformation {

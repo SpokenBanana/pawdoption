@@ -26,7 +26,7 @@ class SwipingPage extends StatefulWidget {
 class _SwipingPageState extends State<SwipingPage>
     with TickerProviderStateMixin {
   AnimalFeed feed;
-  bool _hasInfo, _swipingRight;
+  bool _hasInfo, _swipingRight, _animating;
   AnimationController _controller;
   Animation<double> _right;
   Animation<double> _bottom;
@@ -39,6 +39,7 @@ class _SwipingPageState extends State<SwipingPage>
     _hasInfo = false;
     _initializeAnimalList();
     _updateLikedList();
+    _animating = false;
   }
 
   _updateLikedList() {
@@ -86,7 +87,9 @@ class _SwipingPageState extends State<SwipingPage>
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
     _rotate.addListener(() {
       setState(() {
+        _animating = false;
         if (_rotate.isCompleted) {
+          _animating = true;
           widget.feed.currentList.removeLast();
           widget.feed.updateList();
           _controller.reset();
@@ -421,6 +424,7 @@ class _SwipingPageState extends State<SwipingPage>
         RaisedButton(
           elevation: 5.0,
           onPressed: () {
+            if (_animating) return;
             setState(() {
               if (feed.skipped.isNotEmpty) {
                 _swipingRight = false;
@@ -440,6 +444,7 @@ class _SwipingPageState extends State<SwipingPage>
         RaisedButton(
           elevation: elevation,
           onPressed: () {
+            if (_animating) return;
             Animal pet = feed.currentList[feed.currentList.length - 1];
             setState(() {
               if (_swipingRight) _swipingRight = false;
@@ -458,6 +463,7 @@ class _SwipingPageState extends State<SwipingPage>
         RaisedButton(
           elevation: elevation,
           onPressed: () {
+            if (_animating) return;
             Animal pet = feed.currentList[feed.currentList.length - 1];
             _savePet(pet);
             if (!_swipingRight) setState(() => _swipingRight = true);

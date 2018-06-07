@@ -24,7 +24,7 @@ class SwipingPage extends StatefulWidget {
 }
 
 class _SwipingPageState extends State<SwipingPage>
-    with TickerProviderStateMixin {
+    with SingleTickerProviderStateMixin {
   AnimalFeed feed;
   bool _hasInfo, _swipingRight, _animating;
   AnimationController _controller;
@@ -340,7 +340,7 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   Widget _buildTags(Animal pet) {
-    if (pet.options.isEmpty) return SizedBox();
+    if (pet.options == null || pet.options.isEmpty) return SizedBox();
     return Container(
       padding: const EdgeInsets.only(left: 8.0),
       height: 30.0,

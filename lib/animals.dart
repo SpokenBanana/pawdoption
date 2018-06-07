@@ -30,7 +30,10 @@ class Animal {
   DateTime lastUpdated;
 
   List<String> options;
-  bool spayedNeutered, hasShots, specialNeeds, noKids;
+  bool spayedNeutered = false,
+      hasShots = false,
+      specialNeeds = false,
+      noKids = false;
 
   /// Was used when the project scraped information from petharbor but now
   /// used.

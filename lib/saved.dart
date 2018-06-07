@@ -44,11 +44,7 @@ class _SavedPage extends State<SavedPage> {
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (BuildContext context, int index) {
                   return _buildDogPreview(liked[index]);
-                }
-                //    .map<Widget>((String repr) =>
-                //        _buildDogPreview(Animal.fromString(repr)))
-                //    .toList(),
-                ),
+                }),
       ),
     );
   }

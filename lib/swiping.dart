@@ -24,7 +24,7 @@ class SwipingPage extends StatefulWidget {
 }
 
 class _SwipingPageState extends State<SwipingPage>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   AnimalFeed feed;
   bool _hasInfo, _swipingRight;
   AnimationController _controller;
@@ -36,6 +36,9 @@ class _SwipingPageState extends State<SwipingPage>
 
   _SwipingPageState(AnimalFeed feed) {
     this.feed = feed;
+    _hasInfo = false;
+    _initializeAnimalList();
+    _updateLikedList();
   }
 
   _updateLikedList() {
@@ -71,25 +74,21 @@ class _SwipingPageState extends State<SwipingPage>
 
   void initState() {
     super.initState();
-    _hasInfo = false;
-    _initializeAnimalList();
-    _updateLikedList();
     _swipingRight = false;
     _controller = AnimationController(
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-
-    Animation curve =
-        CurvedAnimation(parent: _controller, curve: Curves.easeIn);
 
     _rotate = new Tween<double>(
       begin: -0.0,
       end: -40.0,
-    ).animate(curve);
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
     _rotate.addListener(() {
       setState(() {
         if (_rotate.isCompleted) {
+          widget.feed.currentList.removeLast();
+          widget.feed.updateList();
           _controller.reset();
         }
       });
@@ -97,11 +96,11 @@ class _SwipingPageState extends State<SwipingPage>
     _right = new Tween<double>(
       begin: 0.0,
       end: 400.0,
-    ).animate(curve);
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
     _bottom = new Tween<double>(
       begin: 15.0,
       end: 100.0,
-    ).animate(curve);
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
   }
 
   @override
@@ -138,7 +137,9 @@ class _SwipingPageState extends State<SwipingPage>
                       _buildButtonRow(),
                     ],
                   )
-                : CircularProgressIndicator()
+                : CircularProgressIndicator(
+                    strokeWidth: 1.0,
+                  )
             : _buildNoInfoPage(),
       ),
     );
@@ -169,7 +170,9 @@ class _SwipingPageState extends State<SwipingPage>
       _savePet(pet);
     else
       feed.skip(pet);
-    _removePet(pet);
+    setState(() {
+      _removePet(pet);
+    });
   }
 
   _savePet(Animal pet) {
@@ -183,24 +186,18 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   _removePet(Animal pet) {
-    setState(() {
-      widget.feed.currentList.remove(pet);
-      widget.feed.updateList();
-    });
+    widget.feed.currentList.remove(pet);
+    widget.feed.updateList();
   }
 
   _buildPetCardContainer(Widget child, Animal pet, {double elevation = 0.1}) {
-    return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
-      child: Card(
-        margin: const EdgeInsets.all(0.0),
-        elevation: elevation,
-        child: Container(
-          height: _screenHeight / 1.65,
-          width: _screenWidth / 1.2,
-          child: child,
-        ),
+    return Card(
+      margin: const EdgeInsets.all(0.0),
+      elevation: elevation,
+      child: Container(
+        height: _screenHeight / 1.65,
+        width: _screenWidth / 1.2,
+        child: child,
       ),
     );
   }
@@ -221,7 +218,10 @@ class _SwipingPageState extends State<SwipingPage>
     return RotationTransition(
       turns: AlwaysStoppedAnimation(
           _swipingRight ? -_rotate.value / 360.0 : _rotate.value / 360),
-      child: _buildPetCardContainer(_buildPetInfo(pet), pet),
+      child: GestureDetector(
+          onTap: () => Navigator.push(context,
+              MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
+          child: _buildPetCardContainer(_buildPetInfo(pet), pet)),
     );
   }
 
@@ -233,7 +233,6 @@ class _SwipingPageState extends State<SwipingPage>
           Dismissible(
             // background: _buildDismissBackground(true),
             // secondaryBackground:_buildDismissBackground(false),
-            movementDuration: Duration(milliseconds: 500),
             key: UniqueKey(),
             crossAxisEndOffset: -.2,
             onDismissed: (direction) => _dogSwiped(direction, pet),
@@ -281,7 +280,7 @@ class _SwipingPageState extends State<SwipingPage>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Container(
-            height: _screenHeight / 1.65 - 130,
+            height: _screenHeight / 1.65 - 110,
             decoration: BoxDecoration(
               color: Colors.black,
               image: DecorationImage(
@@ -333,25 +332,34 @@ class _SwipingPageState extends State<SwipingPage>
               ),
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8.0),
-            height: 50.0,
-            child: ListView(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              children: pet.options.map((option) {
-                return Padding(
-                  padding: const EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    Animal.parseOption(option, pet),
-                    style: TextStyle(
-                        color: kPetThemecolor, fontWeight: FontWeight.bold),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
+          _buildTags(pet),
         ]);
+  }
+
+  Widget _buildTags(Animal pet) {
+    if (pet.options.isEmpty) return SizedBox();
+    return Container(
+      padding: const EdgeInsets.only(left: 8.0),
+      height: 30.0,
+      child: Row(
+        children: <Widget>[
+          pet.spayedNeutered
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 4.0),
+                  child: Text(pet.gender == 'Male' ? "Neutered" : "Spayed",
+                      style: const TextStyle(
+                          color: kPetThemecolor, fontWeight: FontWeight.bold)),
+                )
+              : SizedBox(),
+          pet.options.length > 1
+              ? Icon(
+                  Icons.more,
+                  color: kPetThemecolor,
+                )
+              : SizedBox(),
+        ],
+      ),
+    );
   }
 
   Widget _buildNoInfoPage() {
@@ -433,10 +441,10 @@ class _SwipingPageState extends State<SwipingPage>
           elevation: elevation,
           onPressed: () {
             Animal pet = feed.currentList[feed.currentList.length - 1];
-            if (_swipingRight) setState(() => _swipingRight = false);
-            _runAnimation().then((_) {
+            setState(() {
+              if (_swipingRight) _swipingRight = false;
               feed.skip(pet);
-              _removePet(pet);
+              _runAnimation();
             });
           },
           padding: edge,
@@ -453,9 +461,7 @@ class _SwipingPageState extends State<SwipingPage>
             Animal pet = feed.currentList[feed.currentList.length - 1];
             _savePet(pet);
             if (!_swipingRight) setState(() => _swipingRight = true);
-            _runAnimation().then((_) {
-              _removePet(pet);
-            });
+            _runAnimation();
           },
           padding: edge,
           shape: CircleBorder(),

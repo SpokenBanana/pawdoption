@@ -34,7 +34,7 @@ Pawdoption is currently live on the Google Play Store!
 
 ## The Pet API
 
-All pet informationw was gathered through the [PetFinder](http://www.petfinder.com) API. 
+All pet information was gathered through the [PetFinder](http://www.petfinder.com) API. 
 
 I initially protyped this application by getting pet information from PetHarbor. I would
 just generate the queries I needed and then scrape the page to get the information I needed.

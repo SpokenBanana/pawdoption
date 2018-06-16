@@ -288,7 +288,7 @@ class _SwipingPageState extends State<SwipingPage>
               color: Colors.black,
               image: DecorationImage(
                 fit: BoxFit.cover,
-                image: NetworkImage(pet.imgUrl),
+                image: NetworkImage(pet.info.imgUrl[0]),
               ),
             ),
           ),
@@ -297,7 +297,7 @@ class _SwipingPageState extends State<SwipingPage>
             child: Row(
               children: <Widget>[
                 Text(
-                  '${pet.name},',
+                  '${pet.info.name},',
                   overflow: TextOverflow.ellipsis,
                   maxLines: 1,
                   style: Theme.of(context).textTheme.headline,
@@ -305,7 +305,7 @@ class _SwipingPageState extends State<SwipingPage>
                 SizedBox(width: 5.0),
                 Expanded(
                   child: Text(
-                    pet.age,
+                    pet.info.age,
                     overflow: TextOverflow.fade,
                     maxLines: 1,
                     style: Theme.of(context).textTheme.subhead,
@@ -319,8 +319,8 @@ class _SwipingPageState extends State<SwipingPage>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text(pet.gender, style: sideInfo),
-                Text(pet.cityState, style: sideInfo),
+                Text(pet.info.gender, style: sideInfo),
+                Text(pet.info.cityState, style: sideInfo),
               ],
             ),
           ),
@@ -328,7 +328,7 @@ class _SwipingPageState extends State<SwipingPage>
             child: Padding(
               padding: const EdgeInsets.only(left: 8.0),
               child: Text(
-                pet.breed,
+                pet.info.breed,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: sideInfo,
@@ -340,7 +340,7 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   Widget _buildTags(Animal pet) {
-    if (pet.options == null || pet.options.isEmpty) return SizedBox();
+    if (pet.info.options.isEmpty) return SizedBox();
     return Container(
       padding: const EdgeInsets.only(left: 8.0),
       height: 30.0,
@@ -349,12 +349,12 @@ class _SwipingPageState extends State<SwipingPage>
           pet.spayedNeutered
               ? Padding(
                   padding: const EdgeInsets.only(right: 4.0),
-                  child: Text(pet.gender == 'Male' ? "Neutered" : "Spayed",
+                  child: Text(pet.info.gender == 'Male' ? "Neutered" : "Spayed",
                       style: const TextStyle(
                           color: kPetThemecolor, fontWeight: FontWeight.bold)),
                 )
               : SizedBox(),
-          pet.options.length > 1
+          pet.info.options.length > 1
               ? Icon(
                   Icons.more,
                   color: kPetThemecolor,

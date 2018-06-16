@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'animals.dart';
 import 'api.dart';
 import 'colors.dart';
+import 'protos/animals.pb.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
@@ -25,42 +26,42 @@ class _DetailsPage extends State<DetailsPage> {
       key: key,
       backgroundColor: Theme.of(context).canvasColor,
       appBar: AppBar(
-        title: Text(widget.pet.name,
+        title: Text(widget.pet.info.name,
             style: const TextStyle(fontFamily: 'Raleway')),
       ),
       body: ListView(
         children: <Widget>[
           Hero(
-            tag: widget.pet.apiId,
+            tag: widget.pet.info.apiId,
             child: Container(
               height: 300.0,
               decoration: BoxDecoration(
                 color: Colors.black,
                 image: DecorationImage(
                   fit: BoxFit.fitHeight,
-                  image: NetworkImage(widget.pet.imgUrl),
+                  image: NetworkImage(widget.pet.info.imgUrl[0]),
                 ),
               ),
             ),
           ),
-          _buildDogInfo(widget.pet),
+          _buildDogInfo(widget.pet.info),
           Divider(),
           Padding(
             padding: const EdgeInsets.only(left: 8.0),
-            child: Text("Comments about ${widget.pet.name}:",
+            child: Text("Comments about ${widget.pet.info.name}:",
                 style: const TextStyle(fontFamily: 'Raleway', fontSize: 20.0)),
           ),
           _buildComments(key),
           Divider(),
-          _buildOptionTagSection(),
+          _buildOptionTagSection(widget.pet.info),
           _buildAdoptInfo(),
-          widget.pet.id == null || widget.pet.id == 'null'
+          widget.pet.info.id == null || widget.pet.info.id == 'null'
               ? SizedBox()
               : Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
-                    "Tell them you want to adopt ${widget.pet.name}"
-                        " whose ID is ${widget.pet.id}.",
+                    "Tell them you want to adopt ${widget.pet.info.name}"
+                        " whose ID is ${widget.pet.info.id}.",
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -122,25 +123,24 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildDogInfo(Animal dog) {
+  Widget _buildDogInfo(AnimalData pet) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _createInfoRow("Breed:", widget.pet.breed),
-            _createInfoRow("Gender:", widget.pet.gender),
-            _createInfoRow("Age:", widget.pet.age),
+            _createInfoRow("Breed:", pet.breed),
+            _createInfoRow("Gender:", pet.gender),
+            _createInfoRow("Age:", pet.age),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildOptionTagSection() {
-    if (widget.pet.options == null || widget.pet.options.isEmpty)
-      return SizedBox();
+  Widget _buildOptionTagSection(AnimalData pet) {
+    if (pet.options == null || pet.options.isEmpty) return SizedBox();
     return Column(
       children: <Widget>[
         Text("Pet Tags"),
@@ -156,11 +156,11 @@ class _DetailsPage extends State<DetailsPage> {
       child: ListView(
         physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,
-        children: widget.pet.options.map((option) {
+        children: widget.pet.info.options.map((option) {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              Animal.parseOption(option, widget.pet),
+              Animal.parseOption(option, widget.pet.info),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: kPetThemecolor,
@@ -280,14 +280,14 @@ class _DetailsPage extends State<DetailsPage> {
     return Column(
       children: <Widget>[
         Text(
-          "Adopt ${widget.pet.name}!",
+          "Adopt ${widget.pet.info.name}!",
           style: const TextStyle(
               fontFamily: "Raleway",
               fontSize: 23.0,
               fontWeight: FontWeight.bold),
         ),
         FutureBuilder(
-          future: getShelterInformation(widget.pet.location),
+          future: getShelterInformation(widget.pet.info.shelterId),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:

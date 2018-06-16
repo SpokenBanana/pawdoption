@@ -45,8 +45,8 @@ Animal _scrapeAnimalData(Element e) {
   var img = e.getElementsByTagName('img')[0];
   var url = "http://petharbor.com/${img.attributes['src']}";
   url = url.replaceFirst("thumb", "Detail");
-  return Animal(text[0].text, text[1].text, text[2].text, text[3].text,
-      text[4].text, text[5].text, text[6].text, url);
+  // Depreciated, so information isnt't filled.
+  return Animal();
 }
 
 class PetHarborApi implements PetAPI {
@@ -128,8 +128,9 @@ class PetHarborApi implements PetAPI {
   }
 
   static Future<List<String>> getAnimalDetails(Animal animal) async {
-    String url = '${kBaseUrl}pet.asp?uaid=${animal.location}.'
-        '${animal.id}';
+    // Doesn't work, removed constructor for this.
+    String url = '${kBaseUrl}pet.asp?uaid=${animal.info.shelterId}.'
+        '${animal.info.id}';
     var respone = await http.get(url);
     var details = parser
         .parse(respone.body)

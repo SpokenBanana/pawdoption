@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../animals.dart';
+import '../protos/animals.pb.dart';
 
 const String kBaseUrl = 'api.petfinder.com';
 
@@ -27,54 +28,56 @@ ShelterInformation toShelterInformation(Map shelter) {
   return info;
 }
 
-Animal toAnimal(Map animalData) {
-  var imgUrl;
-  var photoMap = animalData['media']['photos'];
-  var images;
+Animal toAnimal(Map animalMap) {
+  AnimalData data = AnimalData.create();
+
+  // Photos.
+  var photoMap = animalMap['media']['photos'];
   if (photoMap != null) {
-    images = animalData['media']['photos']['photo']
-        .map((urlMap) => urlMap['\$t'])
-        .toList();
-  } else {
-    images = [''];
-  }
-  for (var img in images) {
-    // Use the biggest image, usually the one with width=500.
-    if (img.contains('500')) {
-      imgUrl = img;
-      break;
+    var images = animalMap['media']['photos']['photo'];
+    for (var img in images) {
+      if (img['@size'] == 'x') data.imgUrl.add(img['\$t']);
     }
+  } else {
+    data.imgUrl.add('');
   }
-  if (imgUrl == null) imgUrl = images[0];
-  Map descriptionMap = animalData['description'];
+
+  // Set description.
+  Map descriptionMap = animalMap['description'];
   String description =
       descriptionMap.isEmpty ? "No comments available" : descriptionMap['\$t'];
   try {
     description = utf8.decode(Latin1Codec().encode(description));
   } catch (Exception) {}
-  var breeds = animalData['breeds']['breed'];
-  var breed;
-  var city = animalData['contact']['city'];
-  var state = animalData['contact']['state'];
-  var cityState = '${city.isEmpty ? 'Unknown' : city['\$t']}, '
+
+  // Get city state.
+  var city = animalMap['contact']['city'];
+  var state = animalMap['contact']['state'];
+  data.cityState = '${city.isEmpty ? 'Unknown' : city['\$t']}, '
       '${state.isEmpty? 'Unknown' : state['\$t']}';
+
+  // Get breed.
+  var breeds = animalMap['breeds']['breed'];
   if (breeds is List) {
-    breed = breeds.map((breedstr) => breedstr['\$t']).join(' ');
+    data.breed = breeds.map((breedstr) => breedstr['\$t']).join(' ');
   } else {
-    breed = breeds['\$t'];
+    data.breed = breeds['\$t'];
   }
-  return Animal.fromPetFinder(
-      animalData['name']['\$t'],
-      animalData['sex']['\$t'],
-      breed,
-      animalData['age']['\$t'],
-      imgUrl,
-      animalData['shelterPetId']['\$t'],
-      animalData['shelterId']['\$t'],
-      animalData['id']['\$t'],
-      description,
-      cityState,
-      animalData['lastUpdate']['\$t'],
-      animalData['options'],
-      animalData['size']['\$t']);
+
+  data.name = animalMap['name']['\$t'];
+  data.name =
+      '${data.name[0].toUpperCase()}${data.name.substring(1).toLowerCase()}';
+  data.gender = animalMap['sex']['\$t'] == 'M' ? 'Male' : 'Female';
+  data.age = animalMap['age']['\$t'];
+  data.shelterId = animalMap['shelterId']['\$t'];
+  // Not all animals have a shelter Id.
+  if (animalMap['shelterPetId']['\$t'] != null)
+    data.id = animalMap['shelterPetId']['\$t'];
+  data.apiId = animalMap['id']['\$t'];
+  data.lastUpdated = animalMap['lastUpdate']['\$t'];
+  data.options.addAll(Animal.parseOptions(animalMap['options']));
+  data.size = animalMap['size']['\$t'];
+
+  Animal pet = Animal(info: data, description: description);
+  return pet;
 }

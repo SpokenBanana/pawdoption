@@ -35,7 +35,7 @@ class AnimalFeed {
 
     // Amount to store in this class (reduce number of calls to website at the
     // sacrafice of mememory).
-    this.storeLimit = 40;
+    this.storeLimit = 50;
 
     this.skipped = Queue<Animal>();
     this.currentList = List<Animal>();

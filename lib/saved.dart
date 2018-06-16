@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'details.dart';
+import 'protos/animals.pb.dart';
 
 /// Handles displaying the saved animals to later view.
 class SavedPage extends StatefulWidget {
@@ -43,7 +44,7 @@ class _SavedPage extends State<SavedPage> {
                 itemCount: liked.length,
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (BuildContext context, int index) {
-                  return _buildDogPreview(liked[index]);
+                  return _buildPetPreview(liked[index]);
                 }),
       ),
     );
@@ -59,18 +60,18 @@ class _SavedPage extends State<SavedPage> {
     });
   }
 
-  Widget _buildDogPreview(Animal dog) {
+  Widget _buildPetPreview(Animal pet) {
     return GestureDetector(
       onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => DetailsPage(pet: dog))),
+          MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
       child: Dismissible(
         dismissThresholds: {
           DismissDirection.endToStart: .4,
         },
-        onDismissed: (direction) => _removeDog(dog),
+        onDismissed: (direction) => _removeDog(pet),
         direction: DismissDirection.endToStart,
-        key: ObjectKey(dog),
-        child: _buildDogInfo(dog),
+        key: ObjectKey(pet),
+        child: _buildDogInfo(pet.info),
         background: Container(
             alignment: Alignment.centerRight,
             color: Colors.red,
@@ -82,7 +83,7 @@ class _SavedPage extends State<SavedPage> {
     );
   }
 
-  Widget _buildDogInfo(Animal dog) {
+  Widget _buildDogInfo(AnimalData dog) {
     return Container(
       height: 80.0,
       child: Row(children: <Widget>[
@@ -90,7 +91,7 @@ class _SavedPage extends State<SavedPage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: CircleAvatar(
             radius: 30.0,
-            backgroundImage: NetworkImage(dog.imgUrl),
+            backgroundImage: NetworkImage(dog.imgUrl[0]),
           ),
         ),
         Column(

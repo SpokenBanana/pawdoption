@@ -48,6 +48,9 @@ class PetFinderApi implements PetAPI {
     }
   }
 
+  /// Because of the way the API works, this method will always return the list
+  /// with size that is a multiple of 25. So if amount == 15, you'll get back
+  /// 25. Otherwise, we would get duplicate results.
   Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) async {
     List<Animal> animals = List<Animal>();
     while (animals.length < amount) {
@@ -70,7 +73,6 @@ class PetFinderApi implements PetAPI {
         if (!toSkip.contains(animal)) animals.add(animal);
       }
     }
-
     return animals;
   }
 
@@ -92,13 +94,11 @@ class PetFinderApi implements PetAPI {
 
   static Future<List<String>> getAnimalDetails(Animal animal) async {
     List<String> results = List<String>();
-    if (animal.description == '' ||
-        animal.description == null ||
-        animal.options == null) {
+    if (animal.description == null) {
       // Re-fetch the data.
       Map<String, String> params = {
         'key': kPetFinderToken,
-        'id': animal.apiId,
+        'id': animal.info.apiId,
         'format': 'json',
       };
       var response = await http.get(buildUrl('/pet.get', params));
@@ -117,9 +117,15 @@ class PetFinderApi implements PetAPI {
 
       // Cache it so that we don't have to make this API call multiple times.
       animal.description = results[0];
-      if (animal.options.isEmpty)
-        animal.options =
-            Animal.parseOptions(petDoc['petfinder']['pet']['options']);
+
+      // Update the rest of the pet information
+      var lastUpdated = petDoc['petfinder']['pet']['lastUpdate']['\$t'];
+      if (lastUpdated != animal.info.lastUpdated) {
+        animal.info.options
+            .addAll(Animal.parseOptions(petDoc['petfinder']['pet']['options']));
+        animal.info.lastUpdated = lastUpdated;
+        animal.info.age = petDoc['petfinder']['pet']['age']['\$t'];
+      }
     } else {
       results.add(animal.description);
     }

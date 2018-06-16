@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package pawdoption;
+
+message AnimalData {
+    // Only serialize data we need, the rest would need to updated through
+    // an API call incase some information changes (bio, adoption status, etc).
+    message SavedData {
+        string name = 1;
+        string id = 2;
+        string apiId = 3;
+        string breed = 4;
+        string thumbUrl = 5;
+    }
+
+    string name = 1;
+    string gender = 2;
+    string breed = 3;
+    string age = 4;
+    repeated string imgUrl = 5;
+    string id = 6;
+    string shelterId = 7;
+    string apiId = 8;
+    string cityState = 9; // May want to split this up.
+    repeated string options = 10;
+    string size = 11;
+
+    // Not so important but may be more used as we add more features.
+    string lastUpdated = 12;
+    string color = 13;
+    string thumbUrl = 14;
+    string description = 15;
+}

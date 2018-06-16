@@ -3,16 +3,6 @@ syntax = "proto3";
 package pawdoption;
 
 message AnimalData {
-    // Only serialize data we need, the rest would need to updated through
-    // an API call incase some information changes (bio, adoption status, etc).
-    message SavedData {
-        string name = 1;
-        string id = 2;
-        string apiId = 3;
-        string breed = 4;
-        string thumbUrl = 5;
-    }
-
     string name = 1;
     string gender = 2;
     string breed = 3;

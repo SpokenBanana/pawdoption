@@ -6,7 +6,9 @@ import 'package:url_launcher/url_launcher.dart';
 import 'animals.dart';
 import 'api.dart';
 import 'colors.dart';
+import 'petfinder_lib/petfinder.dart';
 import 'protos/animals.pb.dart';
+import 'widgets/pet_image_gallery.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
@@ -19,6 +21,7 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsPage extends State<DetailsPage> {
+  List<String> urls;
   @override
   Widget build(BuildContext context) {
     final key = GlobalKey<ScaffoldState>();
@@ -31,18 +34,9 @@ class _DetailsPage extends State<DetailsPage> {
       ),
       body: ListView(
         children: <Widget>[
-          Hero(
+          PetImageGallery(
+            widget.pet.info.imgUrl,
             tag: widget.pet.info.apiId,
-            child: Container(
-              height: 300.0,
-              decoration: BoxDecoration(
-                color: Colors.black,
-                image: DecorationImage(
-                  fit: BoxFit.fitHeight,
-                  image: NetworkImage(widget.pet.info.imgUrl[0]),
-                ),
-              ),
-            ),
           ),
           _buildDogInfo(widget.pet.info),
           Divider(),
@@ -70,7 +64,33 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
+  getUrls(String description) {
+    urls = List<String>();
+    var urlMatches = RegExp(kUrlRegex).allMatches(description);
+    for (Match m in urlMatches) {
+      urls.add(m.group(0));
+    }
+  }
+
   Widget _buildComments(GlobalKey<ScaffoldState> key) {
+    // TODO: Consolidate this to once function.
+    if (widget.pet.description != null) {
+      getUrls(widget.pet.description);
+      return Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(14.0),
+            child: RichText(
+              text: TextSpan(
+                text: widget.pet.description,
+                style: Theme.of(context).textTheme.body1,
+              ),
+            ),
+          ),
+          _buildLinkSection(urls, key),
+        ],
+      );
+    }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
       builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -83,6 +103,7 @@ class _DetailsPage extends State<DetailsPage> {
             if (snapshot.hasError)
               return new Text('Couldn\'t get the comments :( ');
             else {
+              urls = snapshot.data.sublist(1);
               return Column(
                 children: <Widget>[
                   Padding(
@@ -94,7 +115,7 @@ class _DetailsPage extends State<DetailsPage> {
                       ),
                     ),
                   ),
-                  _buildLinkSection(snapshot.data.sublist(1), key),
+                  _buildLinkSection(urls, key),
                 ],
               );
             }

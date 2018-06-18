@@ -50,11 +50,16 @@ class AnimalFeed {
     return reprs.map((repr) => Animal.fromString(repr)).toList();
   }
 
+  Future<bool> reInitialize() async {
+    return await this.initialize(this.zip, this.miles);
+  }
+
   Future<bool> initialize(String zip, int miles, {String animalType}) async {
     this.zip = zip;
     this.miles = miles;
     this.animalType = animalType;
     this.currentList = List<Animal>();
+    this.skipped = Queue<Animal>();
     this.storeList = List<Animal>();
     var prefs = await SharedPreferences.getInstance();
     this.liked = _toAnimalList(prefs.getStringList('liked') ?? List<String>());

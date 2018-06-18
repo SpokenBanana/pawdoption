@@ -49,7 +49,7 @@ class _DetailsPage extends State<DetailsPage> {
           Divider(),
           _buildOptionTagSection(widget.pet.info),
           _buildAdoptInfo(),
-          widget.pet.info.id == null || widget.pet.info.id == 'null'
+          !widget.pet.info.hasId()
               ? SizedBox()
               : Padding(
                   padding: const EdgeInsets.all(8.0),

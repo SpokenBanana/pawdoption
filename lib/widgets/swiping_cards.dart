@@ -107,15 +107,33 @@ class PetCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Container(
-            height: _screenHeight / 1.65 - 110,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: NetworkImage(pet.info.imgUrl[0]),
+          Stack(
+            children: <Widget>[
+              Container(
+                height: _screenHeight / 1.65 - 110,
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  image: DecorationImage(
+                    fit: BoxFit.cover,
+                    image: NetworkImage(pet.info.imgUrl[0]),
+                  ),
+                ),
               ),
-            ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: pet.info.imgUrl.map((_) {
+                  return Container(
+                    margin: const EdgeInsets.all(4.0),
+                    width: 6.0,
+                    height: 6.0,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
           ),
           Padding(
             padding: const EdgeInsets.all(8.0),

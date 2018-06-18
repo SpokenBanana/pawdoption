@@ -1,14 +1,10 @@
-import 'dart:async';
-
-import 'package:flutter/animation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'api.dart';
-import 'colors.dart';
-import 'details.dart';
 import 'settings.dart';
+import 'widgets/swiping_cards.dart';
 
 /// The swiping page of the application.
 class SwipingPage extends StatefulWidget {
@@ -26,20 +22,13 @@ class SwipingPage extends StatefulWidget {
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
   AnimalFeed feed;
-  bool _hasInfo, _swipingRight, _animating;
-  AnimationController _controller;
-  Animation<double> _right;
-  Animation<double> _bottom;
-  Animation<double> _rotate;
-  double _screenWidth;
-  double _screenHeight;
+  bool _hasInfo;
 
   _SwipingPageState(AnimalFeed feed) {
     this.feed = feed;
     _hasInfo = false;
     _initializeAnimalList();
     _updateLikedList();
-    _animating = false;
   }
 
   _updateLikedList() {
@@ -75,49 +64,15 @@ class _SwipingPageState extends State<SwipingPage>
 
   void initState() {
     super.initState();
-    _swipingRight = false;
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 400),
-      vsync: this,
-    );
-
-    _rotate = new Tween<double>(
-      begin: -0.0,
-      end: -40.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
-    _rotate.addListener(() {
-      setState(() {
-        _animating = false;
-        if (_rotate.isCompleted) {
-          _animating = true;
-          widget.feed.currentList.removeLast();
-          widget.feed.updateList();
-          _controller.reset();
-        }
-      });
-    });
-    _right = new Tween<double>(
-      begin: 0.0,
-      end: 400.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
-    _bottom = new Tween<double>(
-      begin: 15.0,
-      end: 100.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.ease));
   }
 
   @override
   void dispose() {
-    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    Size screenSize = MediaQuery.of(context).size;
-    _screenWidth = screenSize.width;
-    _screenHeight = screenSize.height;
-
     return Scaffold(
       appBar: AppBar(
         elevation: 4.0,
@@ -133,9 +88,9 @@ class _SwipingPageState extends State<SwipingPage>
                 ? Column(
                     children: [
                       SizedBox(height: 20.0),
-                      Stack(
-                          alignment: Alignment.center,
-                          children: _buildCardsForPets(this.feed.currentList)),
+                      SwipingCards(
+                        feed: widget.feed,
+                      ),
                       SizedBox(height: 10.0),
                       _buildButtonRow(),
                     ],
@@ -153,216 +108,6 @@ class _SwipingPageState extends State<SwipingPage>
       this.feed.initialize(zip, miles, animalType: animalType).then((done) {
         if (this.mounted) setState(() {});
       });
-  }
-
-  Future<Null> _runAnimation() async {
-    try {
-      await _controller.forward();
-    } on TickerCanceled {}
-  }
-
-  Future<Null> _reverseAnimation() async {
-    try {
-      _controller.value = _controller.upperBound - 0.1;
-      await _controller.fling(velocity: -1.8);
-    } on TickerCanceled {}
-  }
-
-  void _dogSwiped(DismissDirection direction, Animal pet) {
-    if (direction == DismissDirection.startToEnd)
-      _savePet(pet);
-    else
-      feed.skip(pet);
-    setState(() {
-      _removePet(pet);
-    });
-  }
-
-  _savePet(Animal pet) {
-    if (!feed.liked.contains(pet)) {
-      feed.liked.add(pet);
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.setStringList(
-            'liked', feed.liked.map((animal) => animal.toString()).toList());
-      });
-    }
-  }
-
-  _removePet(Animal pet) {
-    widget.feed.currentList.remove(pet);
-    widget.feed.updateList();
-  }
-
-  _buildPetCardContainer(Widget child, Animal pet, {double elevation = 0.1}) {
-    return Card(
-      margin: const EdgeInsets.all(0.0),
-      elevation: elevation,
-      child: Container(
-        height: _screenHeight / 1.65,
-        width: _screenWidth / 1.2,
-        child: child,
-      ),
-    );
-  }
-
-  Widget _buildCardPositioning(Widget child, bool isActive) {
-    return Positioned(
-      right: !_swipingRight && isActive
-          ? _right.value != 0 ? _right.value : null
-          : null,
-      left: _swipingRight && isActive
-          ? _right.value != 0 ? _right.value : null
-          : null,
-      child: child,
-    );
-  }
-
-  Widget _buildActiveCard(Animal pet) {
-    return RotationTransition(
-      turns: AlwaysStoppedAnimation(
-          _swipingRight ? -_rotate.value / 360.0 : _rotate.value / 360),
-      child: GestureDetector(
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
-          child: _buildPetCardContainer(_buildPetInfo(pet), pet)),
-    );
-  }
-
-  List<Widget> _buildCardsForPets(List<Animal> pets) {
-    int index = -1;
-    return pets.map((Animal pet) {
-      index += 1;
-      return _buildCardPositioning(
-          Dismissible(
-            // background: _buildDismissBackground(true),
-            // secondaryBackground:_buildDismissBackground(false),
-            key: UniqueKey(),
-            crossAxisEndOffset: -.2,
-            onDismissed: (direction) => _dogSwiped(direction, pet),
-            child: index == pets.length - 1
-                ? _buildActiveCard(pet)
-                : _buildPetCardContainer(_buildPetInfo(pet), pet),
-          ),
-          index == pets.length - 1);
-    }).toList();
-  }
-
-  Widget _buildDismissBackground(bool toRight) {
-    // Creates a background for dismissibles to tell user what swiping
-    // left/right does.
-    // Still deciding whether or not to do this.
-    var color = toRight
-        ? const Color.fromRGBO(140, 230, 140, .7)
-        : const Color(0x88ff0000);
-    var text = toRight ? 'SAVE' : 'SKIP';
-    var rotation = toRight ? -.25 : .25;
-    return Container(
-      color: color,
-      child: RotationTransition(
-        turns: AlwaysStoppedAnimation(rotation),
-        child: Padding(
-          padding: const EdgeInsets.all(14.0),
-          child: Text(text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'Raleway',
-                  color: Colors.white,
-                  fontSize: 120.0)),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPetInfo(Animal pet) {
-    var sideInfo = TextStyle(
-      color: Colors.grey[600],
-    );
-    return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          Container(
-            height: _screenHeight / 1.65 - 110,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              image: DecorationImage(
-                fit: BoxFit.cover,
-                image: NetworkImage(pet.info.imgUrl[0]),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              children: <Widget>[
-                Text(
-                  '${pet.info.name},',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: Theme.of(context).textTheme.headline,
-                ),
-                SizedBox(width: 5.0),
-                Expanded(
-                  child: Text(
-                    pet.info.age,
-                    overflow: TextOverflow.fade,
-                    maxLines: 1,
-                    style: Theme.of(context).textTheme.subhead,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(pet.info.gender, style: sideInfo),
-                Text(pet.info.cityState, style: sideInfo),
-              ],
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Text(
-                pet.info.breed,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: sideInfo,
-              ),
-            ),
-          ),
-          _buildTags(pet),
-        ]);
-  }
-
-  Widget _buildTags(Animal pet) {
-    if (pet.info.options.isEmpty) return SizedBox();
-    return Container(
-      padding: const EdgeInsets.only(left: 8.0),
-      height: 30.0,
-      child: Row(
-        children: <Widget>[
-          pet.spayedNeutered
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 4.0),
-                  child: Text(pet.info.gender == 'Male' ? "Neutered" : "Spayed",
-                      style: const TextStyle(
-                          color: kPetThemecolor, fontWeight: FontWeight.bold)),
-                )
-              : SizedBox(),
-          pet.info.options.length > 1
-              ? Icon(
-                  Icons.more,
-                  color: kPetThemecolor,
-                )
-              : SizedBox(),
-        ],
-      ),
-    );
   }
 
   Widget _buildNoInfoPage() {
@@ -424,14 +169,9 @@ class _SwipingPageState extends State<SwipingPage>
         RaisedButton(
           elevation: 5.0,
           onPressed: () {
-            if (_animating) return;
-            setState(() {
-              if (feed.skipped.isNotEmpty) {
-                _swipingRight = false;
-                feed.getRecentlySkipped();
-                _reverseAnimation();
-              }
-            });
+            if (widget.feed.skipped.isNotEmpty) {
+              widget.feed.notifier.undo();
+            }
           },
           shape: CircleBorder(),
           padding: const EdgeInsets.all(10.0),
@@ -443,15 +183,7 @@ class _SwipingPageState extends State<SwipingPage>
         ),
         RaisedButton(
           elevation: elevation,
-          onPressed: () {
-            if (_animating) return;
-            Animal pet = feed.currentList[feed.currentList.length - 1];
-            setState(() {
-              if (_swipingRight) _swipingRight = false;
-              feed.skip(pet);
-              _runAnimation();
-            });
-          },
+          onPressed: () => widget.feed.notifier.skipCurrent(),
           padding: edge,
           shape: CircleBorder(),
           child: Icon(
@@ -462,13 +194,7 @@ class _SwipingPageState extends State<SwipingPage>
         ),
         RaisedButton(
           elevation: elevation,
-          onPressed: () {
-            if (_animating) return;
-            Animal pet = feed.currentList[feed.currentList.length - 1];
-            _savePet(pet);
-            if (!_swipingRight) setState(() => _swipingRight = true);
-            _runAnimation();
-          },
+          onPressed: () => widget.feed.notifier.likeCurrent(),
           padding: edge,
           shape: CircleBorder(),
           child: Icon(

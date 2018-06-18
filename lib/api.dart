@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:math';
 
+import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
@@ -16,6 +17,7 @@ class AnimalFeed {
   Queue<Animal> skipped;
   String zip, animalType;
   int miles, _undoMax = 20;
+  SwipeNotifier notifier;
 
   int fetchMoreAt, serveLimit, storeLimit;
   bool done;
@@ -25,6 +27,7 @@ class AnimalFeed {
   AnimalFeed() {
     this.zip = '';
     this.miles = -1;
+    notifier = SwipeNotifier();
 
     petApi = PetFinderApi();
 
@@ -102,4 +105,25 @@ Future<List<String>> getDetailsAbout(Animal animal) async {
 Future<ShelterInformation> getShelterInformation(String location) async {
   ShelterInformation info = await PetFinderApi.getShelterInformation(location);
   return info;
+}
+
+enum Swiped { left, right, undo, none }
+
+class SwipeNotifier extends ChangeNotifier {
+  Swiped swiped = Swiped.none;
+
+  likeCurrent() {
+    swiped = Swiped.right;
+    notifyListeners();
+  }
+
+  skipCurrent() {
+    swiped = Swiped.left;
+    notifyListeners();
+  }
+
+  undo() {
+    swiped = Swiped.undo;
+    notifyListeners();
+  }
 }

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'api.dart';
 import 'colors.dart';
 import 'saved.dart';
 import 'swiping.dart';
 
 void main() => runApp(new MyApp());
+
+final AnimalFeed feed = AnimalFeed();
 
 class MyApp extends StatelessWidget {
   @override
@@ -21,7 +24,7 @@ class MyApp extends StatelessWidget {
             body: TabBarView(
                 physics: const NeverScrollableScrollPhysics(),
                 children: <Widget>[
-                  SwipingPage(title: 'Petdoption'),
+                  SwipingPage(feed: feed),
                   SavedPage(),
                 ]),
           ),

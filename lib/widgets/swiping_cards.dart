@@ -41,6 +41,7 @@ class _SwipingCardsState extends State<SwipingCards>
 
   @override
   Widget build(BuildContext context) {
+    if (widget.feed.currentList.isEmpty) return _buildNoPetsLeftPage();
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
@@ -82,6 +83,29 @@ class _SwipingCardsState extends State<SwipingCards>
           ),
         ),
       ],
+    );
+  }
+
+  _buildNoPetsLeftPage() {
+    Size screenSize = MediaQuery.of(context).size;
+    double _screenWidth = screenSize.width;
+    double _screenHeight = screenSize.height;
+    return Container(
+      height: _screenHeight / 1.65,
+      width: _screenWidth / 1.2,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: <Widget>[
+          Icon(Icons.sentiment_dissatisfied, size: 90.0),
+          Text("No more pets"),
+          FlatButton(
+            onPressed: () {
+              widget.feed.reInitialize();
+            },
+            child: Text("Start over"),
+          ),
+        ],
+      ),
     );
   }
 }

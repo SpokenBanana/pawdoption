@@ -8,12 +8,9 @@ import 'widgets/swiping_cards.dart';
 
 /// The swiping page of the application.
 class SwipingPage extends StatefulWidget {
-  SwipingPage({Key key, this.title}) : super(key: key) {
-    feed = new AnimalFeed();
-  }
+  SwipingPage({Key key, this.feed}) : super(key: key);
 
-  AnimalFeed feed;
-  final String title;
+  final AnimalFeed feed;
 
   @override
   _SwipingPageState createState() => new _SwipingPageState(this.feed);

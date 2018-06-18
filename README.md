@@ -12,7 +12,8 @@ Pawdoption allows you to choose between swiping through dogs or cats.
 (Option for both coming soon!)
 
 
-<img src="screenshots/demo.png" height="500px"/> 
+![demo](screenshots/demo.gif)
+
 <img src="screenshots/saved.png" width="500px"/>
 
 

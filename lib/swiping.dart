@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -18,13 +20,7 @@ class SwipingPage extends StatefulWidget {
 
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
-  AnimalFeed feed;
-  bool _hasInfo;
-
   _SwipingPageState(AnimalFeed feed) {
-    this.feed = feed;
-    _hasInfo = false;
-    _initializeAnimalList();
     _updateLikedList();
   }
 
@@ -32,40 +28,23 @@ class _SwipingPageState extends State<SwipingPage>
     SharedPreferences.getInstance().then((prefs) {
       var liked = prefs.getStringList('liked') ?? List<String>();
       if (liked.isNotEmpty)
-        feed.liked = liked.map((repr) => Animal.fromString(repr)).toList();
+        widget.feed.liked =
+            liked.map((repr) => Animal.fromString(repr)).toList();
     });
   }
 
-  _initializeAnimalList() {
-    SharedPreferences.getInstance().then((prefs) {
-      String zip = prefs.getString('zip');
-      int miles = prefs.getInt('miles');
-      var animalType = prefs.getBool('animalType') ?? false;
-      if (zip == null || miles == null) {
-        _hasInfo = false;
-      } else {
-        if (this.mounted)
-          setState(() {
-            _hasInfo = true;
-            if (zip != feed.zip ||
-                miles != feed.miles ||
-                animalType != (feed.animalType == 'cat')) {
-              feed.done = false;
-              _initializeFeed(zip, miles,
-                  animalType: animalType ? 'cat' : 'dog');
-            }
-          });
-      }
-    });
-  }
-
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
+  Future<bool> _initializeAnimalList() async {
+    var prefs = await SharedPreferences.getInstance();
+    String zip = prefs.getString('zip');
+    var animalType = prefs.getBool('animalType') ?? false;
+    if (zip == null) return false;
+    if (zip != widget.feed.zip ||
+        animalType != (widget.feed.animalType == 'cat')) {
+      widget.feed.done = false;
+      return await widget.feed
+          .initialize(zip, 0, animalType: animalType ? 'cat' : 'dog');
+    }
+    return true;
   }
 
   @override
@@ -80,31 +59,34 @@ class _SwipingPageState extends State<SwipingPage>
             )),
       ),
       body: Center(
-        child: this._hasInfo
-            ? this.feed.done
-                ? Column(
-                    children: [
-                      SizedBox(height: 20.0),
-                      SwipingCards(
-                        feed: widget.feed,
-                      ),
-                      SizedBox(height: 10.0),
-                      _buildButtonRow(),
-                    ],
-                  )
-                : CircularProgressIndicator(
-                    strokeWidth: 1.0,
-                  )
-            : _buildNoInfoPage(),
+        child: FutureBuilder(
+          future: _initializeAnimalList(),
+          builder: (BuildContext context, AsyncSnapshot snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.none:
+              case ConnectionState.waiting:
+                return CircularProgressIndicator(
+                  strokeWidth: 1.0,
+                );
+              default:
+                if (snapshot.hasError)
+                  return Text('Couldn\'t fetch the feed :( Try again later? ');
+                if (snapshot.data == false) return _buildNoInfoPage();
+                return Column(
+                  children: [
+                    SizedBox(height: 20.0),
+                    SwipingCards(
+                      feed: widget.feed,
+                    ),
+                    SizedBox(height: 10.0),
+                    _buildButtonRow(),
+                  ],
+                );
+            }
+          },
+        ),
       ),
     );
-  }
-
-  void _initializeFeed(String zip, int miles, {String animalType}) {
-    if (!this.feed.done)
-      this.feed.initialize(zip, miles, animalType: animalType).then((done) {
-        if (this.mounted) setState(() {});
-      });
   }
 
   Widget _buildNoInfoPage() {
@@ -121,22 +103,12 @@ class _SwipingPageState extends State<SwipingPage>
               RaisedButton(
                 elevation: 5.0,
                 onPressed: () {
-                  Navigator
-                      .push(
-                          context,
-                          PageRouteBuilder(
-                              maintainState: false,
-                              pageBuilder: (context, _, __) =>
-                                  SettingsPage(feed: this.feed)))
-                      .then((result) {
-                    if (result == true) {
-                      setState(() {
-                        _hasInfo = true;
-                        this.feed.done = false;
-                        _initializeAnimalList();
-                      });
-                    }
-                  });
+                  Navigator.push(
+                      context,
+                      PageRouteBuilder(
+                          maintainState: false,
+                          pageBuilder: (context, _, __) =>
+                              SettingsPage(feed: widget.feed)));
                 },
                 color: Colors.white,
                 shape: CircleBorder(),
@@ -203,17 +175,10 @@ class _SwipingPageState extends State<SwipingPage>
         RaisedButton(
           elevation: 5.0,
           onPressed: () {
-            Navigator
-                .push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => SettingsPage(feed: this.feed)))
-                .then((result) {
-              if (result == true) {
-                this.feed.done = false;
-                _initializeAnimalList();
-              }
-            });
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SettingsPage(feed: widget.feed)));
           },
           shape: CircleBorder(),
           padding: const EdgeInsets.all(10.0),

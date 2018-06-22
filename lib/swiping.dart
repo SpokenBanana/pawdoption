@@ -128,60 +128,46 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   Widget _buildButtonRow() {
-    const EdgeInsets edge = EdgeInsets.all(12.0);
-    const num elevation = 5.0;
     const num size = 35.0;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        RaisedButton(
-          elevation: 5.0,
-          onPressed: () {
-            if (widget.feed.skipped.isNotEmpty) {
-              widget.feed.notifier.undo();
-            }
-          },
-          shape: CircleBorder(),
+        PetButton(
           padding: const EdgeInsets.all(10.0),
+          onPressed: () {
+            if (widget.feed.skipped.isNotEmpty) widget.feed.notifier.undo();
+          },
           child: Icon(
             Icons.replay,
             size: size / 2,
             color: Colors.yellow[700],
           ),
         ),
-        RaisedButton(
-          elevation: elevation,
+        PetButton(
+          padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.skipCurrent(),
-          padding: edge,
-          shape: CircleBorder(),
           child: Icon(
             Icons.close,
             size: size,
             color: Colors.red,
           ),
         ),
-        RaisedButton(
-          elevation: elevation,
+        PetButton(
+          padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.likeCurrent(),
-          padding: edge,
-          shape: CircleBorder(),
           child: Icon(
             Icons.favorite,
             size: size,
             color: Colors.green,
           ),
         ),
-        RaisedButton(
-          elevation: 5.0,
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SettingsPage(feed: widget.feed)));
-          },
-          shape: CircleBorder(),
+        PetButton(
           padding: const EdgeInsets.all(10.0),
+          onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => SettingsPage(feed: widget.feed))),
           child: Icon(
             Icons.settings,
             size: size / 2,
@@ -189,6 +175,28 @@ class _SwipingPageState extends State<SwipingPage>
           ),
         ),
       ],
+    );
+  }
+}
+
+class PetButton extends StatelessWidget {
+  PetButton({this.key, this.child, this.feed, this.padding, this.onPressed})
+      : super(key: key);
+  Key key;
+
+  Widget child;
+  AnimalFeed feed;
+  VoidCallback onPressed;
+  EdgeInsetsGeometry padding;
+
+  @override
+  Widget build(BuildContext context) {
+    return RaisedButton(
+      elevation: 5.0,
+      onPressed: this.onPressed,
+      shape: CircleBorder(),
+      padding: padding,
+      child: child,
     );
   }
 }

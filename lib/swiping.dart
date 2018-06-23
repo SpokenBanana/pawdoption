@@ -182,12 +182,12 @@ class _SwipingPageState extends State<SwipingPage>
 class PetButton extends StatelessWidget {
   PetButton({this.key, this.child, this.feed, this.padding, this.onPressed})
       : super(key: key);
-  Key key;
+  final Key key;
 
-  Widget child;
-  AnimalFeed feed;
-  VoidCallback onPressed;
-  EdgeInsetsGeometry padding;
+  final Widget child;
+  final AnimalFeed feed;
+  final VoidCallback onPressed;
+  final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {

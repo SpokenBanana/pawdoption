@@ -45,7 +45,7 @@ class _DetailsPage extends State<DetailsPage> {
             child: Text("Comments about ${widget.pet.info.name}:",
                 style: const TextStyle(fontFamily: 'Raleway', fontSize: 20.0)),
           ),
-          _buildComments(key),
+          _fetchAndBuildComments(key),
           Divider(),
           _buildOptionTagSection(widget.pet.info),
           _buildAdoptInfo(),
@@ -64,7 +64,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  getUrls(String description) {
+  _getUrls(String description) {
     urls = List<String>();
     var urlMatches = RegExp(kUrlRegex).allMatches(description);
     for (Match m in urlMatches) {
@@ -72,24 +72,10 @@ class _DetailsPage extends State<DetailsPage> {
     }
   }
 
-  Widget _buildComments(GlobalKey<ScaffoldState> key) {
-    // TODO: Consolidate this to once function.
+  Widget _fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (widget.pet.description != null) {
-      getUrls(widget.pet.description);
-      return Column(
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(14.0),
-            child: RichText(
-              text: TextSpan(
-                text: widget.pet.description,
-                style: Theme.of(context).textTheme.body1,
-              ),
-            ),
-          ),
-          _buildLinkSection(urls, key),
-        ],
-      );
+      _getUrls(widget.pet.description);
+      return _buildComments(widget.pet.description, urls, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -104,23 +90,28 @@ class _DetailsPage extends State<DetailsPage> {
               return new Text('Couldn\'t get the comments :( ');
             else {
               urls = snapshot.data.sublist(1);
-              return Column(
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(14.0),
-                    child: RichText(
-                      text: TextSpan(
-                        text: snapshot.data[0],
-                        style: Theme.of(context).textTheme.body1,
-                      ),
-                    ),
-                  ),
-                  _buildLinkSection(urls, key),
-                ],
-              );
+              return _buildComments(snapshot.data[0], urls, key);
             }
         }
       },
+    );
+  }
+
+  Widget _buildComments(
+      String comments, List<String> urls, GlobalKey<ScaffoldState> key) {
+    return Column(
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.all(14.0),
+          child: RichText(
+            text: TextSpan(
+              text: comments,
+              style: Theme.of(context).textTheme.body1,
+            ),
+          ),
+        ),
+        _buildLinkSection(urls, key),
+      ],
     );
   }
 

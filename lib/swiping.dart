@@ -39,7 +39,9 @@ class _SwipingPageState extends State<SwipingPage>
     var animalType = prefs.getBool('animalType') ?? false;
     if (zip == null) return false;
     if (zip != widget.feed.zip ||
+        widget.feed.reloadFeed ||
         animalType != (widget.feed.animalType == 'cat')) {
+      widget.feed.reloadFeed = false;
       widget.feed.done = false;
       return await widget.feed
           .initialize(zip, 0, animalType: animalType ? 'cat' : 'dog');

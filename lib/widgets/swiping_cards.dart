@@ -45,21 +45,19 @@ class _SwipingCardsState extends State<SwipingCards>
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        PetCard(
-          widget.feed.currentList[widget.feed.currentList.length - 2],
-        ),
+        widget.feed.nextPet == null ? SizedBox() : PetCard(widget.feed.nextPet),
         DraggableCard(
           onLeftSwipe: () {
             setState(() {
-              widget.feed.skip(widget.feed.currentList.last);
-              widget.feed.currentList.removeLast();
+              widget.feed.skip(widget.feed.currentPet);
+              widget.feed.removeCurrentPet();
               widget.feed.updateList();
             });
           },
           onRightSwipe: () {
             setState(() {
-              if (!widget.feed.liked.contains(widget.feed.currentList.last)) {
-                widget.feed.liked.add(widget.feed.currentList.last);
+              if (!widget.feed.liked.contains(widget.feed.currentPet)) {
+                widget.feed.liked.add(widget.feed.currentPet);
                 SharedPreferences.getInstance().then((prefs) {
                   prefs.setStringList(
                       'liked',
@@ -68,7 +66,7 @@ class _SwipingCardsState extends State<SwipingCards>
                           .toList());
                 });
               }
-              widget.feed.currentList.removeLast();
+              widget.feed.removeCurrentPet();
               widget.feed.updateList();
             });
           },
@@ -77,9 +75,9 @@ class _SwipingCardsState extends State<SwipingCards>
               context,
               MaterialPageRoute(
                   builder: (context) =>
-                      DetailsPage(pet: widget.feed.currentList.last))),
+                      DetailsPage(pet: widget.feed.currentPet))),
           child: PetCard(
-            widget.feed.currentList.last,
+            widget.feed.currentPet,
           ),
         ),
       ],
@@ -100,7 +98,9 @@ class _SwipingCardsState extends State<SwipingCards>
           Text("No more pets"),
           FlatButton(
             onPressed: () {
-              widget.feed.reInitialize();
+              widget.feed.reInitialize().then((result) {
+                if (result) setState(() {});
+              });
             },
             child: Text("Start over"),
           ),

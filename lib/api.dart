@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:collection';
-import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,7 +11,7 @@ import 'petfinder_lib/petfinder.dart';
 /// Made this extra layer so we can switch APIs and keep the same
 /// expected functionality.
 class AnimalFeed {
-  List<Animal> currentList, storeList;
+  List<Animal> currentList;
   List<Animal> liked;
   Queue<Animal> skipped;
   String zip, animalType;
@@ -20,9 +19,15 @@ class AnimalFeed {
   SwipeNotifier notifier;
 
   int fetchMoreAt, serveLimit, storeLimit;
-  bool done;
+  bool done, reloadFeed;
 
   PetAPI petApi;
+
+  Animal get currentPet => currentList.last;
+  Animal get nextPet {
+    if (currentList.length < 2) return null;
+    return currentList[currentList.length - 2];
+  }
 
   AnimalFeed() {
     this.zip = '';
@@ -31,10 +36,8 @@ class AnimalFeed {
 
     petApi = PetFinderApi();
 
-    this.fetchMoreAt = 3;
-
-    // Amount to send to front-end.
-    this.serveLimit = 5;
+    this.fetchMoreAt = 5;
+    this.reloadFeed = false;
 
     // Amount to store in this class (reduce number of calls to website at the
     // sacrafice of mememory).
@@ -42,8 +45,8 @@ class AnimalFeed {
 
     this.skipped = Queue<Animal>();
     this.currentList = List<Animal>();
-    this.storeList = List<Animal>();
     this.done = false;
+    this.reloadFeed = false;
   }
 
   List<Animal> _toAnimalList(List<String> reprs) {
@@ -54,40 +57,35 @@ class AnimalFeed {
     return await this.initialize(this.zip, this.miles);
   }
 
+  removeCurrentPet() {
+    currentList.removeLast();
+  }
+
   Future<bool> initialize(String zip, int miles, {String animalType}) async {
     this.zip = zip;
     this.miles = miles;
     this.animalType = animalType;
+
     this.currentList = List<Animal>();
     this.skipped = Queue<Animal>();
-    this.storeList = List<Animal>();
+
     var prefs = await SharedPreferences.getInstance();
     this.liked = _toAnimalList(prefs.getStringList('liked') ?? List<String>());
+
     await petApi.setLocation(zip, miles, animalType: animalType);
-    this.storeList = await petApi.getAnimals(this.storeLimit, this.liked);
-    this.storeList.shuffle();
-    this.currentList.addAll(this.storeList.sublist(0, this.serveLimit));
-    this.storeList = this.storeList.sublist(this.serveLimit);
+    this.currentList = await petApi.getAnimals(this.storeLimit, this.liked);
+    this.currentList.shuffle();
     this.done = true;
     return true;
   }
 
   void updateList() {
     print('running this: ${this.currentList.length}');
-    if (this.currentList.length <= this.fetchMoreAt &&
-        this.storeList.isNotEmpty) {
-      num currentSize =
-          min(this.serveLimit - this.currentList.length, this.storeList.length);
-      this.currentList.insertAll(0, this.storeList.sublist(0, currentSize));
-      this.storeList = this.storeList.sublist(currentSize);
-      if (this.storeList.length <= this.serveLimit) {
-        petApi
-            .getAnimals(this.storeLimit - this.storeList.length, this.liked)
-            .then((list) {
-          list.shuffle();
-          this.storeList.addAll(list);
-        });
-      }
+    if (this.currentList.length <= this.fetchMoreAt) {
+      petApi.getAnimals(25, this.liked).then((list) {
+        list.shuffle();
+        this.currentList.insertAll(0, list);
+      });
     }
   }
 

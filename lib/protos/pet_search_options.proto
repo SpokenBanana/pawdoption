@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+package pawdoption;
+
+message PetSearchOptions {
+    repeated string breeds = 1;
+    repeated string ages = 2;
+    repeated string sizes = 3;
+    bool fixed_only = 4;
+
+    // We may do it so people can input the breeds they want to inlude or
+    // the ones they want excluded.
+    bool include_breeds = 5;
+
+    string sex = 6;
+
+    // If empty, include all shelters. May want to consider to make this work
+    // like breeds, to include or not include them.
+    repeated string selected_shelters = 7;
+
+    // This is repeated information, we could just have the whole app use this.
+    string zip = 8;
+    string animal_type = 9;
+
+    // Not implmented yet but may want to in the future.
+    int32 max_distance = 10;
+}

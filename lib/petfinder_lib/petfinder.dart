@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../animals.dart';
+import '../protos/pet_search_options.pb.dart';
 import 'credentials.dart';
 import 'utils.dart';
 
@@ -16,6 +17,9 @@ class PetFinderApi implements PetAPI {
   List<String> _shelterIds;
   Map<String, String> _baseParams;
   String _zip, _animalType;
+  // If we have to keep fetching, then the query matces too few animals to keep
+  // looking.
+  int maxIterations = 10;
 
   // We want to limit the API calls for this one, so caching is key.
   // TODO: Making this static is a bit of bad practice, try to find an
@@ -51,8 +55,10 @@ class PetFinderApi implements PetAPI {
   /// Because of the way the API works, this method will always return the list
   /// with size that is a multiple of 25. So if amount == 15, you'll get back
   /// 25. Otherwise, we would get duplicate results.
-  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) async {
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
+      {PetSearchOptions searchOptions}) async {
     List<Animal> animals = List<Animal>();
+    int iterations = 0;
     while (animals.length < amount) {
       Map<String, String> params = {
         'animal': _animalType != null ? _animalType : 'dog',
@@ -60,6 +66,9 @@ class PetFinderApi implements PetAPI {
         'output': 'full',
         'offset': _currentOffset.toString(),
       };
+      if (searchOptions != null)
+        params.addAll(_buildParamsFromOptions(searchOptions));
+
       params.addAll(_baseParams);
       _currentOffset += 25; // The default count for the API.
 
@@ -70,10 +79,70 @@ class PetFinderApi implements PetAPI {
       if (petList == null) break;
       for (Map pet in petList) {
         Animal animal = toAnimal(pet);
-        if (!toSkip.contains(animal)) animals.add(animal);
+        if (!toSkip.contains(animal) &&
+            (searchOptions == null || _shouldKeep(searchOptions, animal))) {
+          animals.add(animal);
+        }
       }
+
+      // This means we reached the end of the search query.
+      if (petList.length < 25) break;
+      iterations++;
+      if (iterations >= maxIterations) break;
     }
     return animals;
+  }
+
+  bool _shouldKeep(PetSearchOptions options, Animal pet) {
+    if (options.ages.length > 1 && !options.ages.contains(pet.info.age))
+      return false;
+    if (options.sizes.length > 1 && !options.sizes.contains(pet.info.size))
+      return false;
+    if (options.fixedOnly && !pet.info.options.contains("altered"))
+      return false;
+    if (!options.includeBreeds || options.breeds.length > 1) {
+      var found = !options.includeBreeds;
+      for (String breed in options.breeds) {
+        if (pet.breeds.contains(breed)) {
+          if (options.includeBreeds) {
+            found = true;
+            break;
+          } else {
+            return false;
+          }
+        }
+      }
+      if (!found) return false;
+    }
+    if (options.selectedShelters.isNotEmpty &&
+        !options.selectedShelters.contains(pet.info.shelterId)) return false;
+    return true;
+  }
+
+  _buildParamsFromOptions(PetSearchOptions options) {
+    Map<String, String> params = Map<String, String>();
+    if (options.includeBreeds && options.breeds.length == 1) {
+      params['breed'] = options.breeds[0];
+    }
+    if (options.hasSex()) params['sex'] = options.sex;
+    if (options.ages.length == 1) params['age'] = options.ages[0];
+    if (options.sizes.length == 1) params['size'] = options.sizes[0];
+    return params;
+  }
+
+  static Future<List<String>> getBreeds(String animalType) async {
+    Map<String, String> params = {
+      'key': kPetFinderToken,
+      'animal': animalType,
+      'format': 'json',
+    };
+    var response = await http.get(buildUrl('/breed.list', params));
+    var breeds = json.decode(response.body)['petfinder']['breeds']['breed'];
+    List<String> list = List<String>();
+    for (String item in breeds.map((breed) => breed['\$t'])) {
+      list.add(item);
+    }
+    return list;
   }
 
   static Future<ShelterInformation> getShelterInformation(

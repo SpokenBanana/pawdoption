@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
+import 'colors.dart';
+import 'protos/pet_search_options.pb.dart';
+import 'widgets/search_bar.dart';
 
 /// Handles the settings of the application as well as providiing general
 /// information ahout the app.
@@ -18,6 +23,9 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPage extends State<SettingsPage> {
   String _zip;
+  PetSearchOptions searchOptions;
+  AnimalChangeNotifier animalNotifier = AnimalChangeNotifier(animalType: 'dog');
+  List<String> breeds;
   int _miles;
   bool _selectedCats;
   String _errorMessage;
@@ -29,6 +37,7 @@ class _SettingsPage extends State<SettingsPage> {
     _zip = '';
     _miles = 10;
     _selectedCats = false;
+    breeds = List<String>();
     SharedPreferences.getInstance().then((prefs) {
       var zip = prefs.getString('zip');
       var miles = prefs.getInt('miles');
@@ -38,10 +47,21 @@ class _SettingsPage extends State<SettingsPage> {
           _zip = zip;
           _miles = miles;
           _selectedCats = selectedCat;
+          if (_selectedCats == true) animalNotifier.changeAnimal('cat');
           _textController.text = zip;
         });
       }
     });
+    getBreedList('dog').then((breeds) {
+      setState(() {
+        this.breeds = breeds;
+      });
+    });
+  }
+  @override
+  void initState() {
+    super.initState();
+    searchOptions = widget.feed.searchOptions.clone();
   }
 
   @override
@@ -52,10 +72,54 @@ class _SettingsPage extends State<SettingsPage> {
         title: Text("Settings"),
       ),
       body: _buildWholePage(),
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          color: Theme.of(context).canvasColor,
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(.3),
+              spreadRadius: 1.0,
+              blurRadius: 3.0,
+            )
+          ],
+        ),
+        child: Container(
+          height: 80.0,
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _errorMessage != '' ? Text(_errorMessage) : SizedBox(),
+              FlatButton(
+                padding: const EdgeInsets.all(4.0),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
+                ),
+                color: kPetThemecolor,
+                textColor: Colors.white,
+                onPressed: () => _updateInfo(),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>[
+                    Icon(Icons.check),
+                    Text("Done"),
+                  ],
+                ),
+              )
+            ],
+          ),
+        ),
+      ),
     );
   }
 
+  // TODO: This has become a very long mess, should try to break this up.
   Widget _buildWholePage() {
+    final titleStyle = TextStyle(
+      fontWeight: FontWeight.bold,
+      fontSize: 20.0,
+      fontFamily: 'Open Sans',
+    );
     return Padding(
       padding: const EdgeInsets.all(10.0),
       child: Center(
@@ -63,48 +127,179 @@ class _SettingsPage extends State<SettingsPage> {
           children: <Widget>[
             Text(
               'Where do you want to search?',
+              style: titleStyle,
             ),
             _buildZipTextField(),
-            Text("What do you want to search for?"),
+            Divider(),
+            Text(
+              "What do you want to search for?",
+              style: titleStyle,
+            ),
+            // TOOO: Make this use the GroupedOptions.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 15.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text("Dogs"),
+                      Checkbox(
+                        value: !_selectedCats,
+                        activeColor: kPetThemecolor,
+                        onChanged: (value) {
+                          setState(() {
+                            if (value) {
+                              searchOptions.breeds.clear();
+                              animalNotifier.changeAnimal('dog');
+                            }
+                            _selectedCats = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: <Widget>[
+                      Text("Cats"),
+                      Checkbox(
+                        value: _selectedCats,
+                        activeColor: kPetThemecolor,
+                        onChanged: (value) {
+                          setState(() {
+                            if (value) {
+                              searchOptions.breeds.clear();
+                              animalNotifier.changeAnimal('cat');
+                            }
+                            _selectedCats = true;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Divider(),
+            Text("Sex", style: titleStyle),
+            GroupedOptions(
+              options: <Option>[
+                Option(
+                  text: "Both",
+                  value: !searchOptions.hasSex(),
+                  onChange: (change) {
+                    if (change) {
+                      setState(() {
+                        searchOptions.clearSex();
+                      });
+                    }
+                  },
+                ),
+                Option(
+                  text: "Male",
+                  value: searchOptions.sex == 'M',
+                  onChange: (change) {
+                    if (change) {
+                      setState(() {
+                        searchOptions.sex = 'M';
+                      });
+                    }
+                  },
+                ),
+                Option(
+                  text: "Female",
+                  value: searchOptions.sex == 'F',
+                  onChange: (change) {
+                    if (change) {
+                      setState(() {
+                        searchOptions.sex = 'F';
+                      });
+                    }
+                  },
+                ),
+              ],
+            ),
+            Divider(),
+            Text('Size', style: titleStyle),
+            GroupedOptions(
+              options: _generateOptions(
+                  "All sizes", ['S', 'M', 'X', 'XL'], searchOptions.sizes),
+            ),
+            Divider(),
+            Text('Age', style: titleStyle),
+            GroupedOptions(
+              options: _generateOptions("All ages",
+                  ['Baby', 'Young', 'Adult', 'Senior'], searchOptions.ages),
+            ),
+            Divider(),
             Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
-                Text("Dogs"),
+                Text("Spayed/Neutered only",
+                    style: TextStyle(
+                      fontFamily: 'Open Sans',
+                      fontSize: 17.0,
+                    )),
                 Switch(
-                  inactiveTrackColor: Colors.green,
-                  activeTrackColor: Colors.blue,
-                  activeColor: Colors.white,
-                  value: _selectedCats,
-                  onChanged: (change) {
+                  activeColor: kPetThemecolor,
+                  value: searchOptions.fixedOnly,
+                  onChanged: (value) {
                     setState(() {
-                      _selectedCats = change;
-                      print(change ? 'cats selected' : 'dogs selected');
+                      searchOptions.fixedOnly = value;
                     });
                   },
                 ),
-                Text('Cats'),
               ],
             ),
-            _errorMessage != '' ? Text(_errorMessage) : SizedBox(),
-            ButtonBar(
-              children: [
-                FlatButton(
-                  padding: const EdgeInsets.all(4.0),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                  ),
-                  color: Colors.blue[400],
-                  textColor: Colors.white,
-                  onPressed: () => _updateInfo(),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Divider(),
+            Text('Breeds', style: titleStyle),
+            Text('Leave empty to use all breeds',
+                style: TextStyle(color: Colors.grey)),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: <Widget>[
-                      Icon(Icons.check),
-                      Text("Done"),
+                      Text(
+                        '${searchOptions.includeBreeds ? 'Do' : 'Do not'}'
+                            ' include breeds',
+                        style: TextStyle(fontSize: 17.0),
+                      ),
+                      Text(
+                          'The following breeds ' +
+                              (searchOptions.includeBreeds
+                                  ? 'will'
+                                  : 'will not') +
+                              ' be included in the search',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12.0,
+                          )),
                     ],
                   ),
-                )
-              ],
+                  Switch(
+                    activeColor: kPetThemecolor,
+                    value: searchOptions.includeBreeds,
+                    onChanged: (value) {
+                      setState(() {
+                        searchOptions.includeBreeds = value;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 10.0),
+            SelectableInput(
+              refetchNotifier: animalNotifier,
+              hintText: 'Type the breeds you want here',
+              listFetcher: _fetchBreedList,
+              selectedMatches: searchOptions.breeds,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -114,6 +309,42 @@ class _SettingsPage extends State<SettingsPage> {
         ),
       ),
     );
+  }
+
+  Future<List<String>> _fetchBreedList() async =>
+      await getBreedList(animalNotifier.animalType);
+
+  List<Option> _generateOptions(
+      String allText, List<String> options, List<String> container) {
+    List<Option> result = <Option>[
+      Option(
+        text: allText,
+        value: container.isEmpty,
+        onChange: (value) {
+          if (value)
+            setState(() {
+              container.clear();
+            });
+        },
+      ),
+    ];
+
+    for (String option in options) {
+      result.add(Option(
+        text: option,
+        value: container.contains(option),
+        onChange: (value) {
+          setState(() {
+            if (value)
+              container.add(option);
+            else
+              container.remove(option);
+            if (container.length == options.length) container.clear();
+          });
+        },
+      ));
+    }
+    return result;
   }
 
   Widget _buidInfoSection() {
@@ -174,7 +405,12 @@ class _SettingsPage extends State<SettingsPage> {
         prefs.setInt('miles', _miles);
         prefs.setString('zip', _zip);
         prefs.setBool('animalType', _selectedCats);
+        prefs.setString('searchOptions', searchOptions.writeToJson());
       });
+      if (searchOptions != widget.feed.searchOptions) {
+        widget.feed.reloadFeed = true;
+        widget.feed.searchOptions = searchOptions;
+      }
       Navigator.pop(context, true);
     }
   }
@@ -205,24 +441,119 @@ class _SettingsPage extends State<SettingsPage> {
       ),
     );
   }
+}
 
-  // TODO: Remove this.
-  Widget _buildRadiusDropdown() {
-    return DropdownButton<int>(
-      iconSize: 0.1,
-      value: _miles,
-      onChanged: (value) {
-        setState(() {
-          _miles = value;
-        });
-      },
-      elevation: 1,
-      items: <int>[10, 20, 50, 100, 200].map((value) {
-        return DropdownMenuItem<int>(
-          value: value,
-          child: Text('$value miles'),
+/// Let user select from what can possibily be a large list of items.
+class SelectableInput extends StatefulWidget {
+  SelectableInput(
+      {this.key,
+      this.listFetcher,
+      this.selectedMatches,
+      this.hintText,
+      this.refetchNotifier})
+      : super(key: key);
+  final Key key;
+  final ItemCallback listFetcher;
+  final List<String> selectedMatches;
+  final ChangeNotifier refetchNotifier;
+  final String hintText;
+  @override
+  _SelectableInputState createState() => _SelectableInputState();
+}
+
+class _SelectableInputState extends State<SelectableInput> {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: <Widget>[
+        _buildSelectedItems(),
+        SearchBar(
+          refetchNotifier: widget.refetchNotifier,
+          hintText: widget.hintText,
+          onSelectedItem: (item) {
+            if (!widget.selectedMatches.contains(item))
+              setState(() {
+                widget.selectedMatches.add(item);
+              });
+          },
+          listFetcher: widget.listFetcher,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectedItems() {
+    return Column(
+      children: widget.selectedMatches.map((item) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            children: <Widget>[
+              ButtonTheme(
+                height: 14.0,
+                child: FlatButton(
+                  shape: CircleBorder(),
+                  color: kPetThemecolor,
+                  onPressed: () {
+                    setState(() {
+                      widget.selectedMatches.remove(item);
+                    });
+                  },
+                  child: Icon(Icons.remove, color: Colors.white),
+                ),
+              ),
+              Text(item),
+            ],
+          ),
         );
       }).toList(),
     );
   }
+}
+
+/// Used to list options that the user can select from.
+class GroupedOptions extends StatefulWidget {
+  GroupedOptions({Key key, this.options}) : super(key: key);
+  final List<Option> options;
+  @override
+  _GroupedOptionsState createState() => _GroupedOptionsState();
+}
+
+class _GroupedOptionsState extends State<GroupedOptions> {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 15.0),
+        child: Column(
+          children: widget.options.map((option) {
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(option.text,
+                    style: TextStyle(
+                      fontFamily: 'Open Sans',
+                      fontSize: 17.0,
+                    )),
+                Checkbox(
+                  value: option.value,
+                  onChanged: option.onChange,
+                  activeColor: kPetThemecolor,
+                ),
+              ],
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+}
+
+/// Basically a wrapper for checkbox inputs. We may want to use a different
+/// widget so we want at least have a uniform way to define an option.
+class Option {
+  final String text;
+  final bool value;
+  final Function(bool change) onChange;
+  Option({this.text, this.onChange, this.value});
 }

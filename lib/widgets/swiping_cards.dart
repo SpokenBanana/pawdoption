@@ -19,6 +19,8 @@ class _SwipingCardsState extends State<SwipingCards>
   @override
   bool get wantKeepAlive => true;
 
+  bool loading = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +43,20 @@ class _SwipingCardsState extends State<SwipingCards>
 
   @override
   Widget build(BuildContext context) {
+    if (loading) {
+      Size screenSize = MediaQuery.of(context).size;
+      double _screenWidth = screenSize.width;
+      double _screenHeight = screenSize.height;
+      return Container(
+          height: _screenHeight / 1.65,
+          width: _screenWidth / 1.2,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              CircularProgressIndicator(strokeWidth: 1.0),
+            ],
+          ));
+    }
     if (widget.feed.currentList.isEmpty) return _buildNoPetsLeftPage();
     return Stack(
       alignment: Alignment.center,
@@ -98,8 +114,14 @@ class _SwipingCardsState extends State<SwipingCards>
           Text("No more pets"),
           FlatButton(
             onPressed: () {
-              widget.feed.reInitialize().then((result) {
-                if (result) setState(() {});
+              setState(() {
+                loading = true;
+                widget.feed.reInitialize().then((result) {
+                  if (result)
+                    setState(() {
+                      loading = false;
+                    });
+                });
               });
             },
             child: Text("Start over"),
@@ -163,11 +185,15 @@ class PetCard extends StatelessWidget {
             padding: const EdgeInsets.all(8.0),
             child: Row(
               children: <Widget>[
-                Text(
-                  '${pet.info.name},',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: Theme.of(context).textTheme.headline,
+                Flexible(
+                  child: Container(
+                    child: Text(
+                      '${pet.info.name},',
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.headline,
+                    ),
+                  ),
                 ),
                 SizedBox(width: 5.0),
                 Expanded(

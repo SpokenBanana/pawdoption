@@ -58,10 +58,13 @@ Animal toAnimal(Map animalMap) {
 
   // Get breed.
   var breeds = animalMap['breeds']['breed'];
+  List<String> breedList = List<String>();
   if (breeds is List) {
     data.breed = breeds.map((breedstr) => breedstr['\$t']).join(' ');
+    for (var breed in breeds) breedList.add(breed['\$t']);
   } else {
     data.breed = breeds['\$t'];
+    breedList.add(data.breed);
   }
 
   data.name = animalMap['name']['\$t'];
@@ -78,6 +81,6 @@ Animal toAnimal(Map animalMap) {
   data.options.addAll(Animal.parseOptions(animalMap['options']));
   data.size = animalMap['size']['\$t'];
 
-  Animal pet = Animal(info: data, description: description);
+  Animal pet = Animal(info: data, description: description, breeds: breedList);
   return pet;
 }

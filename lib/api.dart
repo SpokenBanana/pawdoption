@@ -6,6 +6,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'petfinder_lib/petfinder.dart';
+import 'protos/pet_search_options.pb.dart';
+
+final kDefaultOptions = PetSearchOptions()
+  ..fixedOnly = false
+  ..includeBreeds = true
+  ..animalType = "dog";
 
 /// The main interface the app uses to get pet information.
 /// Made this extra layer so we can switch APIs and keep the same
@@ -22,6 +28,7 @@ class AnimalFeed {
   bool done, reloadFeed;
 
   PetAPI petApi;
+  PetSearchOptions searchOptions;
 
   Animal get currentPet => currentList.last;
   Animal get nextPet {
@@ -35,6 +42,7 @@ class AnimalFeed {
     notifier = SwipeNotifier();
 
     petApi = PetFinderApi();
+    searchOptions = kDefaultOptions;
 
     this.fetchMoreAt = 5;
     this.reloadFeed = false;
@@ -71,9 +79,15 @@ class AnimalFeed {
 
     var prefs = await SharedPreferences.getInstance();
     this.liked = _toAnimalList(prefs.getStringList('liked') ?? List<String>());
+    var searchString = prefs.getString('searchOptions');
+    this.searchOptions = searchString != null
+        ? PetSearchOptions.fromJson(searchString)
+        : kDefaultOptions;
 
     await petApi.setLocation(zip, miles, animalType: animalType);
-    this.currentList = await petApi.getAnimals(this.storeLimit, this.liked);
+    var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;
+    this.currentList = await petApi.getAnimals(amount, this.liked,
+        searchOptions: this.searchOptions);
     this.currentList.shuffle();
     this.done = true;
     return true;
@@ -82,7 +96,9 @@ class AnimalFeed {
   void updateList() {
     print('running this: ${this.currentList.length}');
     if (this.currentList.length <= this.fetchMoreAt) {
-      petApi.getAnimals(25, this.liked).then((list) {
+      petApi
+          .getAnimals(25, this.liked, searchOptions: this.searchOptions)
+          .then((list) {
         list.shuffle();
         this.currentList.insertAll(0, list);
       });
@@ -110,6 +126,10 @@ Future<ShelterInformation> getShelterInformation(String location) async {
   return info;
 }
 
+Future<List<String>> getBreedList(String animal) async {
+  return await PetFinderApi.getBreeds(animal);
+}
+
 enum Swiped { left, right, undo, none }
 
 class SwipeNotifier extends ChangeNotifier {
@@ -127,6 +147,18 @@ class SwipeNotifier extends ChangeNotifier {
 
   undo() {
     swiped = Swiped.undo;
+    notifyListeners();
+  }
+}
+
+// TODO: This is probably overkill for our purposes so maybe find a better
+//       way to do this.
+class AnimalChangeNotifier extends ChangeNotifier {
+  String animalType;
+  AnimalChangeNotifier({this.animalType});
+
+  changeAnimal(String animal) {
+    this.animalType = animal;
     notifyListeners();
   }
 }

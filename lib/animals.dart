@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:quiver/core.dart';
 
 import 'protos/animals.pb.dart';
+import 'protos/pet_search_options.pb.dart';
 
 /// Used as sort of an abstract class. Probably a better way of doing this.
 /// This is so that if another API is found to be better or the current
@@ -11,7 +12,8 @@ import 'protos/animals.pb.dart';
 class PetAPI {
   void setLocation(String zip, int miles, {String animalType}) {}
   // ignore: missing_return
-  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) {}
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
+      {PetSearchOptions searchOptions}) {}
   // ignore: missing_return
   static Future<List<String>> getAnimalDetails(Animal animal) {}
   // ignore: missing_return
@@ -26,13 +28,15 @@ class Animal {
       hasShots = false,
       specialNeeds = false,
       noKids = false;
+  List<String> breeds;
 
-  Animal({AnimalData info, String description}) {
+  Animal({AnimalData info, String description, List<String> breeds}) {
     if (info != null)
       this.info = info;
     else
       this.info = AnimalData.create();
     this.description = description;
+    this.breeds = breeds;
     readOptions();
   }
 

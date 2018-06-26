@@ -72,7 +72,7 @@ class _SwipingPageState extends State<SwipingPage>
                 );
               default:
                 if (snapshot.hasError)
-                  return Text('Couldn\'t fetch the feed :( Try again later? ');
+                  return Text('Couldn\'t fetch the feed :( Try again later?');
                 if (snapshot.data == false) return _buildNoInfoPage();
                 return Column(
                   children: [

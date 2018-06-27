@@ -14,6 +14,7 @@ dependencies:
   shared_preferences: ^0.4.1
   collection: ^1.14.6
   protobuf: ^0.9.0
+  geocoder: ^0.0.1
 
 dev_dependencies:
   flutter_test:

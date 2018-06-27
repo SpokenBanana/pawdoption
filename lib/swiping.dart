@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
@@ -37,6 +39,8 @@ class _SwipingPageState extends State<SwipingPage>
     var prefs = await SharedPreferences.getInstance();
     String zip = prefs.getString('zip');
     var animalType = prefs.getBool('animalType') ?? false;
+    var zipFromUser = await _getLocationFromUser();
+    if (zipFromUser != null) zip = zipFromUser;
     if (zip == null) return false;
     if (zip != widget.feed.zip ||
         widget.feed.reloadFeed ||
@@ -47,6 +51,30 @@ class _SwipingPageState extends State<SwipingPage>
           .initialize(zip, 0, animalType: animalType ? 'cat' : 'dog');
     }
     return true;
+  }
+
+  Future<String> _getLocationFromUser() async {
+    String zip;
+    var location = Location();
+    try {
+      var currentLocation = await location.getLocation;
+      widget.feed.userLat = currentLocation['latitude'];
+      widget.feed.userLng = currentLocation['longitude'];
+      widget.feed.geoLocationEnabled = true;
+      final coords = Coordinates(widget.feed.userLat, widget.feed.userLng);
+      var address = await Geocoder.local.findAddressesFromCoordinates(coords);
+      // TOOD: There is a bug in Geocoder right now where the postal code is
+      // always null so we have to retrieve it this way for now. Remember to
+      // change this once the bug is fixed.
+      final zipReg = RegExp(r'[A-Z]{2} (\d{5})');
+      var zipMatches = zipReg.allMatches(address.first.addressLine);
+      if (zipMatches.length != 0) {
+        zip = zipMatches.first.group(1);
+      }
+    } on Exception {
+      widget.feed.geoLocationEnabled = false;
+    }
+    return zip;
   }
 
   @override

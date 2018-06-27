@@ -253,6 +253,9 @@ class _SettingsPage extends State<SettingsPage> {
                 ),
               ],
             ),
+            widget.feed.geoLocationEnabled
+                ? _buildDistanceSlider(titleStyle)
+                : SizedBox(),
             Divider(),
             Text('Breeds', style: titleStyle),
             Text('Leave empty to use all breeds',
@@ -308,6 +311,30 @@ class _SettingsPage extends State<SettingsPage> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildDistanceSlider(titleStyle) {
+    return Column(
+      children: <Widget>[
+        Divider(),
+        Text('Max distance', style: titleStyle),
+        // TODO: There is currently a bug that doesn't let the label render
+        //       so use the label field once it is fixed.
+        Center(child: Text('${searchOptions.maxDistance} miles')),
+        Slider(
+          value: searchOptions.maxDistance.toDouble(),
+          min: 1.0,
+          max: 100.0,
+          divisions: 100,
+          onChanged: (value) {
+            setState(() {
+              searchOptions.maxDistance = value.round();
+            });
+          },
+          activeColor: kPetThemecolor,
+        ),
+      ],
     );
   }
 

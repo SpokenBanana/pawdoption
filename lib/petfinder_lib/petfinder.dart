@@ -19,7 +19,7 @@ class PetFinderApi implements PetAPI {
   String _zip, _animalType;
   // If we have to keep fetching, then the query matces too few animals to keep
   // looking.
-  int maxIterations = 10;
+  int maxIterations = 5;
 
   // We want to limit the API calls for this one, so caching is key.
   // TODO: Making this static is a bit of bad practice, try to find an
@@ -33,13 +33,15 @@ class PetFinderApi implements PetAPI {
     _baseParams = {'key': kPetFinderToken, 'output': 'full', 'format': 'json'};
   }
 
-  void setLocation(String zip, int miles, {String animalType}) async {
+  void setLocation(String zip, int miles,
+      {String animalType, double lat, double lng}) async {
     _shelterIds = List<String>();
     _currentOffset = 0;
     _shelterCache = Map<String, ShelterInformation>();
     _animalType = animalType;
     Map<String, String> params = {
       'location': zip,
+      'count': '50',
     };
     _zip = zip;
     params.addAll(_baseParams);
@@ -47,16 +49,19 @@ class PetFinderApi implements PetAPI {
     Map data = json.decode(response.body);
     for (Map shelter in data['petfinder']['shelters']['shelter']) {
       String id = shelter['id']['\$t'];
-      _shelterIds.add(id);
-      _shelterCache[id] = toShelterInformation(shelter);
+      if (!_shelterCache.containsKey(id))
+        _shelterCache[id] =
+            toShelterInformation(shelter, usrlat: lat, usrlng: lng);
     }
   }
 
   /// Because of the way the API works, this method will always return the list
   /// with size that is a multiple of 25. So if amount == 15, you'll get back
   /// 25. Otherwise, we would get duplicate results.
+  /// TODO: Passing the user lat, lng this way looks ugly, there is probably
+  /// a better way to do this.
   Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
-      {PetSearchOptions searchOptions}) async {
+      {PetSearchOptions searchOptions, double lat, double lng}) async {
     List<Animal> animals = List<Animal>();
     int iterations = 0;
     while (animals.length < amount) {
@@ -80,20 +85,22 @@ class PetFinderApi implements PetAPI {
       for (Map pet in petList) {
         Animal animal = toAnimal(pet);
         if (!toSkip.contains(animal) &&
-            (searchOptions == null || _shouldKeep(searchOptions, animal))) {
+            (searchOptions == null ||
+                await _shouldKeep(searchOptions, animal, lat: lat, lng: lng))) {
           animals.add(animal);
         }
       }
 
+      iterations++;
       // This means we reached the end of the search query.
       if (petList.length < 25) break;
-      iterations++;
       if (iterations >= maxIterations) break;
     }
     return animals;
   }
 
-  bool _shouldKeep(PetSearchOptions options, Animal pet) {
+  Future<bool> _shouldKeep(PetSearchOptions options, Animal pet,
+      {double lat, double lng}) async {
     if (options.ages.length > 1 && !options.ages.contains(pet.info.age))
       return false;
     if (options.sizes.length > 1 && !options.sizes.contains(pet.info.size))
@@ -114,6 +121,20 @@ class PetFinderApi implements PetAPI {
       }
       if (!found) return false;
     }
+    ShelterInformation shelter = await PetFinderApi
+        .getShelterInformation(pet.info.shelterId, lat: lat, lng: lng);
+    // Shelter opted out to give informaiton if it is null.
+    if (shelter != null) {
+      int distance = shelter.distance;
+      if (distance != -1 && distance > options.maxDistance) {
+        return false;
+      }
+    } else {
+      // TODO: Only return false if the geoLocation is enabled, otherwise
+      // just include the pet.
+      return false;
+    }
+
     if (options.selectedShelters.isNotEmpty &&
         !options.selectedShelters.contains(pet.info.shelterId)) return false;
     return true;
@@ -145,8 +166,8 @@ class PetFinderApi implements PetAPI {
     return list;
   }
 
-  static Future<ShelterInformation> getShelterInformation(
-      String location) async {
+  static Future<ShelterInformation> getShelterInformation(String location,
+      {double lat, double lng}) async {
     if (_shelterCache.containsKey(location)) return _shelterCache[location];
     Map<String, String> params = {
       'key': kPetFinderToken,
@@ -156,7 +177,8 @@ class PetFinderApi implements PetAPI {
     var response = await http.get(buildUrl('/shelter.get', params));
     var shelterMap = json.decode(response.body)['petfinder']['shelter'];
     // Cache it to not make this API call again.
-    ShelterInformation shelter = toShelterInformation(shelterMap);
+    ShelterInformation shelter =
+        toShelterInformation(shelterMap, usrlat: lat, usrlng: lng);
     _shelterCache[location] = shelter;
     return shelter;
   }

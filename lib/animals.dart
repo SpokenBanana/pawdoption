@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:quiver/core.dart';
+import 'package:vector_math/vector_math.dart';
 
 import 'protos/animals.pb.dart';
 import 'protos/pet_search_options.pb.dart';
@@ -10,10 +12,11 @@ import 'protos/pet_search_options.pb.dart';
 /// API stops working, then we can switch APIs without being so dependent
 /// on how one API works.
 class PetAPI {
-  void setLocation(String zip, int miles, {String animalType}) {}
+  void setLocation(String zip, int miles,
+      {String animalType, double lat, double lng}) {}
   // ignore: missing_return
   Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
-      {PetSearchOptions searchOptions}) {}
+      {PetSearchOptions searchOptions, double lat, double lng}) {}
   // ignore: missing_return
   static Future<List<String>> getAnimalDetails(Animal animal) {}
   // ignore: missing_return
@@ -133,9 +136,22 @@ String _splitCamelCase(String option) {
 class ShelterInformation {
   String name, phone, location, id;
   double lat, lng;
-  ShelterInformation(name, phone, location) {
+  int distance = -1;
+
+  ShelterInformation(name, phone, location, {this.lat, this.lng}) {
     this.name = name;
     this.phone = phone;
     this.location = location;
+  }
+
+  computeDistanceFrom(lat1, lng1) {
+    lat1 = radians(lat1);
+    lng1 = radians(lng1);
+    lat = radians(lat);
+    lng = radians(lng);
+    const R = 3959;
+    final x = (lng1 - lng) * cos(0.5 * (lat1 + lat));
+    final y = lat1 - lat;
+    distance = (R * sqrt((x * x) + (y * y))).round();
   }
 }

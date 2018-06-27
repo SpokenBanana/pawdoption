@@ -11,6 +11,7 @@ import 'protos/pet_search_options.pb.dart';
 final kDefaultOptions = PetSearchOptions()
   ..fixedOnly = false
   ..includeBreeds = true
+  ..maxDistance = 50
   ..animalType = "dog";
 
 /// The main interface the app uses to get pet information.
@@ -25,7 +26,8 @@ class AnimalFeed {
   SwipeNotifier notifier;
 
   int fetchMoreAt, serveLimit, storeLimit;
-  bool done, reloadFeed;
+  bool done, reloadFeed, geoLocationEnabled = false;
+  double userLat, userLng;
 
   PetAPI petApi;
   PetSearchOptions searchOptions;
@@ -84,20 +86,26 @@ class AnimalFeed {
         ? PetSearchOptions.fromJson(searchString)
         : kDefaultOptions;
 
-    await petApi.setLocation(zip, miles, animalType: animalType);
+    await petApi.setLocation(zip, miles,
+        animalType: animalType, lat: userLat, lng: userLng);
     var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;
     this.currentList = await petApi.getAnimals(amount, this.liked,
-        searchOptions: this.searchOptions);
+        searchOptions: this.searchOptions,
+        lat: this.userLat,
+        lng: this.userLng);
     this.currentList.shuffle();
     this.done = true;
     return true;
   }
 
   void updateList() {
-    print('running this: ${this.currentList.length}');
+    print('Current length: ${this.currentList.length}');
     if (this.currentList.length <= this.fetchMoreAt) {
       petApi
-          .getAnimals(25, this.liked, searchOptions: this.searchOptions)
+          .getAnimals(25, this.liked,
+              searchOptions: this.searchOptions,
+              lat: this.userLat,
+              lng: this.userLng)
           .then((list) {
         list.shuffle();
         this.currentList.insertAll(0, list);

@@ -283,6 +283,9 @@ class _DetailsPage extends State<DetailsPage> {
                     style: normalStyle,
                   ),
                 ),
+          shelter.distance != -1
+              ? Text('${shelter.distance} miles away.')
+              : SizedBox(),
         ],
       ),
     );

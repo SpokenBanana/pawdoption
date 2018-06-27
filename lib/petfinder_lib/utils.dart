@@ -9,7 +9,8 @@ String buildUrl(String method, Map<String, String> params) {
   return Uri.http('api.petfinder.com', method, params).toString();
 }
 
-ShelterInformation toShelterInformation(Map shelter) {
+ShelterInformation toShelterInformation(Map shelter,
+    {double usrlat, double usrlng}) {
   if (shelter == null) {
     return null;
   }
@@ -20,11 +21,13 @@ ShelterInformation toShelterInformation(Map shelter) {
   var location = '$address $city, $state. $zip';
   var lat = double.parse(shelter['latitude']['\$t']);
   var lng = double.parse(shelter['longitude']['\$t']);
+
   ShelterInformation info = ShelterInformation(
-      shelter['name']['\$t'], shelter['phone']['\$t'] ?? '', location)
-    ..id = shelter['id']['\$t']
-    ..lat = lat
-    ..lng = lng;
+      shelter['name']['\$t'], shelter['phone']['\$t'] ?? '', location,
+      lat: lat, lng: lng)
+    ..id = shelter['id']['\$t'];
+  if (usrlat != null && usrlng != null)
+    info.computeDistanceFrom(usrlat, usrlng);
   return info;
 }
 

@@ -6,6 +6,7 @@ import 'package:html/parser.dart' as parser;
 import 'package:http/http.dart' as http;
 
 import '../animals.dart';
+import '../protos/pet_search_options.pb.dart';
 
 const String kBaseUrl = 'http://petharbor.com/';
 const String kSearchUrl = kBaseUrl + 'results.asp?';
@@ -49,6 +50,8 @@ Animal _scrapeAnimalData(Element e) {
   return Animal();
 }
 
+// TODO: Since this really shouldn't be used anymore maybe it's time to remove
+//       this?
 class PetHarborApi implements PetAPI {
   int _currentPage, _totalPages, _lastElement, _pageOffset;
   List<String> _shelters;
@@ -57,7 +60,8 @@ class PetHarborApi implements PetAPI {
     this._lastElement = 0;
   }
 
-  void setLocation(String zip, int miles, {String animalType}) async {
+  void setLocation(String zip, int miles,
+      {String animalType, double lat, double lng}) async {
     print('Setting location');
     Document doc = await _fetchShelterSearchPage(zip, miles);
     _shelters = List<String>();
@@ -70,7 +74,8 @@ class PetHarborApi implements PetAPI {
     this._currentPage = 1;
   }
 
-  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip) async {
+  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
+      {PetSearchOptions searchOptions, double lat, double lng}) async {
     // TODO: Maybe send an error message?
     if (this._totalPages != -1 && this._currentPage > this._totalPages)
       return List<Animal>();

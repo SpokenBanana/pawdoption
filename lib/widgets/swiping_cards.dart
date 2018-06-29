@@ -21,6 +21,8 @@ class _SwipingCardsState extends State<SwipingCards>
 
   bool loading = false;
 
+  double _backCardScale = 0.9;
+
   @override
   void initState() {
     super.initState();
@@ -61,7 +63,14 @@ class _SwipingCardsState extends State<SwipingCards>
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
-        widget.feed.nextPet == null ? SizedBox() : PetCard(widget.feed.nextPet),
+        widget.feed.nextPet == null
+            ? SizedBox()
+            : Transform(
+                alignment: Alignment.center,
+                transform: Matrix4.identity()
+                  ..scale(_backCardScale, _backCardScale),
+                child: PetCard(widget.feed.nextPet),
+              ),
         DraggableCard(
           onLeftSwipe: () {
             setState(() {
@@ -84,6 +93,12 @@ class _SwipingCardsState extends State<SwipingCards>
               }
               widget.feed.removeCurrentPet();
               widget.feed.updateList();
+            });
+          },
+          onSwipe: (Offset offset) {
+            setState(() {
+              _backCardScale =
+                  0.9 + (0.1 * (offset.distance / 150)).clamp(0.0, 0.1);
             });
           },
           notifier: widget.feed.notifier,
@@ -147,7 +162,17 @@ class PetCard extends StatelessWidget {
       color: Colors.grey[600],
     );
     return Container(
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [
+          BoxShadow(
+            offset: const Offset(0.0, 2.0),
+            spreadRadius: 0.5,
+            blurRadius: 4.0,
+            color: Colors.black.withOpacity(.1),
+          )
+        ],
+      ),
       height: _screenHeight / 1.65,
       width: _screenWidth / 1.2,
       child: Column(
@@ -213,7 +238,12 @@ class PetCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(pet.info.gender, style: sideInfo),
-                Text(pet.info.cityState, style: sideInfo),
+                Row(
+                  children: <Widget>[
+                    Icon(Icons.location_on, size: 15.0, color: Colors.grey),
+                    Text(pet.info.cityState, style: sideInfo),
+                  ],
+                ),
               ],
             ),
           ),

@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
         theme: mainTheme,
         debugShowCheckedModeBanner: false,
         home: DefaultTabController(
-          length: 3,
+          length: 2,
           child: Scaffold(
             bottomNavigationBar: _buildTabBar(mainTheme),
             body: TabBarView(
@@ -45,10 +45,7 @@ class MyApp extends StatelessWidget {
         labelColor: kPetThemecolor,
         unselectedLabelColor: Colors.grey,
         tabs: <Widget>[
-          Tab(
-              icon: ImageIcon(
-            AssetImage('assets/app_black_icon.png'),
-          )),
+          Tab(icon: ImageIcon(AssetImage('assets/app_black_icon.png'))),
           Tab(icon: Icon(Icons.favorite_border)),
         ],
       ),

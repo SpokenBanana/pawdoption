@@ -81,7 +81,7 @@ class _SwipingPageState extends State<SwipingPage>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        elevation: 4.0,
+        elevation: 2.0,
         centerTitle: true,
         title: Text("Pawdoption",
             style: TextStyle(
@@ -108,7 +108,7 @@ class _SwipingPageState extends State<SwipingPage>
                     SwipingCards(
                       feed: widget.feed,
                     ),
-                    SizedBox(height: 10.0),
+                    SizedBox(height: 15.0),
                     _buildButtonRow(),
                   ],
                 );

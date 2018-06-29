@@ -54,6 +54,7 @@ class _DraggableCardState extends State<DraggableCard>
         setState(() {
           card = Offset.lerp(dragStart, const Offset(0.0, 0.0),
               Curves.elasticOut.transform(slideBack.value));
+          if (widget.onSwipe != null) widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
@@ -62,6 +63,7 @@ class _DraggableCardState extends State<DraggableCard>
             dragStart = null;
             likeOpacity = 0.0;
             skipOpacity = 0.0;
+            if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
           });
         }
       });
@@ -73,6 +75,7 @@ class _DraggableCardState extends State<DraggableCard>
       ..addListener(() {
         setState(() {
           card = slideTween.evaluate(slideOut);
+          if (widget.onSwipe != null) widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
@@ -81,6 +84,7 @@ class _DraggableCardState extends State<DraggableCard>
             widget.onRightSwipe();
           else
             widget.onLeftSwipe();
+          if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
           setState(() {
             dragStart = null;
             card = const Offset(0.0, 0.0);
@@ -100,10 +104,12 @@ class _DraggableCardState extends State<DraggableCard>
               Offset(-2 * context.size.width, 0.0),
               const Offset(0.0, 0.0),
               Curves.decelerate.transform(undoAnimation.value));
+          if (widget.onSwipe != null) widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
         if (status == AnimationStatus.completed) {
+          if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
           setState(() {
             card = const Offset(0.0, 0.0);
             likeOpacity = 0.0;

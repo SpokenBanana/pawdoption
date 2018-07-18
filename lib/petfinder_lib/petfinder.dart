@@ -14,28 +14,25 @@ const String kUrlRegex = r'(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]'
 /// Uses PetFinder API to get animals using the standard API interface defined
 /// in 'animals.dart'.
 class PetFinderApi implements PetAPI {
-  List<String> _shelterIds;
-  Map<String, String> _baseParams;
-  String _zip, _animalType;
+  final Map<String, String> _baseParams = {
+    'key': kPetFinderToken,
+    'output': 'full',
+    'format': 'json'
+  };
   // If we have to keep fetching, then the query matces too few animals to keep
   // looking.
-  int maxIterations = 5;
+  final maxIterations = 5;
+  String _zip, _animalType;
 
   // We want to limit the API calls for this one, so caching is key.
   // TODO: Making this static is a bit of bad practice, try to find an
   //       alternative solution
   static Map<String, ShelterInformation> _shelterCache;
 
-  int _currentOffset;
-
-  PetFinderApi() {
-    _currentOffset = 0;
-    _baseParams = {'key': kPetFinderToken, 'output': 'full', 'format': 'json'};
-  }
+  int _currentOffset = 0;
 
   void setLocation(String zip, int miles,
       {String animalType, double lat, double lng}) async {
-    _shelterIds = List<String>();
     _currentOffset = 0;
     _shelterCache = Map<String, ShelterInformation>();
     _animalType = animalType;
@@ -61,21 +58,21 @@ class PetFinderApi implements PetAPI {
   /// TODO: Passing the user lat, lng this way looks ugly, there is probably
   /// a better way to do this.
   Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
-      {PetSearchOptions searchOptions, double lat, double lng}) async {
+      {PetSearchOptions searchOptions, double usrLat, double userLng}) async {
     List<Animal> animals = List<Animal>();
     int iterations = 0;
+    const defaultCount = 25;
     while (animals.length < amount) {
       Map<String, String> params = {
         'animal': _animalType != null ? _animalType : 'dog',
         'location': _zip,
-        'output': 'full',
         'offset': _currentOffset.toString(),
       };
       if (searchOptions != null)
         params.addAll(_buildParamsFromOptions(searchOptions));
 
       params.addAll(_baseParams);
-      _currentOffset += 25; // The default count for the API.
+      _currentOffset += defaultCount;
 
       var response = await http.get(buildUrl('/pet.find', params));
       var petList = json.decode(utf8.decode(response.bodyBytes))['petfinder']
@@ -86,14 +83,15 @@ class PetFinderApi implements PetAPI {
         Animal animal = toAnimal(pet);
         if (!toSkip.contains(animal) &&
             (searchOptions == null ||
-                await _shouldKeep(searchOptions, animal, lat: lat, lng: lng))) {
+                await _shouldKeep(searchOptions, animal,
+                    lat: usrLat, lng: userLng))) {
           animals.add(animal);
         }
       }
 
       iterations++;
       // This means we reached the end of the search query.
-      if (petList.length < 25) break;
+      if (petList.length < defaultCount) break;
       if (iterations >= maxIterations) break;
     }
     return animals;
@@ -183,8 +181,7 @@ class PetFinderApi implements PetAPI {
     return shelter;
   }
 
-  static Future<List<String>> getAnimalDetails(Animal animal) async {
-    List<String> results = List<String>();
+  static Future<String> getAnimalDetails(Animal animal) async {
     if (animal.description == null) {
       // Re-fetch the data.
       Map<String, String> params = {
@@ -195,19 +192,20 @@ class PetFinderApi implements PetAPI {
       var response = await http.get(buildUrl('/pet.get', params));
       var petDoc = json.decode(utf8.decode(response.bodyBytes));
       Map descMap = petDoc['petfinder']['pet']['description'];
+      var description;
       if (descMap.isEmpty) {
-        results.add('No comments.');
+        description = 'No comments.';
       } else {
-        results.add(descMap['\$t']);
+        description = descMap['\$t'];
         // Try to resolve some encoding issues.
         // Somethings this fails, if it does then we just have to deal with it.
         try {
-          results[0] = utf8.decode(Latin1Codec().encode(results[0]));
+          description = utf8.decode(Latin1Codec().encode(description));
         } catch (Exception) {}
       }
 
       // Cache it so that we don't have to make this API call multiple times.
-      animal.description = results[0];
+      animal.description = description;
 
       // Update the rest of the pet information
       var lastUpdated = petDoc['petfinder']['pet']['lastUpdate']['\$t'];
@@ -217,15 +215,8 @@ class PetFinderApi implements PetAPI {
         animal.info.lastUpdated = lastUpdated;
         animal.info.age = petDoc['petfinder']['pet']['age']['\$t'];
       }
-    } else {
-      results.add(animal.description);
+      return animal.description;
     }
-
-    // Find urls since Flutter won't let us select/copy text from Text widgets.
-    var urlMatches = RegExp(kUrlRegex).allMatches(results[0]);
-    for (Match m in urlMatches) {
-      results.add(m.group(0));
-    }
-    return results;
+    return animal.description;
   }
 }

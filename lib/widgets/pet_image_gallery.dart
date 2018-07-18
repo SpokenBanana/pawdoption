@@ -2,6 +2,8 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
+import 'photo_view_page.dart';
+
 class PetImageGallery extends StatefulWidget {
   PetImageGallery(this.images, {this.tag});
   final List<String> images;
@@ -43,6 +45,20 @@ class _PetImageGallery extends State<PetImageGallery>
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      onTap: () {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return ViewImagePage(images: widget.images, initialIndex: index);
+          },
+        ).then((lastIndex) {
+          if (lastIndex != null)
+            setState(() {
+              index = lastIndex;
+              scrollPercent = index / widget.images.length;
+            });
+        });
+      },
       onHorizontalDragStart: _onPanStart,
       onHorizontalDragUpdate: _onPanUpdate,
       onHorizontalDragEnd: _onPanEnd,

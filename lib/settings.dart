@@ -130,6 +130,25 @@ class _SettingsPage extends State<SettingsPage> {
               style: titleStyle,
             ),
             _buildZipTextField(),
+            FlatButton(
+              onPressed: () async {
+                var zip = await getZipFromGeo();
+                if (zip != null)
+                  setState(() {
+                    _textController.text = zip;
+                    _zip = zip;
+                  });
+              },
+              child: Row(
+                children: <Widget>[
+                  Icon(Icons.my_location),
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text('Auto set my location'),
+                  ),
+                ],
+              ),
+            ),
             Divider(),
             Text(
               "What do you want to search for?",
@@ -254,7 +273,7 @@ class _SettingsPage extends State<SettingsPage> {
               ],
             ),
             widget.feed.geoLocationEnabled
-                ? _buildDistanceSlider(titleStyle)
+                ? _createDistanceSlider(titleStyle)
                 : SizedBox(),
             Divider(),
             Text('Breeds', style: titleStyle),
@@ -314,7 +333,7 @@ class _SettingsPage extends State<SettingsPage> {
     );
   }
 
-  Widget _buildDistanceSlider(titleStyle) {
+  Widget _createDistanceSlider(titleStyle) {
     return Column(
       children: <Widget>[
         Divider(),

@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'api.dart';
+import 'protos/pet_search_options.pb.dart';
 import 'settings.dart';
 import 'widgets/pet_button.dart';
 import 'widgets/swiping_cards.dart';
@@ -39,17 +40,26 @@ class _SwipingPageState extends State<SwipingPage>
   Future<bool> _initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
     String zip = prefs.getString('zip');
-    var animalType = prefs.getBool('animalType') ?? false;
+    final animalType = prefs.getBool('animalType') ?? false;
+    final options = prefs.getString('searchOptions');
+    List<Animal> liked = prefs
+        .getStringList('liked')
+        .map((str) => Animal.fromString(str))
+        .toList();
+
     var zipFromUser = await _getLocationFromUser();
-    if (zipFromUser != null) zip = zipFromUser;
+    if (zipFromUser != null && zip == null) {
+      zip = zipFromUser;
+      prefs.setString('zip', zip);
+    }
     if (zip == null) return false;
     if (zip != widget.feed.zip ||
         widget.feed.reloadFeed ||
         animalType != (widget.feed.animalType == 'cat')) {
-      widget.feed.reloadFeed = false;
-      widget.feed.done = false;
-      return await widget.feed
-          .initialize(zip, 0, animalType: animalType ? 'cat' : 'dog');
+      return await widget.feed.initialize(zip,
+          animalType: animalType ? 'cat' : 'dog',
+          options: PetSearchOptions.fromJson(options),
+          liked: liked);
     }
     return true;
   }

@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geocoder/geocoder.dart';
+import 'package:location/location.dart';
 
 import 'animals.dart';
 import 'petfinder_lib/petfinder.dart';
@@ -22,10 +23,10 @@ class AnimalFeed {
   List<Animal> liked;
   Queue<Animal> skipped;
   String zip, animalType;
-  int miles, _undoMax = 20;
+  int miles;
   SwipeNotifier notifier;
 
-  int fetchMoreAt, serveLimit, storeLimit;
+  final int fetchMoreAt = 5, storeLimit = 50, _undoMax = 20;
   bool done, reloadFeed, geoLocationEnabled = false;
   double userLat, userLng;
 
@@ -46,53 +47,43 @@ class AnimalFeed {
     petApi = PetFinderApi();
     searchOptions = kDefaultOptions;
 
-    this.fetchMoreAt = 5;
-    this.reloadFeed = false;
-
-    // Amount to store in this class (reduce number of calls to website at the
-    // sacrafice of mememory).
-    this.storeLimit = 50;
-
     this.skipped = Queue<Animal>();
     this.currentList = List<Animal>();
     this.done = false;
     this.reloadFeed = false;
   }
 
-  List<Animal> _toAnimalList(List<String> reprs) {
-    return reprs.map((repr) => Animal.fromString(repr)).toList();
-  }
-
   Future<bool> reInitialize() async {
-    return await this.initialize(this.zip, this.miles);
+    return await this.initialize(this.zip,
+        animalType: this.animalType,
+        options: this.searchOptions,
+        liked: this.liked);
   }
 
   removeCurrentPet() {
     currentList.removeLast();
   }
 
-  Future<bool> initialize(String zip, int miles, {String animalType}) async {
+  Future<bool> initialize(String zip,
+      {String animalType, PetSearchOptions options, List<Animal> liked}) async {
+    this.reloadFeed = false;
+    this.done = false;
     this.zip = zip;
-    this.miles = miles;
     this.animalType = animalType;
 
     this.currentList = List<Animal>();
     this.skipped = Queue<Animal>();
 
-    var prefs = await SharedPreferences.getInstance();
-    this.liked = _toAnimalList(prefs.getStringList('liked') ?? List<String>());
-    var searchString = prefs.getString('searchOptions');
-    this.searchOptions = searchString != null
-        ? PetSearchOptions.fromJson(searchString)
-        : kDefaultOptions;
+    this.liked = liked ?? List<Animal>();
+    this.searchOptions = options ?? kDefaultOptions;
 
     await petApi.setLocation(zip, miles,
         animalType: animalType, lat: userLat, lng: userLng);
     var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;
     this.currentList = await petApi.getAnimals(amount, this.liked,
         searchOptions: this.searchOptions,
-        lat: this.userLat,
-        lng: this.userLng);
+        usrLat: this.userLat,
+        userLng: this.userLng);
     this.currentList.shuffle();
     this.done = true;
     return true;
@@ -104,8 +95,8 @@ class AnimalFeed {
       petApi
           .getAnimals(25, this.liked,
               searchOptions: this.searchOptions,
-              lat: this.userLat,
-              lng: this.userLng)
+              usrLat: this.userLat,
+              userLng: this.userLng)
           .then((list) {
         list.shuffle();
         this.currentList.insertAll(0, list);
@@ -124,19 +115,37 @@ class AnimalFeed {
   }
 }
 
-Future<List<String>> getDetailsAbout(Animal animal) async {
-  List<String> info = await PetFinderApi.getAnimalDetails(animal);
-  return info;
+Future<String> getZipFromGeo() async {
+  String zip;
+  var location = Location();
+  try {
+    var currentLocation = await location.getLocation;
+    final userLat = currentLocation['latitude'];
+    final userLng = currentLocation['longitude'];
+    final coords = Coordinates(userLat, userLng);
+    var address = await Geocoder.local.findAddressesFromCoordinates(coords);
+    // TOOD: There is a bug in Geocoder right now where the postal code is
+    // always null so we have to retrieve it this way for now. Remember to
+    // change this once the bug is fixed.
+    final zipReg = RegExp(r'[A-Z]{2} (\d{5})');
+    var zipMatches = zipReg.allMatches(address.first.addressLine);
+    if (zipMatches.length != 0) {
+      zip = zipMatches.first.group(1);
+    }
+    return zip;
+  } on Exception {
+    return null;
+  }
 }
 
-Future<ShelterInformation> getShelterInformation(String location) async {
-  ShelterInformation info = await PetFinderApi.getShelterInformation(location);
-  return info;
-}
+Future<String> getDetailsAbout(Animal animal) async =>
+    await PetFinderApi.getAnimalDetails(animal);
 
-Future<List<String>> getBreedList(String animal) async {
-  return await PetFinderApi.getBreeds(animal);
-}
+Future<ShelterInformation> getShelterInformation(String location) async =>
+    await PetFinderApi.getShelterInformation(location);
+
+Future<List<String>> getBreedList(String animal) async =>
+    await PetFinderApi.getBreeds(animal);
 
 enum Swiped { left, right, undo, none }
 

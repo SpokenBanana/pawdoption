@@ -64,7 +64,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  _getUrls(String description) {
+  _populateUrls(String description) {
     urls = List<String>();
     var urlMatches = RegExp(kUrlRegex).allMatches(description);
     for (Match m in urlMatches) {
@@ -74,7 +74,7 @@ class _DetailsPage extends State<DetailsPage> {
 
   Widget _fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (widget.pet.description != null) {
-      _getUrls(widget.pet.description);
+      _populateUrls(widget.pet.description);
       return _buildComments(widget.pet.description, urls, key);
     }
     return FutureBuilder(
@@ -87,10 +87,10 @@ class _DetailsPage extends State<DetailsPage> {
             return Text('Loading...');
           default:
             if (snapshot.hasError)
-              return new Text('Couldn\'t get the comments :( ');
+              return Text('Couldn\'t get the comments :( ');
             else {
-              urls = snapshot.data.sublist(1);
-              return _buildComments(snapshot.data[0], urls, key);
+              _populateUrls(snapshot.data);
+              return _buildComments(snapshot.data, urls, key);
             }
         }
       },

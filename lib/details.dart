@@ -55,7 +55,7 @@ class _DetailsPage extends State<DetailsPage> {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     "Tell them you want to adopt ${widget.pet.info.name}"
-                        " whose ID is ${widget.pet.info.id}.",
+                    " whose ID is ${widget.pet.info.id}.",
                     textAlign: TextAlign.center,
                   ),
                 ),
@@ -82,12 +82,14 @@ class _DetailsPage extends State<DetailsPage> {
       builder: (BuildContext context, AsyncSnapshot snapshot) {
         switch (snapshot.connectionState) {
           case ConnectionState.none:
-            return Text('Wait..');
+            return Center(child: Text('Wait..'));
           case ConnectionState.waiting:
-            return Text('Loading...');
+            return Center(child: Text('Loading...'));
           default:
             if (snapshot.hasError)
-              return Text('Couldn\'t get the comments :( ');
+              return Center(
+                child: Text('Couldn\'t get the comments :( '),
+              );
             else {
               _populateUrls(snapshot.data);
               return _buildComments(snapshot.data, urls, key);
@@ -164,7 +166,7 @@ class _DetailsPage extends State<DetailsPage> {
 
   Widget _buildOptionTags() {
     return Container(
-      height: 30.0,
+      height: 40.0,
       child: ListView(
         physics: const BouncingScrollPhysics(),
         scrollDirection: Axis.horizontal,

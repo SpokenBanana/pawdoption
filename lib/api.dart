@@ -26,7 +26,7 @@ class AnimalFeed {
   int miles;
   SwipeNotifier notifier;
 
-  final int fetchMoreAt = 5, storeLimit = 50, _undoMax = 20;
+  final int fetchMoreAt = 20, storeLimit = 50, _undoMax = 20;
   bool done, reloadFeed, geoLocationEnabled = false;
   double userLat, userLng;
 
@@ -76,6 +76,7 @@ class AnimalFeed {
 
     this.liked = liked ?? List<Animal>();
     this.searchOptions = options ?? kDefaultOptions;
+    miles = this.searchOptions.maxDistance;
 
     await petApi.setLocation(zip, miles,
         animalType: animalType, lat: userLat, lng: userLng);
@@ -90,7 +91,6 @@ class AnimalFeed {
   }
 
   void updateList() {
-    print('Current length: ${this.currentList.length}');
     if (this.currentList.length <= this.fetchMoreAt) {
       petApi
           .getAnimals(25, this.liked,
@@ -116,23 +116,14 @@ class AnimalFeed {
 }
 
 Future<String> getZipFromGeo() async {
-  String zip;
   var location = Location();
   try {
-    var currentLocation = await location.getLocation;
+    var currentLocation = await location.getLocation();
     final userLat = currentLocation['latitude'];
     final userLng = currentLocation['longitude'];
     final coords = Coordinates(userLat, userLng);
     var address = await Geocoder.local.findAddressesFromCoordinates(coords);
-    // TOOD: There is a bug in Geocoder right now where the postal code is
-    // always null so we have to retrieve it this way for now. Remember to
-    // change this once the bug is fixed.
-    final zipReg = RegExp(r'[A-Z]{2} (\d{5})');
-    var zipMatches = zipReg.allMatches(address.first.addressLine);
-    if (zipMatches.length != 0) {
-      zip = zipMatches.first.group(1);
-    }
-    return zip;
+    return address.first.postalCode;
   } on Exception {
     return null;
   }

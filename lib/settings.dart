@@ -218,22 +218,22 @@ class _SettingsPage extends State<SettingsPage> {
                 ),
                 Option(
                   text: "Male",
-                  value: searchOptions.sex == 'M',
+                  value: searchOptions.sex == 'male',
                   onChange: (change) {
                     if (change) {
                       setState(() {
-                        searchOptions.sex = 'M';
+                        searchOptions.sex = 'male';
                       });
                     }
                   },
                 ),
                 Option(
                   text: "Female",
-                  value: searchOptions.sex == 'F',
+                  value: searchOptions.sex == 'female',
                   onChange: (change) {
                     if (change) {
                       setState(() {
-                        searchOptions.sex = 'F';
+                        searchOptions.sex = 'female';
                       });
                     }
                   },
@@ -279,43 +279,6 @@ class _SettingsPage extends State<SettingsPage> {
             Text('Breeds', style: titleStyle),
             Text('Leave empty to use all breeds',
                 style: TextStyle(color: Colors.grey)),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: <Widget>[
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: <Widget>[
-                      Text(
-                        '${searchOptions.includeBreeds ? 'Do' : 'Do not'}'
-                            ' include breeds',
-                        style: TextStyle(fontSize: 17.0),
-                      ),
-                      Text(
-                          'The following breeds ' +
-                              (searchOptions.includeBreeds
-                                  ? 'will'
-                                  : 'will not') +
-                              ' be included in the search',
-                          style: TextStyle(
-                            color: Colors.grey,
-                            fontSize: 12.0,
-                          )),
-                    ],
-                  ),
-                  Switch(
-                    activeColor: kPetThemecolor,
-                    value: searchOptions.includeBreeds,
-                    onChanged: (value) {
-                      setState(() {
-                        searchOptions.includeBreeds = value;
-                      });
-                    },
-                  ),
-                ],
-              ),
-            ),
             SizedBox(height: 10.0),
             SelectableInput(
               refetchNotifier: animalNotifier,
@@ -464,8 +427,8 @@ class _SettingsPage extends State<SettingsPage> {
   Widget _buildZipTextField() {
     return Theme(
       data: Theme.of(context).copyWith(
-            primaryColor: Theme.of(context).accentColor,
-          ),
+        primaryColor: Theme.of(context).accentColor,
+      ),
       child: TextField(
         style: TextStyle(
             fontFamily: 'OpenSans',

@@ -15,6 +15,7 @@ class PetButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
+      color: Colors.white,
       elevation: 5.0,
       onPressed: this.onPressed,
       shape: CircleBorder(),

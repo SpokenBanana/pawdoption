@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
@@ -41,11 +42,18 @@ class _SwipingPageState extends State<SwipingPage>
     var prefs = await SharedPreferences.getInstance();
     String zip = prefs.getString('zip');
     final animalType = prefs.getBool('animalType') ?? false;
-    final options = prefs.getString('searchOptions');
+    final optionsStr = prefs.getString('searchOptions') ?? '';
+    var options = PetSearchOptions.getDefault();
+    if (optionsStr.isNotEmpty) {
+      options = PetSearchOptions.fromJson(optionsStr);
+    } else {
+      options = null;
+    }
     List<Animal> liked = prefs
-        .getStringList('liked')
-        .map((str) => Animal.fromString(str))
-        .toList();
+            .getStringList('liked')
+            ?.map((str) => Animal.fromString(str))
+            ?.toList() ??
+        [];
 
     var zipFromUser = await _getLocationFromUser();
     if (zipFromUser != null && zip == null) {
@@ -58,7 +66,7 @@ class _SwipingPageState extends State<SwipingPage>
         animalType != (widget.feed.animalType == 'cat')) {
       return await widget.feed.initialize(zip,
           animalType: animalType ? 'cat' : 'dog',
-          options: PetSearchOptions.fromJson(options),
+          options: options,
           liked: liked);
     }
     return true;
@@ -68,20 +76,13 @@ class _SwipingPageState extends State<SwipingPage>
     String zip;
     var location = Location();
     try {
-      var currentLocation = await location.getLocation;
+      var currentLocation = await location.getLocation();
       widget.feed.userLat = currentLocation['latitude'];
       widget.feed.userLng = currentLocation['longitude'];
       widget.feed.geoLocationEnabled = true;
       final coords = Coordinates(widget.feed.userLat, widget.feed.userLng);
       var address = await Geocoder.local.findAddressesFromCoordinates(coords);
-      // TOOD: There is a bug in Geocoder right now where the postal code is
-      // always null so we have to retrieve it this way for now. Remember to
-      // change this once the bug is fixed.
-      final zipReg = RegExp(r'[A-Z]{2} (\d{5})');
-      var zipMatches = zipReg.allMatches(address.first.addressLine);
-      if (zipMatches.length != 0) {
-        zip = zipMatches.first.group(1);
-      }
+      return address.first.postalCode;
     } on Exception {
       widget.feed.geoLocationEnabled = false;
     }

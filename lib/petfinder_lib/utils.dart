@@ -1,12 +1,44 @@
 import 'dart:convert';
+import 'dart:developer';
+
+import 'package:http/http.dart' as http;
+import 'package:petadopt/petfinder_lib/credentials.dart';
 
 import '../animals.dart';
 import '../protos/animals.pb.dart';
 
-const String kBaseUrl = 'api.petfinder.com';
-
 String buildUrl(String method, Map<String, String> params) {
-  return Uri.http('api.petfinder.com', method, params).toString();
+  return Uri.https('api.petfinder.com', '/v2/$method', params).toString();
+}
+
+// Will make sure we make authorized requests.
+class ApiClient {
+  DateTime tokenExperiation;
+  String token;
+  ApiClient() {
+    tokenExperiation = new DateTime.now();
+  }
+
+  void checkToken() async {
+    if (tokenExperiation.isBefore(DateTime.now())) {
+      var response = await http.post(buildUrl('oauth2/token', {}), body: {
+        'grant_type': 'client_credentials',
+        'client_id': '$kPetFinderToken',
+        'client_secret': '$kPetFinderSecret',
+      });
+      var parsed = json.decode(response.body);
+      tokenExperiation =
+          new DateTime.now().add(new Duration(seconds: parsed['expires_in']));
+      token = parsed['access_token'];
+    }
+  }
+
+  dynamic fetch(String method, Map<String, String> params) async {
+    await checkToken();
+    var response = await http.get(buildUrl(method, params),
+        headers: {'Authorization': 'Bearer $token'});
+    return json.decode(utf8.decode(response.bodyBytes));
+  }
 }
 
 ShelterInformation toShelterInformation(Map shelter,
@@ -14,76 +46,71 @@ ShelterInformation toShelterInformation(Map shelter,
   if (shelter == null) {
     return null;
   }
-  var address = shelter['address1'].isEmpty ? '' : shelter['address1']['\$t'];
-  var city = shelter['city']['\$t'];
-  var zip = shelter['zip']['\$t'];
-  var state = shelter['state']['\$t'];
+  var address = shelter['address']['address1'];
+  var city = shelter['address']['city'];
+  var zip = shelter['address']['postcode'];
+  var state = shelter['address']['state'];
   var location = '$address $city, $state. $zip';
-  var lat = double.parse(shelter['latitude']['\$t']);
-  var lng = double.parse(shelter['longitude']['\$t']);
-
-  ShelterInformation info = ShelterInformation(
-      shelter['name']['\$t'], shelter['phone']['\$t'] ?? '', location,
-      lat: lat, lng: lng)
-    ..id = shelter['id']['\$t'];
-  if (usrlat != null && usrlng != null)
-    info.computeDistanceFrom(usrlat, usrlng);
+  var phone = shelter['phone'] ?? '';
+  ShelterInformation info = ShelterInformation(shelter['name'], phone, location)
+    ..id = shelter['id'];
   return info;
 }
 
 Animal toAnimal(Map animalMap) {
   AnimalData data = AnimalData.create();
 
-  // Photos.
-  var photoMap = animalMap['media']['photos'];
-  if (photoMap != null) {
-    var images = animalMap['media']['photos']['photo'];
-    for (var img in images) {
-      if (img['@size'] == 'x') data.imgUrl.add(img['\$t']);
-    }
-  } else {
+  for (var img in animalMap['photos']) {
+    data.imgUrl.add(img['large']);
+  }
+  if (data.imgUrl.isEmpty) {
+    // TODO: Add an actual placeholder image.
     data.imgUrl.add('');
   }
 
-  // Set description.
-  Map descriptionMap = animalMap['description'];
-  String description =
-      descriptionMap.isEmpty ? "No comments available" : descriptionMap['\$t'];
+  String description = animalMap['description'] == ''
+      ? 'No comments available.'
+      : animalMap['desciption'];
+  // Some descriptions contain some weird characters. We'll try to parse them
+  // here.
   try {
     description = utf8.decode(Latin1Codec().encode(description));
   } catch (Exception) {}
 
   // Get city state.
-  var city = animalMap['contact']['city'];
-  var state = animalMap['contact']['state'];
-  data.cityState = '${city.isEmpty ? 'Unknown' : city['\$t']}, '
-      '${state.isEmpty? 'Unknown' : state['\$t']}';
+  var city = animalMap['contact']['address']['city'];
+  var state = animalMap['contact']['address']['state'];
+  data.cityState = '${city.isEmpty ? 'Unknown' : city}, '
+      '${state.isEmpty ? 'Unknown' : state}';
 
   // Get breed.
-  var breeds = animalMap['breeds']['breed'];
+  var breeds = animalMap['breeds'];
   List<String> breedList = List<String>();
-  if (breeds is List) {
-    data.breed = breeds.map((breedstr) => breedstr['\$t']).join(' ');
-    for (var breed in breeds) breedList.add(breed['\$t']);
-  } else {
-    data.breed = breeds['\$t'];
-    breedList.add(data.breed);
+  if (breeds['primary']) {
+    breedList.add(breeds['primary'].toString());
+  }
+  if (breeds['secondary']) {
+    breedList.add(breeds['secondary'].toString());
+  }
+  data.breed = breedList.join(' / ');
+  if (breeds['unknown']) {
+    data.breed = 'Unknown';
   }
 
-  data.name = animalMap['name']['\$t'];
+  data.name = animalMap['name'];
   data.name =
       '${data.name[0].toUpperCase()}${data.name.substring(1).toLowerCase()}';
-  data.gender = animalMap['sex']['\$t'] == 'M' ? 'Male' : 'Female';
-  data.age = animalMap['age']['\$t'];
-  data.shelterId = animalMap['shelterId']['\$t'];
-  // Not all animals have a shelter Id.
-  if (animalMap['shelterPetId']['\$t'] != null)
-    data.id = animalMap['shelterPetId']['\$t'];
-  data.apiId = animalMap['id']['\$t'];
-  data.lastUpdated = animalMap['lastUpdate']['\$t'];
-  data.options.addAll(Animal.parseOptions(animalMap['options']));
-  data.size = animalMap['size']['\$t'];
+  data.gender = animalMap['gender'];
+  data.age = animalMap['age'];
+  data.shelterId = animalMap['organization_id'];
+  data.apiId = animalMap['id'].toString();
+  data.lastUpdated = animalMap['published_at'];
+  for (String item in animalMap['tags']) {
+    data.options.add(item);
+  }
+  data.size = animalMap['size'];
 
-  Animal pet = Animal(info: data, description: description, breeds: breedList);
+  Animal pet = Animal(info: data, description: description);
+  pet.readAttributes(animalMap['attributes']);
   return pet;
 }

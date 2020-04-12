@@ -31,16 +31,13 @@ class Animal {
       hasShots = false,
       specialNeeds = false,
       noKids = false;
-  List<String> breeds;
 
-  Animal({AnimalData info, String description, List<String> breeds}) {
+  Animal({AnimalData info, String description}) {
     if (info != null)
       this.info = info;
     else
       this.info = AnimalData.create();
     this.description = description;
-    this.breeds = breeds;
-    readOptions();
   }
 
   factory Animal.fromString(String animalStr) {
@@ -72,32 +69,17 @@ class Animal {
     return info.writeToJson();
   }
 
-  void readOptions() {
-    for (String option in info.options) {
-      switch (option) {
-        case 'specialNeeds':
-          specialNeeds = true;
-          break;
-        case 'hasShots':
-          hasShots = true;
-          break;
-        case 'altered':
-          spayedNeutered = true;
-          break;
-        case 'noKids':
-          noKids = true;
-          break;
-        default:
-          continue;
-      }
-    }
+  void readAttributes(dynamic attributes) {
+    specialNeeds = attributes['special_needs'];
+    hasShots = attributes['shots_current'];
+    spayedNeutered = attributes['spayed_neutered'];
   }
 
   bool operator ==(other) {
-    return other is Animal && other.info.id == this.info.id;
+    return other is Animal && other.info.apiId == this.info.apiId;
   }
 
-  int get hashCode => hash2(this.info.apiId.hashCode, this.info.id.hashCode);
+  int get hashCode => this.info.apiId.hashCode;
 
   static String parseOption(String option, AnimalData pet) {
     switch (option) {
@@ -124,7 +106,7 @@ class Animal {
 // TODO: This is pretty ugly, probably find a better way to do this.
 String _splitCamelCase(String option) {
   for (int i = 0; i < option.length; i++) {
-    if (option[i] == option[i].toUpperCase()) {
+    if (option[i] == option[i].toUpperCase() && i != 0) {
       String first = option.substring(0, i);
       String second = option.substring(i).toLowerCase();
       return '${first[0].toUpperCase()}${first.substring(1)} $second';

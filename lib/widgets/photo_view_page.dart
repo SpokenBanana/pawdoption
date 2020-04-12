@@ -4,7 +4,6 @@ import 'package:photo_view/photo_view.dart';
 class ViewImagePage extends StatefulWidget {
   ViewImagePage({this.images, this.initialIndex});
 
-  final ImageProvider image;
   final List<String> images;
   final int initialIndex;
   @override

@@ -35,8 +35,10 @@ class ApiClient {
 
   dynamic fetch(String method, Map<String, String> params) async {
     await checkToken();
+    print(buildUrl(method, params));
     var response = await http.get(buildUrl(method, params),
         headers: {'Authorization': 'Bearer $token'});
+    print(response.body);
     return json.decode(utf8.decode(response.bodyBytes));
   }
 }
@@ -46,15 +48,7 @@ ShelterInformation toShelterInformation(Map shelter,
   if (shelter == null) {
     return null;
   }
-  var address = shelter['address']['address1'];
-  var city = shelter['address']['city'];
-  var zip = shelter['address']['postcode'];
-  var state = shelter['address']['state'];
-  var location = '$address $city, $state. $zip';
-  var phone = shelter['phone'] ?? '';
-  ShelterInformation info = ShelterInformation(shelter['name'], phone, location)
-    ..id = shelter['id'];
-  return info;
+  return ShelterInformation.fromApi(shelter);
 }
 
 Animal toAnimal(Map animalMap) {
@@ -86,14 +80,14 @@ Animal toAnimal(Map animalMap) {
   // Get breed.
   var breeds = animalMap['breeds'];
   List<String> breedList = List<String>();
-  if (breeds['primary']) {
+  if (breeds['primary'] != null) {
     breedList.add(breeds['primary'].toString());
   }
-  if (breeds['secondary']) {
+  if (breeds['secondary'] != null) {
     breedList.add(breeds['secondary'].toString());
   }
   data.breed = breedList.join(' / ');
-  if (breeds['unknown']) {
+  if (breeds['unknown'] == 'true') {
     data.breed = 'Unknown';
   }
 

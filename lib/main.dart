@@ -62,7 +62,7 @@ class MyApp extends StatelessWidget {
       scaffoldBackgroundColor: kPetGray,
       buttonColor: Colors.white,
       primaryIconTheme: base.iconTheme.copyWith(
-        color: Color(0xFF555555),
+        color: Colors.white,
       ),
       primaryTextTheme: base.textTheme.copyWith(
         title: TextStyle(

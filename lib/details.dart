@@ -144,9 +144,22 @@ class _DetailsPage extends State<DetailsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            _createInfoRow("Breed:", pet.breed),
-            _createInfoRow("Gender:", pet.gender),
-            _createInfoRow("Age:", pet.age),
+            Row(
+              children: <Widget>[
+                Expanded(
+                    child: Text(pet.breed,
+                        style: const TextStyle(
+                            fontFamily: 'Raleway', fontSize: 20.0))),
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                    child: Text("${pet.gender} • ${pet.age}",
+                        style: const TextStyle(
+                            fontFamily: 'Raleway', fontSize: 20.0))),
+              ],
+            )
           ],
         ),
       ),
@@ -174,7 +187,7 @@ class _DetailsPage extends State<DetailsPage> {
           return Padding(
             padding: const EdgeInsets.all(8.0),
             child: Text(
-              Animal.parseOption(option, widget.pet.info),
+              option,
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
                 color: kPetThemecolor,
@@ -234,62 +247,96 @@ class _DetailsPage extends State<DetailsPage> {
         child: Text("Shelter opted out of giving information :("),
       );
     }
-    var linkStyle = TextStyle(
-      fontFamily: "OpenSans",
-      color: Theme.of(context).indicatorColor,
-    );
-    var normalStyle = Theme.of(context).textTheme.body1;
-    return Padding(
-      padding: const EdgeInsets.all(14.0),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Flexible(
-              child: RichText(
-            textAlign: TextAlign.center,
-            text: TextSpan(
-              text: "I am at ",
-              style: normalStyle,
-              children: <TextSpan>[
-                TextSpan(
-                  text: "${shelter.name}, "
-                      "${shelter.location}",
-                  style: linkStyle,
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () async {
-                      String search = Uri.encodeComponent("${shelter.name}, "
-                          "${shelter.location}");
-                      String url = "geo:0,0?q=$search";
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            shelter.phone.trim() == ""
+                ? SizedBox()
+                : ActionChip(
+                    backgroundColor: Colors.white,
+                    elevation: 1.5,
+                    label: Row(
+                      children: <Widget>[
+                        Icon(
+                          Icons.phone,
+                          color: Colors.blue,
+                        ),
+                        Text(shelter.phone),
+                      ],
+                    ),
+                    onPressed: () async {
+                      String url = "tel://${shelter.phone}";
                       if (await canLaunch(url)) launch(url);
-                    },
+                    }),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            ActionChip(
+                backgroundColor: Colors.white,
+                elevation: 1.5,
+                label: Row(
+                  children: <Widget>[
+                    Icon(
+                      Icons.email,
+                      color: Colors.red,
+                    ),
+                    Text(shelter.email),
+                  ],
                 ),
+                onPressed: () async {
+                  String url = "mailto://${shelter.email}";
+                  if (await canLaunch(url)) launch(url);
+                }),
+          ],
+        ),
+        _shelterActionChip(
+            Icon(
+              Icons.location_on,
+              color: Colors.green,
+            ),
+            Expanded(
+              child: Text(
+                "${shelter.name}, ${shelter.location}",
+                overflow: TextOverflow.ellipsis,
+              ),
+            ), () async {
+          String search = Uri.encodeComponent("${shelter.name}, "
+              "${shelter.location}");
+          String url = "geo:0,0?q=$search";
+          if (await canLaunch(url)) launch(url);
+        }),
+        shelter.distance != -1
+            ? Text('${shelter.distance} miles away.')
+            : SizedBox(),
+      ],
+    );
+  }
+
+  Widget _shelterActionChip(Icon icon, Widget body, Function onPressed) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: <Widget>[
+        ActionChip(
+          backgroundColor: Colors.white,
+          elevation: 1.5,
+          label: Container(
+            constraints: BoxConstraints(maxWidth: 300),
+            child: Row(
+              children: <Widget>[
+                icon,
+                body,
               ],
             ),
-          )),
-          shelter.phone == ""
-              ? Text("No phone number available, go visit!")
-              : RichText(
-                  text: TextSpan(
-                    text: "Go visit or call ",
-                    children: <TextSpan>[
-                      TextSpan(
-                        text: shelter.phone,
-                        style: linkStyle,
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () async {
-                            String url = "tel://${shelter.phone}";
-                            if (await canLaunch(url)) launch(url);
-                          },
-                      ),
-                    ],
-                    style: normalStyle,
-                  ),
-                ),
-          shelter.distance != -1
-              ? Text('${shelter.distance} miles away.')
-              : SizedBox(),
-        ],
-      ),
+          ),
+          onPressed: onPressed,
+        )
+      ],
     );
   }
 
@@ -329,7 +376,7 @@ class _DetailsPage extends State<DetailsPage> {
     return Column(
       children: <Widget>[
         Divider(),
-        Text("Links found:"),
+        Text("Links:"),
         _buildUrlTags(urls, key),
         Text("Long press link to copy",
             style: const TextStyle(color: Colors.grey, fontSize: 12.0))

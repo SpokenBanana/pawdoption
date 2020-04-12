@@ -33,7 +33,10 @@ class PetFinderApi implements PetAPI {
     Map<String, String> params = {
       'location': zip,
       'distance': '$miles',
+      'limit': '50',
     };
+    print('$zip');
+    print('$miles');
     _zip = zip;
     var data = await kClient.fetch('organizations', params);
     for (Map shelter in data['organizations']) {
@@ -98,6 +101,8 @@ class PetFinderApi implements PetAPI {
 
   static Future<ShelterInformation> getShelterInformation(String location,
       {double lat, double lng}) async {
+    print('$location');
+    print(_shelterCache.keys.toString());
     if (_shelterCache.containsKey(location)) return _shelterCache[location];
     var response = await kClient.fetch('organizations/$location', {});
     var shelterMap = response['organization'];

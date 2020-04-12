@@ -70,9 +70,9 @@ class Animal {
   }
 
   void readAttributes(dynamic attributes) {
-    specialNeeds = attributes['special_needs'];
-    hasShots = attributes['shots_current'];
-    spayedNeutered = attributes['spayed_neutered'];
+    specialNeeds = attributes['special_needs'] == 'true';
+    hasShots = attributes['shots_current'] == 'true';
+    spayedNeutered = attributes['spayed_neutered'] == 'true';
   }
 
   bool operator ==(other) {
@@ -80,43 +80,10 @@ class Animal {
   }
 
   int get hashCode => this.info.apiId.hashCode;
-
-  static String parseOption(String option, AnimalData pet) {
-    switch (option) {
-      case 'altered':
-        return pet.gender == 'Male' ? 'Neutered' : 'Spayed';
-      case 'housebroken':
-        return 'Housebroken';
-      default:
-        return _splitCamelCase(option);
-    }
-  }
-
-  static List<String> parseOptions(Map options) {
-    if (options.isEmpty) return List<String>();
-    if (options['option'] is List) {
-      List<String> strOptions = List<String>();
-      for (var option in options['option']) strOptions.add(option['\$t']);
-      return strOptions;
-    }
-    return <String>[options['option']['\$t']];
-  }
-}
-
-// TODO: This is pretty ugly, probably find a better way to do this.
-String _splitCamelCase(String option) {
-  for (int i = 0; i < option.length; i++) {
-    if (option[i] == option[i].toUpperCase() && i != 0) {
-      String first = option.substring(0, i);
-      String second = option.substring(i).toLowerCase();
-      return '${first[0].toUpperCase()}${first.substring(1)} $second';
-    }
-  }
-  return '${option[0].toUpperCase()}${option.substring(1)}';
 }
 
 class ShelterInformation {
-  String name, phone, location, id;
+  String name, phone, location, id, email;
   double lat, lng;
   int distance = -1;
 
@@ -124,6 +91,23 @@ class ShelterInformation {
     this.name = name;
     this.phone = phone;
     this.location = location;
+  }
+
+  ShelterInformation.fromApi(dynamic response) {
+    var address = response['address']['address1'] ?? '';
+    var city = response['address']['city'];
+    var zip = response['address']['postcode'];
+    var state = response['address']['state'];
+    this.location = '$address $city, $state. $zip';
+    this.phone = response['phone'] ?? '';
+    this.name = response['name'];
+    this.id = response['id'];
+    if (response['distance'] != null) {
+      this.distance = response['distance'].round();
+    }
+    if (response['email'] != null) {
+      this.email = response['email'];
+    }
   }
 
   computeDistanceFrom(lat1, lng1) {

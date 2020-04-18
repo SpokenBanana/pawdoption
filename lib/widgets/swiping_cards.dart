@@ -105,8 +105,8 @@ class _SwipingCardsState extends State<SwipingCards>
           onTap: () => Navigator.push(
               context,
               MaterialPageRoute(
-                  builder: (context) =>
-                      DetailsPage(pet: widget.feed.currentPet))),
+                  builder: (context) => DetailsPage(
+                      pet: widget.feed.currentPet, feed: widget.feed))),
           child: PetCard(
             widget.feed.currentPet,
           ),
@@ -163,6 +163,7 @@ class PetCard extends StatelessWidget {
     );
     return Container(
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
         color: Colors.white,
         boxShadow: [
           BoxShadow(
@@ -173,16 +174,20 @@ class PetCard extends StatelessWidget {
           )
         ],
       ),
-      height: _screenHeight / 1.65,
-      width: _screenWidth / 1.2,
+      height: _screenHeight / 1.53,
+      width: _screenWidth / 1.05,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           Stack(
             children: <Widget>[
               Container(
-                height: _screenHeight / 1.65 - 110,
+                height: _screenHeight / 1.56 - 110,
                 decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(12),
+                    topRight: Radius.circular(12),
+                  ),
                   color: Colors.black,
                   image: DecorationImage(
                     fit: BoxFit.cover,
@@ -216,7 +221,9 @@ class PetCard extends StatelessWidget {
                       '${pet.info.name},',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: Theme.of(context).textTheme.headline,
+                      style: Theme.of(context).textTheme.headline.copyWith(
+                            fontSize: 30,
+                          ),
                     ),
                   ),
                 ),
@@ -226,7 +233,9 @@ class PetCard extends StatelessWidget {
                     pet.info.age,
                     overflow: TextOverflow.fade,
                     maxLines: 1,
-                    style: Theme.of(context).textTheme.subhead,
+                    style: Theme.of(context).textTheme.subhead.copyWith(
+                          fontSize: 30,
+                        ),
                   ),
                 ),
               ],

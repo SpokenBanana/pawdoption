@@ -49,32 +49,3 @@ and basically the same pets as PetHarbor so the app stayed the same, just the wo
 changed. The only downside is that the API only allows 10k requests a day, anymore requests and you have to 
 ask for special permission from PetFinder to go above that. I suspect you have to start paying at that
 point. 
-
-So if this app ever gets to around 10k users I'm going to have to find a way to make some money off
-it. But that's a good problem to have at that point I guess!
-
-## What's this made with?
-
-Flutter!
-
-Google's new mobile app SDK allows you to build for both iOS and Android using one code base! I thought
-it was pretty cool so I decided to try it out with this app. So far it was a good experience! 
-
-Dart is a cool language without much to not like about it. However, it is kind of "boring" in that
-there is nothing especially cool about it either. It has everything you'd expect a language to have,
-and the syntax is very similar to Java and Javascript. 
-Overall it is just a really nice language to code in and I do hope to see it grow to something big.
-
-Flutter was really great to work with. Hot reload allowed me to really style the app very quickly
-and the design of the framework really makes it easy to build what you want. I definitely
-think I'll make some more apps with this. 
-
-## That was a long answer
-
-I'm debating on writing a longer post about this app and developing it because Flutter is still new
-plus it was really fun making this app. So that was just a little practice doing that kind of writing.
-
-
-
-
-

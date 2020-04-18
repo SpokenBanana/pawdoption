@@ -49,11 +49,6 @@ class _SwipingPageState extends State<SwipingPage>
     } else {
       options = null;
     }
-    List<Animal> liked = prefs
-            .getStringList('liked')
-            ?.map((str) => Animal.fromString(str))
-            ?.toList() ??
-        [];
 
     var zipFromUser = await _getLocationFromUser();
     if (zipFromUser != null && zip == null) {
@@ -65,9 +60,7 @@ class _SwipingPageState extends State<SwipingPage>
         widget.feed.reloadFeed ||
         animalType != (widget.feed.animalType == 'cat')) {
       return await widget.feed.initialize(zip,
-          animalType: animalType ? 'cat' : 'dog',
-          options: options,
-          liked: liked);
+          animalType: animalType ? 'cat' : 'dog', options: options);
     }
     return true;
   }
@@ -117,7 +110,7 @@ class _SwipingPageState extends State<SwipingPage>
                 if (snapshot.data == false) return _buildNoInfoPage();
                 return Column(
                   children: [
-                    SizedBox(height: 20.0),
+                    SizedBox(height: 8.0),
                     SwipingCards(
                       feed: widget.feed,
                     ),
@@ -202,7 +195,7 @@ class _SwipingPageState extends State<SwipingPage>
           child: Icon(
             Icons.favorite,
             size: size,
-            color: Colors.green,
+            color: Colors.green[400],
           ),
         ),
         PetButton(

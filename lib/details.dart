@@ -12,9 +12,10 @@ import 'widgets/pet_image_gallery.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
-  DetailsPage({Key key, this.pet}) : super(key: key);
+  DetailsPage({Key key, this.pet, this.feed}) : super(key: key);
 
   final Animal pet;
+  final AnimalFeed feed;
 
   @override
   _DetailsPage createState() => _DetailsPage();
@@ -40,11 +41,6 @@ class _DetailsPage extends State<DetailsPage> {
           ),
           _buildDogInfo(widget.pet.info),
           Divider(),
-          Padding(
-            padding: const EdgeInsets.only(left: 8.0),
-            child: Text("Comments about ${widget.pet.info.name}:",
-                style: const TextStyle(fontFamily: 'Raleway', fontSize: 20.0)),
-          ),
           _fetchAndBuildComments(key),
           Divider(),
           _buildOptionTagSection(widget.pet.info),
@@ -66,16 +62,61 @@ class _DetailsPage extends State<DetailsPage> {
 
   _populateUrls(String description) {
     urls = List<String>();
-    var urlMatches = RegExp(kUrlRegex).allMatches(description);
+    var urlMatches =
+        RegExp(kUrlRegex, caseSensitive: false).allMatches(description);
     for (Match m in urlMatches) {
       urls.add(m.group(0));
     }
   }
 
+  Widget _petAtrributeSection() {
+    var attributes = new List<Widget>();
+    if (widget.pet.hasShots) {
+      attributes.add(
+          _attributeChip("Has shots", Icon(Icons.check, color: Colors.green)));
+    }
+    if (widget.pet.spayedNeutered) {
+      if (widget.pet.info.gender == "Male") {
+        attributes.add(
+            _attributeChip("Neutered", Icon(Icons.check, color: Colors.green)));
+      } else {
+        attributes.add(
+            _attributeChip("Spayed", Icon(Icons.check, color: Colors.green)));
+      }
+    }
+    if (widget.pet.specialNeeds) {
+      attributes.add(_attributeChip(
+          "Special needs", Icon(Icons.warning, color: Colors.yellow)));
+    }
+    // if (attributes.isEmpty) {
+    //   return SizedBox();
+    // }
+    return Column(
+      children: <Widget>[
+        Text("Attributes"),
+        Row(
+          children: attributes,
+        ),
+        Divider(),
+      ],
+    );
+  }
+
+  Widget _attributeChip(String label, Icon icon) {
+    return Chip(
+      label: Row(
+        children: <Widget>[
+          icon,
+          Text(label),
+        ],
+      ),
+    );
+  }
+
   Widget _fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
-    if (widget.pet.description != null) {
-      _populateUrls(widget.pet.description);
-      return _buildComments(widget.pet.description, urls, key);
+    if (!widget.pet.shouldCheckOn()) {
+      _populateUrls(widget.pet.info.description);
+      return _buildComments(widget.pet.info.description, urls, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -88,10 +129,15 @@ class _DetailsPage extends State<DetailsPage> {
           default:
             if (snapshot.hasError)
               return Center(
-                child: Text('Couldn\'t get the comments :( '),
+                child: Text('No bio, check with shelter for more information!'),
               );
             else {
               _populateUrls(snapshot.data);
+              // After fetching details, we may have updated information,
+              // so update the list here.
+              // TODO: We should only really do this if we came here from the
+              // saved page.
+              widget.feed.storeCurrentlyLikedList();
               return _buildComments(snapshot.data, urls, key);
             }
         }
@@ -105,8 +151,8 @@ class _DetailsPage extends State<DetailsPage> {
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(14.0),
-          child: RichText(
-            text: TextSpan(
+          child: SelectableText.rich(
+            TextSpan(
               text: comments,
               style: Theme.of(context).textTheme.body1,
             ),
@@ -247,10 +293,51 @@ class _DetailsPage extends State<DetailsPage> {
         child: Text("Shelter opted out of giving information :("),
       );
     }
+    Widget policyUrl = SizedBox();
+    Widget photoAvatar = SizedBox();
+    if (shelter.photo != null) {
+      photoAvatar = Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(6),
+            child: CircleAvatar(
+              radius: 35.0,
+              backgroundImage: NetworkImage(shelter.photo),
+            ),
+          ),
+          Flexible(
+            child: Text(
+              shelter.name,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontFamily: "Raleway",
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ],
+      );
+    }
+    if (shelter.policyUrl != null) {
+      policyUrl = _shelterActionChip(
+          Icon(Icons.language, color: Colors.grey),
+          Expanded(
+              child: Text(
+            shelter.policyUrl,
+            overflow: TextOverflow.ellipsis,
+          )), () async {
+        if (await canLaunch(shelter.policyUrl)) {
+          await launch(shelter.policyUrl);
+        }
+      });
+    }
     return Column(
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
+        photoAvatar,
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
@@ -274,27 +361,31 @@ class _DetailsPage extends State<DetailsPage> {
                     }),
           ],
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ActionChip(
-                backgroundColor: Colors.white,
-                elevation: 1.5,
-                label: Row(
-                  children: <Widget>[
-                    Icon(
-                      Icons.email,
-                      color: Colors.red,
-                    ),
-                    Text(shelter.email),
-                  ],
-                ),
-                onPressed: () async {
-                  String url = "mailto://${shelter.email}";
-                  if (await canLaunch(url)) launch(url);
-                }),
-          ],
-        ),
+        shelter.email == null
+            ? SizedBox()
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  ActionChip(
+                      backgroundColor: Colors.white,
+                      elevation: 1.5,
+                      label: Row(
+                        children: <Widget>[
+                          Icon(
+                            Icons.email,
+                            color: Colors.red,
+                          ),
+                          Text(shelter.email),
+                        ],
+                      ),
+                      onPressed: () async {
+                        var subject = Uri.encodeFull(
+                            'I want to adopt ${widget.pet.info.name}!');
+                        String url = "mailto:${shelter.email}?subject=$subject";
+                        if (await canLaunch(url)) launch(url);
+                      }),
+                ],
+              ),
         _shelterActionChip(
             Icon(
               Icons.location_on,
@@ -311,6 +402,7 @@ class _DetailsPage extends State<DetailsPage> {
           String url = "geo:0,0?q=$search";
           if (await canLaunch(url)) launch(url);
         }),
+        policyUrl,
         shelter.distance != -1
             ? Text('${shelter.distance} miles away.')
             : SizedBox(),
@@ -347,9 +439,10 @@ class _DetailsPage extends State<DetailsPage> {
           "Adopt ${widget.pet.info.name}!",
           style: const TextStyle(
               fontFamily: "Raleway",
-              fontSize: 23.0,
+              fontSize: 29.0,
               fontWeight: FontWeight.bold),
         ),
+        SizedBox(height: 15),
         FutureBuilder(
           future: getShelterInformation(widget.pet.info.shelterId),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -376,7 +469,6 @@ class _DetailsPage extends State<DetailsPage> {
     return Column(
       children: <Widget>[
         Divider(),
-        Text("Links:"),
         _buildUrlTags(urls, key),
         Text("Long press link to copy",
             style: const TextStyle(color: Colors.grey, fontSize: 12.0))

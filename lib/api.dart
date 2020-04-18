@@ -4,6 +4,7 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:location/location.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'petfinder_lib/petfinder.dart';
@@ -26,7 +27,7 @@ class AnimalFeed {
   int miles;
   SwipeNotifier notifier;
 
-  final int fetchMoreAt = 20, storeLimit = 50, _undoMax = 20;
+  final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
   bool done, reloadFeed, geoLocationEnabled = false;
   double userLat, userLng;
 
@@ -48,6 +49,7 @@ class AnimalFeed {
     searchOptions = kDefaultOptions;
 
     this.skipped = Queue<Animal>();
+    this.liked = List<Animal>();
     this.currentList = List<Animal>();
     this.done = false;
     this.reloadFeed = false;
@@ -55,9 +57,7 @@ class AnimalFeed {
 
   Future<bool> reInitialize() async {
     return await this.initialize(this.zip,
-        animalType: this.animalType,
-        options: this.searchOptions,
-        liked: this.liked);
+        animalType: this.animalType, options: this.searchOptions);
   }
 
   removeCurrentPet() {
@@ -65,7 +65,7 @@ class AnimalFeed {
   }
 
   Future<bool> initialize(String zip,
-      {String animalType, PetSearchOptions options, List<Animal> liked}) async {
+      {String animalType, PetSearchOptions options}) async {
     this.reloadFeed = false;
     this.done = false;
     this.zip = zip;
@@ -74,7 +74,6 @@ class AnimalFeed {
     this.currentList = List<Animal>();
     this.skipped = Queue<Animal>();
 
-    this.liked = liked ?? List<Animal>();
     this.searchOptions = options ?? kDefaultOptions;
     miles = this.searchOptions.maxDistance;
 
@@ -112,6 +111,21 @@ class AnimalFeed {
   void getRecentlySkipped() {
     if (this.skipped.isNotEmpty)
       this.currentList.add(this.skipped.removeLast());
+  }
+
+  void storeCurrentlyLikedList() {
+    SharedPreferences.getInstance().then((prefs) {
+      prefs.setStringList("liked", liked.map((pet) => pet.toString()).toList());
+    });
+  }
+
+  void loadLiked() async {
+    var prefs = await SharedPreferences.getInstance();
+    this.liked = prefs
+            .getStringList('liked')
+            ?.map((str) => Animal.fromString(str))
+            ?.toList() ??
+        [];
   }
 }
 

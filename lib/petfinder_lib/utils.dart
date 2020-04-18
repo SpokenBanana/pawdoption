@@ -35,11 +35,30 @@ class ApiClient {
 
   dynamic fetch(String method, Map<String, String> params) async {
     await checkToken();
-    print(buildUrl(method, params));
     var response = await http.get(buildUrl(method, params),
         headers: {'Authorization': 'Bearer $token'});
-    print(response.body);
     return json.decode(utf8.decode(response.bodyBytes));
+  }
+}
+
+/// For some reason, V2 isn't returning full descriptions. So, let's just
+/// use the V1 API since it looks like it is still working and does return full
+/// descriptions. We'll save this information once we fetch it.
+Future<String> getAnimalDescriptionV1(String petId) async {
+  String url = Uri.https('api.petfinder.com', 'pet.get', {
+    'format': 'json',
+    'output': 'full',
+    'key': kV1Token,
+    'id': petId,
+  }).toString();
+  var response = await http.get(url);
+  var jsonResponse = json.decode(utf8.decode(response.bodyBytes));
+  // In case PetFinder actually shuts down this API.
+  try {
+    return utf8.decode(Latin1Codec()
+        .encode(jsonResponse['petfinder']['pet']['description']['\$t']));
+  } catch (Exception) {
+    return null;
   }
 }
 
@@ -61,15 +80,6 @@ Animal toAnimal(Map animalMap) {
     // TODO: Add an actual placeholder image.
     data.imgUrl.add('');
   }
-
-  String description = animalMap['description'] == ''
-      ? 'No comments available.'
-      : animalMap['desciption'];
-  // Some descriptions contain some weird characters. We'll try to parse them
-  // here.
-  try {
-    description = utf8.decode(Latin1Codec().encode(description));
-  } catch (Exception) {}
 
   // Get city state.
   var city = animalMap['contact']['address']['city'];
@@ -104,7 +114,7 @@ Animal toAnimal(Map animalMap) {
   }
   data.size = animalMap['size'];
 
-  Animal pet = Animal(info: data, description: description);
+  Animal pet = Animal(info: data);
   pet.readAttributes(animalMap['attributes']);
   return pet;
 }

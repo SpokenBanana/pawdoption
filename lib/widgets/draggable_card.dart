@@ -27,6 +27,7 @@ class DraggableCard extends StatefulWidget {
 
 class _DraggableCardState extends State<DraggableCard>
     with TickerProviderStateMixin {
+  double swipSensitivity = 0.15;
   Offset dragStart;
   Offset dragPosition;
   Offset card = const Offset(0.0, 0.0);
@@ -237,8 +238,8 @@ class _DraggableCardState extends State<DraggableCard>
 
   _onPanEnd(DragEndDetails details) {
     final dragDirection = card / card.distance;
-    final inLeft = (card.dx / context.size.width) < -0.45;
-    final inRight = (card.dx / context.size.width) > 0.45;
+    final inLeft = (card.dx / context.size.width) < -this.swipSensitivity;
+    final inRight = (card.dx / context.size.width) > this.swipSensitivity;
     setState(() {
       if (inLeft || inRight) {
         swipedRight = inRight;

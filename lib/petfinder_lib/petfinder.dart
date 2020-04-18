@@ -8,8 +8,8 @@ import '../protos/pet_search_options.pb.dart';
 import 'credentials.dart';
 import 'utils.dart';
 
-const String kUrlRegex = r'(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]'
-    r'{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)';
+const String kUrlRegex =
+    r'(https?|ftp)://([-A-Z0-9.]+)(/[-A-Z0-9+&@#/%=~_|!:,.;]*)?(\?[A-Z0-9+&@#/%=~_|!:‌​,.;]*)?';
 
 ApiClient kClient = new ApiClient();
 
@@ -35,8 +35,6 @@ class PetFinderApi implements PetAPI {
       'distance': '$miles',
       'limit': '50',
     };
-    print('$zip');
-    print('$miles');
     _zip = zip;
     var data = await kClient.fetch('organizations', params);
     for (Map shelter in data['organizations']) {
@@ -101,8 +99,6 @@ class PetFinderApi implements PetAPI {
 
   static Future<ShelterInformation> getShelterInformation(String location,
       {double lat, double lng}) async {
-    print('$location');
-    print(_shelterCache.keys.toString());
     if (_shelterCache.containsKey(location)) return _shelterCache[location];
     var response = await kClient.fetch('organizations/$location', {});
     var shelterMap = response['organization'];
@@ -114,36 +110,19 @@ class PetFinderApi implements PetAPI {
   }
 
   static Future<String> getAnimalDetails(Animal animal) async {
-    if (animal.description == null) {
-      // Re-fetch the data.
-      var response = await kClient.fetch('animals/${animal.info.apiId}', {});
-      var petDoc = response['animal'];
-      var description = petDoc['description'];
-      if (description.isEmpty) {
-        description = 'No comments.';
-      } else {
-        // Try to resolve some encoding issues.
-        // Somethings this fails, if it does then we just have to deal with it.
-        try {
-          description = utf8.decode(Latin1Codec().encode(description));
-        } catch (Exception) {}
-      }
+    animal.info.description = await getAnimalDescriptionV1(animal.info.apiId);
 
-      // Cache it so that we don't have to make this API call multiple times.
-      animal.description = description;
-
-      // Update the rest of the pet information
-      var lastUpdated = petDoc['published_at'];
-      if (lastUpdated != animal.info.lastUpdated) {
-        animal.info.options.clear();
-        for (String item in petDoc['tags']) {
-          animal.info.options.add(item);
-        }
-        animal.info.lastUpdated = lastUpdated;
-        animal.info.age = petDoc['age'];
-      }
-      return animal.description;
+    // Update the rest of the pet information if needed.
+    var response = await kClient.fetch('animals/${animal.info.apiId}', {});
+    var petDoc = response['animal'];
+    if (animal.info.description == null) {
+      animal.info.description = petDoc['description'];
     }
-    return animal.description;
+    animal.info.options.clear();
+    for (String item in petDoc['tags']) {
+      animal.info.options.add(item);
+    }
+    animal.info.age = petDoc['age'];
+    return animal.info.description;
   }
 }

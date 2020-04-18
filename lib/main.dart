@@ -13,6 +13,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData mainTheme = _buildTheme();
+    feed.loadLiked();
     return MaterialApp(
         title: 'Pawdoption',
         theme: mainTheme,
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 children: <Widget>[
                   SwipingPage(feed: feed),
-                  SavedPage(),
+                  SavedPage(feed: feed),
                 ]),
           ),
         ));
@@ -62,7 +63,7 @@ class MyApp extends StatelessWidget {
       scaffoldBackgroundColor: kPetGray,
       buttonColor: Colors.white,
       primaryIconTheme: base.iconTheme.copyWith(
-        color: Colors.white,
+        color: Colors.grey,
       ),
       primaryTextTheme: base.textTheme.copyWith(
         title: TextStyle(

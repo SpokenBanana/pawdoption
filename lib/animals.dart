@@ -6,6 +6,7 @@ import 'package:vector_math/vector_math.dart';
 
 import 'protos/animals.pb.dart';
 import 'protos/pet_search_options.pb.dart';
+import 'package:sqflite/sqflite.dart';
 
 /// Used as sort of an abstract class. Probably a better way of doing this.
 /// This is so that if another API is found to be better or the current
@@ -25,19 +26,21 @@ class PetAPI {
 
 class Animal {
   AnimalData info;
-  String description;
   DateTime lastUpdated;
+  DateTime lastViewed;
+  // Only populated if the Animal was liked and has an id in our db.
+  int dbId;
   bool spayedNeutered = false,
       hasShots = false,
       specialNeeds = false,
       noKids = false;
 
-  Animal({AnimalData info, String description}) {
-    if (info != null)
+  Animal({AnimalData info}) {
+    if (info != null) {
       this.info = info;
-    else
+      this.lastViewed = DateTime.parse(info.lastUpdated);
+    } else
       this.info = AnimalData.create();
-    this.description = description;
   }
 
   factory Animal.fromString(String animalStr) {
@@ -70,9 +73,9 @@ class Animal {
   }
 
   void readAttributes(dynamic attributes) {
-    specialNeeds = attributes['special_needs'] == 'true';
-    hasShots = attributes['shots_current'] == 'true';
-    spayedNeutered = attributes['spayed_neutered'] == 'true';
+    this.specialNeeds = attributes['special_needs'] == 'true';
+    this.hasShots = attributes['shots_current'] == 'true';
+    this.spayedNeutered = attributes['spayed_neutered'] == 'true';
   }
 
   bool operator ==(other) {
@@ -80,10 +83,49 @@ class Animal {
   }
 
   int get hashCode => this.info.apiId.hashCode;
+
+  // For now, we'll check on pets if it has been more than 3 days since the last
+  // recorded lastUpdated date.
+  // TODO: Replace this with the timestamp of the last time their details page
+  //       was clicked on. (or when the saved page was viewed)
+  bool shouldCheckOn() {
+    bool result = DateTime.now().difference(this.lastViewed).inHours > 12 ||
+        info.description == null ||
+        info.description.isEmpty;
+    this.lastViewed = DateTime.now();
+    info.lastUpdated = this.lastViewed.toIso8601String();
+    return result;
+  }
+
+  // For DB operations.
+
+  Map<String, dynamic> toMap() {
+    var map = <String, dynamic>{
+      'protoString': info.writeToJson(),
+    };
+    if (dbId != null) {
+      map['id'] = dbId;
+    }
+    return map;
+  }
+
+  factory Animal.fromMap(Map<String, dynamic> map) {
+    Animal pet = Animal.fromString(map['protoString']);
+    pet.dbId = map['id'];
+    return pet;
+  }
 }
 
 class ShelterInformation {
-  String name, phone, location, id, email;
+  String name,
+      phone,
+      location,
+      id,
+      email,
+      missionStatement,
+      policy,
+      policyUrl,
+      photo;
   double lat, lng;
   int distance = -1;
 
@@ -102,6 +144,12 @@ class ShelterInformation {
     this.phone = response['phone'] ?? '';
     this.name = response['name'];
     this.id = response['id'];
+    this.missionStatement = response['mission_statement'];
+    this.policy = response['adoption']['policy'];
+    this.policyUrl = response['adoption']['url'];
+    if (response['photos'] != null && response['photos'].isNotEmpty) {
+      this.photo = response['photos'][0]['medium'];
+    }
     if (response['distance'] != null) {
       this.distance = response['distance'].round();
     }

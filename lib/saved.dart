@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:petadopt/api.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
@@ -9,22 +10,20 @@ import 'protos/animals.pb.dart';
 
 /// Handles displaying the saved animals to later view.
 class SavedPage extends StatefulWidget {
+  SavedPage({this.feed});
+  final AnimalFeed feed;
   @override
   _SavedPage createState() => _SavedPage();
 }
 
 class _SavedPage extends State<SavedPage> {
-  List<Animal> liked;
-
-  _SavedPage() {
-    liked = List<Animal>();
-    _getLiked();
-  }
+  _SavedPage() {}
 
   Future<Null> _getLiked() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     var likedrepr = prefs.getStringList('liked') ?? List<String>();
-    this.liked = likedrepr.map((animal) => Animal.fromString(animal)).toList();
+    widget.feed.liked =
+        likedrepr.map((animal) => Animal.fromString(animal)).toList();
     if (this.mounted) setState(() {});
   }
 
@@ -38,13 +37,13 @@ class _SavedPage extends State<SavedPage> {
       body: Container(
         color: Theme.of(context).canvasColor,
         alignment: Alignment.center,
-        child: liked.isEmpty
+        child: widget.feed.liked.isEmpty
             ? _buildNoSavedPage()
             : ListView.builder(
-                itemCount: liked.length,
+                itemCount: widget.feed.liked.length,
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (BuildContext context, int index) {
-                  return _buildPetPreview(liked[index]);
+                  return _buildPetPreview(widget.feed.liked[index]);
                 }),
       ),
     );
@@ -52,18 +51,20 @@ class _SavedPage extends State<SavedPage> {
 
   void _removeDog(Animal dog) {
     setState(() {
-      liked.remove(dog);
+      widget.feed.liked.remove(dog);
       SharedPreferences.getInstance().then((prefs) {
         prefs.setStringList(
-            "liked", liked.map((pet) => pet.toString()).toList());
+            "liked", widget.feed.liked.map((pet) => pet.toString()).toList());
       });
     });
   }
 
   Widget _buildPetPreview(Animal pet) {
     return GestureDetector(
-      onTap: () => Navigator.push(context,
-          MaterialPageRoute(builder: (context) => DetailsPage(pet: pet))),
+      onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => DetailsPage(pet: pet, feed: widget.feed))),
       child: Dismissible(
         dismissThresholds: {
           DismissDirection.endToStart: .4,
@@ -90,31 +91,38 @@ class _SavedPage extends State<SavedPage> {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: CircleAvatar(
-            radius: 30.0,
+            radius: 35.0,
             backgroundImage: NetworkImage(dog.imgUrl[0]),
           ),
         ),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: <Widget>[
-            Flexible(
-              child: Text(dog.name,
-                  style: Theme
-                      .of(context)
-                      .textTheme
-                      .headline
-                      .copyWith(fontSize: 18.0)),
+        Expanded(
+          child: Container(
+            height: 50,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Expanded(
+                  child: Text(dog.name,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context)
+                          .textTheme
+                          .headline
+                          .copyWith(fontSize: 18.0)),
+                ),
+                Expanded(
+                  child: Text(
+                    dog.breed,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.caption.copyWith(
+                          fontSize: 14.0,
+                        ),
+                  ),
+                ),
+              ],
             ),
-            Flexible(
-              child: Text(
-                dog.breed,
-                style: Theme.of(context).textTheme.caption.copyWith(
-                      fontSize: 14.0,
-                    ),
-              ),
-            ),
-          ],
+          ),
         ),
       ]),
     );

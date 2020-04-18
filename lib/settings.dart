@@ -42,13 +42,17 @@ class _SettingsPage extends State<SettingsPage> {
       var zip = prefs.getString('zip');
       var miles = prefs.getInt('miles');
       var selectedCat = prefs.getBool('animalType') ?? false;
-      if (zip != null && miles != null) {
+      if (zip != null) {
         setState(() {
           _zip = zip;
+          _textController.text = zip;
+        });
+      }
+      if (miles != null) {
+        setState(() {
           _miles = miles;
           _selectedCats = selectedCat;
           if (_selectedCats == true) animalNotifier.changeAnimal('cat');
-          _textController.text = zip;
         });
       }
     });
@@ -243,8 +247,8 @@ class _SettingsPage extends State<SettingsPage> {
             Divider(),
             Text('Size', style: titleStyle),
             GroupedOptions(
-              options: _generateOptions(
-                  "All sizes", ['S', 'M', 'X', 'XL'], searchOptions.sizes),
+              options: _generateOptions("All sizes",
+                  ['small', 'medium', 'large', 'xlarge'], searchOptions.sizes),
             ),
             Divider(),
             Text('Age', style: titleStyle),

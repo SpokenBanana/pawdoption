@@ -1,6 +1,6 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'animals.dart';
@@ -135,9 +135,9 @@ class _DetailsPage extends State<DetailsPage> {
               _populateUrls(snapshot.data);
               // After fetching details, we may have updated information,
               // so update the list here.
-              // TODO: We should only really do this if we came here from the
-              // saved page.
-              widget.feed.storeCurrentlyLikedList();
+              if (widget.pet.dbId != null) {
+                widget.feed.updatePet(widget.pet);
+              }
               return _buildComments(snapshot.data, urls, key);
             }
         }
@@ -303,7 +303,11 @@ class _DetailsPage extends State<DetailsPage> {
             padding: const EdgeInsets.all(6),
             child: CircleAvatar(
               radius: 35.0,
-              backgroundImage: NetworkImage(shelter.photo),
+              child: CachedNetworkImage(
+                imageUrl: shelter.photo,
+                placeholder: (context, url) => CircularProgressIndicator(),
+                errorWidget: (context, url, error) => Icon(Icons.error),
+              ),
             ),
           ),
           Flexible(

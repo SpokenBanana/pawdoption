@@ -45,7 +45,7 @@ class PetFinderApi implements PetAPI {
     }
   }
 
-  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
+  Future<List<Animal>> getAnimals(int amount, Set<String> toSkip,
       {PetSearchOptions searchOptions, double usrLat, double userLng}) async {
     List<Animal> animals = List<Animal>();
     Map<String, String> params = {
@@ -65,7 +65,7 @@ class PetFinderApi implements PetAPI {
 
     for (Map pet in petList) {
       Animal animal = toAnimal(pet);
-      if (!toSkip.contains(animal)) {
+      if (!toSkip.contains(animal.info.apiId)) {
         animals.add(animal);
       }
     }

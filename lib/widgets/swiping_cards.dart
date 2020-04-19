@@ -74,25 +74,12 @@ class _SwipingCardsState extends State<SwipingCards>
         DraggableCard(
           onLeftSwipe: () {
             setState(() {
-              widget.feed.skip(widget.feed.currentPet);
-              widget.feed.removeCurrentPet();
-              widget.feed.updateList();
+              widget.feed.skip();
             });
           },
           onRightSwipe: () {
             setState(() {
-              if (!widget.feed.liked.contains(widget.feed.currentPet)) {
-                widget.feed.liked.add(widget.feed.currentPet);
-                SharedPreferences.getInstance().then((prefs) {
-                  prefs.setStringList(
-                      'liked',
-                      widget.feed.liked
-                          .map((animal) => animal.toString())
-                          .toList());
-                });
-              }
-              widget.feed.removeCurrentPet();
-              widget.feed.updateList();
+              widget.feed.like();
             });
           },
           onSwipe: (Offset offset) {

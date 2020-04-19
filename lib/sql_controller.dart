@@ -1,4 +1,5 @@
 import 'package:petadopt/animals.dart';
+import 'package:petadopt/protos/animals.pb.dart';
 import 'package:sqflite/sqflite.dart';
 
 class Liked {
@@ -27,8 +28,8 @@ class LikedDb {
         onCreate: (Database db, int version) async {
       await db.execute('''
         CREATE TABLE Liked(
-          id INT PRIMARY KEY AUTOINCREMENT,
-          protoString STRING NOT NULL)
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          protoString TEXT NOT NULL)
       ''');
     });
   }
@@ -36,7 +37,7 @@ class LikedDb {
   Future<List<Animal>> getAll() async {
     List<Map> maps = await db.query('Liked', columns: ['id', 'protoString']);
     if (maps.length > 0) {
-      return maps.map((map) => Animal.fromMap(map));
+      return maps.map((map) => Animal.fromMap(map)).toList();
     }
     return null;
   }
@@ -44,6 +45,10 @@ class LikedDb {
   Future insert(Animal liked) async {
     int id = await db.insert('Liked', liked.toMap());
     liked.dbId = id;
+  }
+
+  Future delete(Animal pet) async {
+    return await db.delete('Liked', where: 'id = ?', whereArgs: [pet.dbId]);
   }
 
   Future update(Animal liked) async {

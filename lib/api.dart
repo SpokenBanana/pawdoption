@@ -4,7 +4,9 @@ import 'dart:collection';
 import 'package:flutter/widgets.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:location/location.dart';
+import 'package:petadopt/sql_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
 
 import 'animals.dart';
 import 'petfinder_lib/petfinder.dart';
@@ -21,7 +23,9 @@ final kDefaultOptions = PetSearchOptions()
 /// expected functionality.
 class AnimalFeed {
   List<Animal> currentList;
-  List<Animal> liked;
+  LikedDb likedDb;
+  Set<String> liked;
+
   Queue<Animal> skipped;
   String zip, animalType;
   int miles;
@@ -49,10 +53,11 @@ class AnimalFeed {
     searchOptions = kDefaultOptions;
 
     this.skipped = Queue<Animal>();
-    this.liked = List<Animal>();
+    this.liked = Set<String>();
     this.currentList = List<Animal>();
     this.done = false;
     this.reloadFeed = false;
+    this.likedDb = new LikedDb();
   }
 
   Future<bool> reInitialize() async {
@@ -103,9 +108,11 @@ class AnimalFeed {
     }
   }
 
-  void skip(Animal pet) {
+  void skip() {
+    Animal pet = currentList.removeLast();
     if (this.skipped.length == _undoMax) this.skipped.removeFirst();
     this.skipped.addLast(pet);
+    this.updateList();
   }
 
   void getRecentlySkipped() {
@@ -113,19 +120,49 @@ class AnimalFeed {
       this.currentList.add(this.skipped.removeLast());
   }
 
-  void storeCurrentlyLikedList() {
-    SharedPreferences.getInstance().then((prefs) {
-      prefs.setStringList("liked", liked.map((pet) => pet.toString()).toList());
-    });
+  Future removeFromLiked(Animal dog) async {
+    liked.remove(dog.info.apiId);
+    await likedDb.delete(dog);
   }
 
-  void loadLiked() async {
+  void like() {
+    Animal current = currentList.removeLast();
+    if (!liked.contains(current.info.apiId)) {
+      liked.add(current.info.apiId);
+      likedDb.insert(current);
+    }
+    this.updateList();
+  }
+
+  void updatePet(Animal pet) {
+    this.likedDb.update(pet);
+  }
+
+  Future loadLiked() async {
+    var databasesPath = await getDatabasesPath();
+    String path = '$databasesPath/demo.db';
+    await this.likedDb.open(path);
+
+    // Check if we have previously saved pets in SharedPreferences.
     var prefs = await SharedPreferences.getInstance();
-    this.liked = prefs
-            .getStringList('liked')
-            ?.map((str) => Animal.fromString(str))
-            ?.toList() ??
-        [];
+    var fromPrefs = prefs.getStringList('liked');
+    if (fromPrefs != null) {
+      this.syncSharedPreferences(fromPrefs);
+      prefs.remove('liked');
+    }
+
+    this.liked = (await this.likedDb.getAll())
+        .map((animal) => animal.info.apiId)
+        .toSet();
+  }
+
+  // Just in case some users still have some saved pets, here migrate them to
+  // the new database and delete it. Once metrics show no apps installed before
+  // update 1.5, then we can remove this.
+  void syncSharedPreferences(List<String> fromShared) {
+    for (String repr in fromShared) {
+      this.likedDb.insert(Animal.fromString(repr));
+    }
   }
 }
 

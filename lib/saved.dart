@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:petadopt/api.dart';
+import 'package:petadopt/settings.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
@@ -17,14 +18,19 @@ class SavedPage extends StatefulWidget {
 }
 
 class _SavedPage extends State<SavedPage> {
-  _SavedPage() {}
+  List<Animal> saved;
+  _SavedPage() {
+    saved = List<Animal>();
+  }
 
-  Future<Null> _getLiked() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    var likedrepr = prefs.getStringList('liked') ?? List<String>();
-    widget.feed.liked =
-        likedrepr.map((animal) => Animal.fromString(animal)).toList();
-    if (this.mounted) setState(() {});
+  @override
+  void initState() {
+    super.initState();
+    widget.feed.likedDb.getAll().then((animals) {
+      setState(() {
+        this.saved = animals;
+      });
+    });
   }
 
   @override
@@ -39,23 +45,25 @@ class _SavedPage extends State<SavedPage> {
         alignment: Alignment.center,
         child: widget.feed.liked.isEmpty
             ? _buildNoSavedPage()
-            : ListView.builder(
-                itemCount: widget.feed.liked.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (BuildContext context, int index) {
-                  return _buildPetPreview(widget.feed.liked[index]);
-                }),
+            : buildPetList(this.saved),
       ),
     );
   }
 
-  void _removeDog(Animal dog) {
+  Widget buildPetList(List<Animal> animals) {
+    return ListView.builder(
+        itemCount: animals.length,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (BuildContext context, int index) {
+          return _buildPetPreview(animals[index]);
+        });
+  }
+
+  void _removeDog(Animal dog) async {
+    await widget.feed.removeFromLiked(dog);
+    var newSaved = await widget.feed.likedDb.getAll();
     setState(() {
-      widget.feed.liked.remove(dog);
-      SharedPreferences.getInstance().then((prefs) {
-        prefs.setStringList(
-            "liked", widget.feed.liked.map((pet) => pet.toString()).toList());
-      });
+      this.saved = newSaved;
     });
   }
 

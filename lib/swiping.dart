@@ -25,18 +25,7 @@ class SwipingPage extends StatefulWidget {
 
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
-  _SwipingPageState(AnimalFeed feed) {
-    _updateLikedList();
-  }
-
-  _updateLikedList() {
-    SharedPreferences.getInstance().then((prefs) {
-      var liked = prefs.getStringList('liked') ?? List<String>();
-      if (liked.isNotEmpty)
-        widget.feed.liked =
-            liked.map((repr) => Animal.fromString(repr)).toList();
-    });
-  }
+  _SwipingPageState(AnimalFeed feed) {}
 
   Future<bool> _initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();

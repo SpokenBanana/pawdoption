@@ -16,7 +16,7 @@ class PetAPI {
   void setLocation(String zip, int miles,
       {String animalType, double lat, double lng}) {}
   // ignore: missing_return
-  Future<List<Animal>> getAnimals(int amount, List<Animal> toSkip,
+  Future<List<Animal>> getAnimals(int amount, Set<String> toSkip,
       {PetSearchOptions searchOptions, double usrLat, double userLng}) {}
   // ignore: missing_return
   static Future<List<String>> getAnimalDetails(Animal animal) {}

@@ -40,6 +40,7 @@ class _DetailsPage extends State<DetailsPage> {
             tag: widget.pet.info.apiId,
           ),
           _buildDogInfo(widget.pet.info),
+          _checkStatus(widget.pet),
           Divider(),
           _fetchAndBuildComments(key),
           Divider(),
@@ -181,6 +182,26 @@ class _DetailsPage extends State<DetailsPage> {
                 style: const TextStyle(fontFamily: 'Raleway', fontSize: 20.0))),
       ],
     );
+  }
+
+  Widget _checkStatus(Animal pet) {
+    Widget adopted = SizedBox();
+    if (pet.status != "adoptable") {
+      adopted = Chip(
+        backgroundColor: Colors.white,
+        elevation: 1.5,
+        label: Row(
+          children: <Widget>[
+            Icon(
+              Icons.warning,
+              color: Colors.red,
+            ),
+            Text('${pet.info.name} is no longer available for adoption :('),
+          ],
+        ),
+      );
+    }
+    return adopted;
   }
 
   Widget _buildDogInfo(AnimalData pet) {

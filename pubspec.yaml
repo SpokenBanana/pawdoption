@@ -9,7 +9,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   quiver: '>=2.0.5'
   cupertino_icons: ^0.1.0
-  location: ^1.2.0
+  location: ^3.0.2
   url_launcher: ^3.0.1
   shared_preferences: ^0.4.1
   collection: ^1.14.6

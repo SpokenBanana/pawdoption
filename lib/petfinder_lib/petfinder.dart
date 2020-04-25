@@ -122,6 +122,19 @@ class PetFinderApi implements PetAPI {
     for (String item in petDoc['tags']) {
       animal.info.options.add(item);
     }
+
+    animal.info.imgUrl.clear();
+    for (var img in petDoc['photos']) {
+      animal.info.imgUrl.add(img['large']);
+    }
+    if (animal.info.imgUrl.isEmpty) {
+      // TODO: Add an actual placeholder image.
+      animal.info.imgUrl.add('');
+    }
+
+    // TODO: update pictures, check adoption status.
+    animal.status = petDoc['status'];
+
     animal.info.age = petDoc['age'];
     return animal.info.description;
   }

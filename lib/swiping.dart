@@ -59,8 +59,8 @@ class _SwipingPageState extends State<SwipingPage>
     var location = Location();
     try {
       var currentLocation = await location.getLocation();
-      widget.feed.userLat = currentLocation['latitude'];
-      widget.feed.userLng = currentLocation['longitude'];
+      widget.feed.userLat = currentLocation.latitude;
+      widget.feed.userLng = currentLocation.longitude;
       widget.feed.geoLocationEnabled = true;
       final coords = Coordinates(widget.feed.userLat, widget.feed.userLng);
       var address = await Geocoder.local.findAddressesFromCoordinates(coords);
@@ -95,7 +95,7 @@ class _SwipingPageState extends State<SwipingPage>
               default:
                 if (snapshot.hasError)
                   return Text(
-                      'Couldn\'t fetch the feed :( Try again later?');
+                      'Couldn\'t fetch the feed :( Try again later? ${snapshot.error}');
                 if (snapshot.data == false) return _buildNoInfoPage();
                 return Column(
                   children: [

@@ -34,11 +34,14 @@ class Animal {
       hasShots = false,
       specialNeeds = false,
       noKids = false;
+  String status;
 
   Animal({AnimalData info}) {
     if (info != null) {
       this.info = info;
       this.lastViewed = DateTime.parse(info.lastUpdated);
+      // Assume adoptable since that is the default search filter we apply.
+      this.status = "adoptable";
     } else
       this.info = AnimalData.create();
   }
@@ -156,16 +159,5 @@ class ShelterInformation {
     if (response['email'] != null) {
       this.email = response['email'];
     }
-  }
-
-  computeDistanceFrom(lat1, lng1) {
-    lat1 = radians(lat1);
-    lng1 = radians(lng1);
-    lat = radians(lat);
-    lng = radians(lng);
-    const R = 3959;
-    final x = (lng1 - lng) * cos(0.5 * (lat1 + lat));
-    final y = lat1 - lat;
-    distance = (R * sqrt((x * x) + (y * y))).round();
   }
 }

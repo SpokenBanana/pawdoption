@@ -82,13 +82,10 @@ class AnimalFeed {
     this.searchOptions = options ?? kDefaultOptions;
     miles = this.searchOptions.maxDistance;
 
-    await petApi.setLocation(zip, miles,
-        animalType: animalType, lat: userLat, lng: userLng);
+    await petApi.setLocation(zip, miles, animalType: animalType);
     var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;
     this.currentList = await petApi.getAnimals(amount, this.liked,
-        searchOptions: this.searchOptions,
-        usrLat: this.userLat,
-        userLng: this.userLng);
+        searchOptions: this.searchOptions);
     this.currentList.shuffle();
     this.done = true;
     return true;
@@ -152,8 +149,8 @@ class AnimalFeed {
     }
 
     this.liked = (await this.likedDb.getAll())
-        .map((animal) => animal.info.apiId)
-        .toSet();
+        ?.map((animal) => animal.info.apiId)
+        ?.toSet() ?? Set<String>();
   }
 
   // Just in case some users still have some saved pets, here migrate them to
@@ -170,8 +167,8 @@ Future<String> getZipFromGeo() async {
   var location = Location();
   try {
     var currentLocation = await location.getLocation();
-    final userLat = currentLocation['latitude'];
-    final userLng = currentLocation['longitude'];
+    final userLat = currentLocation.latitude;
+    final userLng = currentLocation.longitude;
     final coords = Coordinates(userLat, userLng);
     var address = await Geocoder.local.findAddressesFromCoordinates(coords);
     return address.first.postalCode;

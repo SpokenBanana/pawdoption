@@ -189,14 +189,15 @@ class _DetailsPage extends State<DetailsPage> {
     if (pet.status != "adoptable") {
       adopted = Chip(
         backgroundColor: Colors.white,
-        elevation: 1.5,
+        elevation: 2,
         label: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
             Icon(
               Icons.warning,
               color: Colors.red,
             ),
-            Text('${pet.info.name} is no longer available for adoption :('),
+            Text('No longer available for adoption :('),
           ],
         ),
       );

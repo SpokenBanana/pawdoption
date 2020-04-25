@@ -1,12 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'animals.dart';
 import 'api.dart';
 import 'protos/pet_search_options.pb.dart';
 import 'settings.dart';
@@ -29,8 +27,8 @@ class _SwipingPageState extends State<SwipingPage>
 
   Future<bool> _initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
-    String zip = prefs.getString('zip');
     final animalType = prefs.getBool('animalType') ?? false;
+
     final optionsStr = prefs.getString('searchOptions') ?? '';
     var options = PetSearchOptions.getDefault();
     if (optionsStr.isNotEmpty) {
@@ -39,12 +37,9 @@ class _SwipingPageState extends State<SwipingPage>
       options = null;
     }
 
-    var zipFromUser = await _getLocationFromUser();
-    if (zipFromUser != null && zip == null) {
-      zip = zipFromUser;
-      prefs.setString('zip', zip);
-    }
+    String zip = await _getZip(prefs);
     if (zip == null) return false;
+
     if (zip != widget.feed.zip ||
         widget.feed.reloadFeed ||
         animalType != (widget.feed.animalType == 'cat')) {
@@ -54,9 +49,24 @@ class _SwipingPageState extends State<SwipingPage>
     return true;
   }
 
+  Future<String> _getZip(SharedPreferences prefs) async {
+    if (widget.feed.zip != '') {
+      return widget.feed.zip;
+    }
+    var zipFromUser = await _getLocationFromUser();
+    if (zipFromUser != null) {
+      return zipFromUser;
+    }
+    String zip = prefs.getString('zip');
+    return zip;
+  }
+
   Future<String> _getLocationFromUser() async {
     String zip;
     var location = Location();
+    // We only need to get the zip code from the location, don't need
+    // high accuracy for now.
+    location.changeSettings(accuracy: LocationAccuracy.low);
     try {
       var currentLocation = await location.getLocation();
       widget.feed.userLat = currentLocation.latitude;
@@ -94,8 +104,7 @@ class _SwipingPageState extends State<SwipingPage>
                 );
               default:
                 if (snapshot.hasError)
-                  return Text(
-                      'Couldn\'t fetch the feed :( Try again later?');
+                  return Text('Couldn\'t fetch the feed :( Try again later?');
                 if (snapshot.data == false) return _buildNoInfoPage();
                 return Column(
                   children: [

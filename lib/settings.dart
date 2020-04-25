@@ -276,9 +276,7 @@ class _SettingsPage extends State<SettingsPage> {
                 ),
               ],
             ),
-            widget.feed.geoLocationEnabled
-                ? _createDistanceSlider(titleStyle)
-                : SizedBox(),
+            _createDistanceSlider(titleStyle),
             Divider(),
             Text('Breeds', style: titleStyle),
             Text('Leave empty to use all breeds',
@@ -421,8 +419,10 @@ class _SettingsPage extends State<SettingsPage> {
         prefs.setString('searchOptions', searchOptions.writeToJson());
       });
       if (searchOptions != widget.feed.searchOptions) {
+        // TODO: ApiFeed needs its own updateSetting() call.
         widget.feed.reloadFeed = true;
         widget.feed.searchOptions = searchOptions;
+        widget.feed.zip = _zip;
       }
       Navigator.pop(context, true);
     }

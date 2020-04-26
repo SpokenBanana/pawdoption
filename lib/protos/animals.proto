@@ -1,5 +1,6 @@
 syntax = "proto3";
 
+
 package pawdoption;
 
 message AnimalData {
@@ -20,4 +21,15 @@ message AnimalData {
     string color = 13;
     string thumbUrl = 14;
     string description = 15;
+
+    // I regret not using snake case in the beginning but
+    // let's just make all new fields snake case from now on.
+    bool spayed_neutered = 16;
+    bool house_trained = 17;
+    bool special_needs = 18;
+    bool shots_current = 19;
+    bool good_with_children = 20;
+    bool good_with_cats = 21;
+    bool good_with_dogs = 22;
+    uint64 liked_usec = 23;
 }

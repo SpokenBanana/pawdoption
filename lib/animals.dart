@@ -33,6 +33,10 @@ class Animal {
   bool spayedNeutered = false,
       hasShots = false,
       specialNeeds = false,
+      houseTrained = false,
+      goodWithChildren = false,
+      goodWithDogs = false,
+      goodWithCats = false,
       noKids = false;
   String status;
 
@@ -89,8 +93,6 @@ class Animal {
 
   // For now, we'll check on pets if it has been more than 3 days since the last
   // recorded lastUpdated date.
-  // TODO: Replace this with the timestamp of the last time their details page
-  //       was clicked on. (or when the saved page was viewed)
   bool shouldCheckOn() {
     bool result = DateTime.now().difference(this.lastViewed).inHours > 12 ||
         info.description == null ||

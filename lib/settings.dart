@@ -206,7 +206,7 @@ class _SettingsPage extends State<SettingsPage> {
               ),
             ),
             Divider(),
-            Text("Sex", style: titleStyle),
+            Text("Gender", style: titleStyle),
             GroupedOptions(
               options: <Option>[
                 Option(

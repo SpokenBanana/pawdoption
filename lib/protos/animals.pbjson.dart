@@ -1,7 +1,9 @@
 ///
 //  Generated code. Do not modify.
-///
-// ignore_for_file: non_constant_identifier_names,library_prefixes
+//  source: animals.proto
+//
+// @dart = 2.3
+// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
 const AnimalData$json = const {
   '1': 'AnimalData',
@@ -21,6 +23,14 @@ const AnimalData$json = const {
     const {'1': 'color', '3': 13, '4': 1, '5': 9, '10': 'color'},
     const {'1': 'thumbUrl', '3': 14, '4': 1, '5': 9, '10': 'thumbUrl'},
     const {'1': 'description', '3': 15, '4': 1, '5': 9, '10': 'description'},
+    const {'1': 'spayed_neutered', '3': 16, '4': 1, '5': 8, '10': 'spayedNeutered'},
+    const {'1': 'house_trained', '3': 17, '4': 1, '5': 8, '10': 'houseTrained'},
+    const {'1': 'special_needs', '3': 18, '4': 1, '5': 8, '10': 'specialNeeds'},
+    const {'1': 'shots_current', '3': 19, '4': 1, '5': 8, '10': 'shotsCurrent'},
+    const {'1': 'good_with_children', '3': 20, '4': 1, '5': 8, '10': 'goodWithChildren'},
+    const {'1': 'good_with_cats', '3': 21, '4': 1, '5': 8, '10': 'goodWithCats'},
+    const {'1': 'good_with_dogs', '3': 22, '4': 1, '5': 8, '10': 'goodWithDogs'},
+    const {'1': 'liked_usec', '3': 23, '4': 1, '5': 4, '10': 'likedUsec'},
   ],
 };
 

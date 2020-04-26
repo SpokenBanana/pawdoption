@@ -114,6 +114,7 @@ Animal toAnimal(Map animalMap) {
   data.size = animalMap['size'];
 
   Animal pet = Animal(info: data);
+  // TODO: These fields are now in AnimalData, fill it out there.
   pet.readAttributes(animalMap['attributes']);
   return pet;
 }

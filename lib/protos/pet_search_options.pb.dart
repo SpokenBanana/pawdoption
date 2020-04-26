@@ -1,15 +1,16 @@
 ///
 //  Generated code. Do not modify.
-///
-// ignore_for_file: non_constant_identifier_names,library_prefixes
+//  source: pet_search_options.proto
+//
+// @dart = 2.3
+// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
 
-// ignore: UNUSED_SHOWN_NAME
-import 'dart:core' show int, bool, double, String, List, override;
+import 'dart:core' as $core;
 
-import 'package:protobuf/protobuf.dart';
+import 'package:protobuf/protobuf.dart' as $pb;
 
-class PetSearchOptions extends GeneratedMessage {
-  static final BuilderInfo _i = new BuilderInfo('PetSearchOptions')
+class PetSearchOptions extends $pb.GeneratedMessage {
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo('PetSearchOptions', package: const $pb.PackageName('pawdoption'), createEmptyInstance: create)
     ..pPS(1, 'breeds')
     ..pPS(2, 'ages')
     ..pPS(3, 'sizes')
@@ -19,64 +20,89 @@ class PetSearchOptions extends GeneratedMessage {
     ..pPS(7, 'selectedShelters')
     ..aOS(8, 'zip')
     ..aOS(9, 'animalType')
-    ..a<int>(10, 'maxDistance', PbFieldType.O3)
+    ..a<$core.int>(10, 'maxDistance', $pb.PbFieldType.O3)
     ..hasRequiredFields = false
   ;
 
-  PetSearchOptions() : super();
-  PetSearchOptions.fromBuffer(List<int> i, [ExtensionRegistry r = ExtensionRegistry.EMPTY]) : super.fromBuffer(i, r);
-  PetSearchOptions.fromJson(String i, [ExtensionRegistry r = ExtensionRegistry.EMPTY]) : super.fromJson(i, r);
-  PetSearchOptions clone() => new PetSearchOptions()..mergeFromMessage(this);
-  BuilderInfo get info_ => _i;
-  static PetSearchOptions create() => new PetSearchOptions();
-  static PbList<PetSearchOptions> createRepeated() => new PbList<PetSearchOptions>();
-  static PetSearchOptions getDefault() {
-    if (_defaultInstance == null) _defaultInstance = new _ReadonlyPetSearchOptions();
-    return _defaultInstance;
-  }
+  PetSearchOptions._() : super();
+  factory PetSearchOptions() => create();
+  factory PetSearchOptions.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
+  factory PetSearchOptions.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  PetSearchOptions clone() => PetSearchOptions()..mergeFromMessage(this);
+  PetSearchOptions copyWith(void Function(PetSearchOptions) updates) => super.copyWith((message) => updates(message as PetSearchOptions));
+  $pb.BuilderInfo get info_ => _i;
+  @$core.pragma('dart2js:noInline')
+  static PetSearchOptions create() => PetSearchOptions._();
+  PetSearchOptions createEmptyInstance() => create();
+  static $pb.PbList<PetSearchOptions> createRepeated() => $pb.PbList<PetSearchOptions>();
+  @$core.pragma('dart2js:noInline')
+  static PetSearchOptions getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PetSearchOptions>(create);
   static PetSearchOptions _defaultInstance;
-  static void $checkItem(PetSearchOptions v) {
-    if (v is! PetSearchOptions) checkItemFailed(v, 'PetSearchOptions');
-  }
 
-  List<String> get breeds => $_getList(0);
+  @$pb.TagNumber(1)
+  $core.List<$core.String> get breeds => $_getList(0);
 
-  List<String> get ages => $_getList(1);
+  @$pb.TagNumber(2)
+  $core.List<$core.String> get ages => $_getList(1);
 
-  List<String> get sizes => $_getList(2);
+  @$pb.TagNumber(3)
+  $core.List<$core.String> get sizes => $_getList(2);
 
-  bool get fixedOnly => $_get(3, false);
-  set fixedOnly(bool v) { $_setBool(3, v); }
-  bool hasFixedOnly() => $_has(3);
+  @$pb.TagNumber(4)
+  $core.bool get fixedOnly => $_getBF(3);
+  @$pb.TagNumber(4)
+  set fixedOnly($core.bool v) { $_setBool(3, v); }
+  @$pb.TagNumber(4)
+  $core.bool hasFixedOnly() => $_has(3);
+  @$pb.TagNumber(4)
   void clearFixedOnly() => clearField(4);
 
-  bool get includeBreeds => $_get(4, false);
-  set includeBreeds(bool v) { $_setBool(4, v); }
-  bool hasIncludeBreeds() => $_has(4);
+  @$pb.TagNumber(5)
+  $core.bool get includeBreeds => $_getBF(4);
+  @$pb.TagNumber(5)
+  set includeBreeds($core.bool v) { $_setBool(4, v); }
+  @$pb.TagNumber(5)
+  $core.bool hasIncludeBreeds() => $_has(4);
+  @$pb.TagNumber(5)
   void clearIncludeBreeds() => clearField(5);
 
-  String get sex => $_getS(5, '');
-  set sex(String v) { $_setString(5, v); }
-  bool hasSex() => $_has(5);
+  @$pb.TagNumber(6)
+  $core.String get sex => $_getSZ(5);
+  @$pb.TagNumber(6)
+  set sex($core.String v) { $_setString(5, v); }
+  @$pb.TagNumber(6)
+  $core.bool hasSex() => $_has(5);
+  @$pb.TagNumber(6)
   void clearSex() => clearField(6);
 
-  List<String> get selectedShelters => $_getList(6);
+  @$pb.TagNumber(7)
+  $core.List<$core.String> get selectedShelters => $_getList(6);
 
-  String get zip => $_getS(7, '');
-  set zip(String v) { $_setString(7, v); }
-  bool hasZip() => $_has(7);
+  @$pb.TagNumber(8)
+  $core.String get zip => $_getSZ(7);
+  @$pb.TagNumber(8)
+  set zip($core.String v) { $_setString(7, v); }
+  @$pb.TagNumber(8)
+  $core.bool hasZip() => $_has(7);
+  @$pb.TagNumber(8)
   void clearZip() => clearField(8);
 
-  String get animalType => $_getS(8, '');
-  set animalType(String v) { $_setString(8, v); }
-  bool hasAnimalType() => $_has(8);
+  @$pb.TagNumber(9)
+  $core.String get animalType => $_getSZ(8);
+  @$pb.TagNumber(9)
+  set animalType($core.String v) { $_setString(8, v); }
+  @$pb.TagNumber(9)
+  $core.bool hasAnimalType() => $_has(8);
+  @$pb.TagNumber(9)
   void clearAnimalType() => clearField(9);
 
-  int get maxDistance => $_get(9, 0);
-  set maxDistance(int v) { $_setSignedInt32(9, v); }
-  bool hasMaxDistance() => $_has(9);
+  @$pb.TagNumber(10)
+  $core.int get maxDistance => $_getIZ(9);
+  @$pb.TagNumber(10)
+  set maxDistance($core.int v) { $_setSignedInt32(9, v); }
+  @$pb.TagNumber(10)
+  $core.bool hasMaxDistance() => $_has(9);
+  @$pb.TagNumber(10)
   void clearMaxDistance() => clearField(10);
 }
-
-class _ReadonlyPetSearchOptions extends PetSearchOptions with ReadonlyMessageMixin {}
 

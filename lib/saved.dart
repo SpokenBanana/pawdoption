@@ -1,9 +1,5 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:petadopt/api.dart';
-import 'package:petadopt/settings.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'animals.dart';
 import 'details.dart';

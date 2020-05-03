@@ -1,5 +1,4 @@
 import 'package:petadopt/animals.dart';
-import 'package:petadopt/protos/animals.pb.dart';
 import 'package:sqflite/sqflite.dart';
 
 class LikedDb {

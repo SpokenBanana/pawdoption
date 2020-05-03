@@ -1,7 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
-
-import 'package:http/http.dart' as http;
 
 import '../animals.dart';
 import '../protos/pet_search_options.pb.dart';

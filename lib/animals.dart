@@ -1,12 +1,7 @@
 import 'dart:async';
-import 'dart:math';
-
-import 'package:quiver/core.dart';
-import 'package:vector_math/vector_math.dart';
 
 import 'protos/animals.pb.dart';
 import 'protos/pet_search_options.pb.dart';
-import 'package:sqflite/sqflite.dart';
 
 /// Used as sort of an abstract class. Probably a better way of doing this.
 /// This is so that if another API is found to be better or the current

@@ -27,6 +27,7 @@ class _SavedPage extends State<SavedPage> {
   void initState() {
     super.initState();
     widget.feed.likedDb.getAll().then((animals) {
+      // TODO: Add sorting and sort them here.
       setState(() {
         this.saved = animals;
       });

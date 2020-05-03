@@ -26,7 +26,6 @@ class _SettingsPage extends State<SettingsPage> {
   PetSearchOptions searchOptions;
   AnimalChangeNotifier animalNotifier = AnimalChangeNotifier(animalType: 'dog');
   List<String> breeds;
-  int _miles;
   bool _selectedCats;
   String _errorMessage;
 
@@ -35,28 +34,33 @@ class _SettingsPage extends State<SettingsPage> {
   _SettingsPage() {
     _errorMessage = '';
     _zip = '';
-    _miles = 10;
     _selectedCats = false;
     breeds = List<String>();
     SharedPreferences.getInstance().then((prefs) {
       var zip = prefs.getString('zip');
-      var miles = prefs.getInt('miles');
+      var searchJson = prefs.getString('searchOptions');
       var selectedCat = prefs.getBool('animalType') ?? false;
-      if (zip != null) {
-        setState(() {
+      setState(() {
+        if (widget.feed.zip != null) {
+          _zip = widget.feed.zip;
+          _textController.text = _zip;
+        } else if (zip != null) {
           _zip = zip;
           _textController.text = zip;
-        });
-      }
-      if (miles != null) {
-        setState(() {
-          _miles = miles;
-          _selectedCats = selectedCat;
-          if (_selectedCats == true) animalNotifier.changeAnimal('cat');
-        });
-      }
+        }
+
+        if (widget.feed.searchOptions != null) {
+          searchOptions = widget.feed.searchOptions;
+        } else if (searchJson != null) {
+          searchOptions = PetSearchOptions.fromJson(searchJson);
+        }
+
+        _selectedCats = selectedCat;
+        if (_selectedCats == true) animalNotifier.changeAnimal('cat');
+      });
     });
-    getBreedList('dog').then((breeds) {
+    var animalType = _selectedCats ? 'cat' : 'dog';
+    getBreedList(animalType).then((breeds) {
       setState(() {
         this.breeds = breeds;
       });
@@ -413,7 +417,6 @@ class _SettingsPage extends State<SettingsPage> {
       });
     } else {
       SharedPreferences.getInstance().then((prefs) {
-        prefs.setInt('miles', _miles);
         prefs.setString('zip', _zip);
         prefs.setBool('animalType', _selectedCats);
         prefs.setString('searchOptions', searchOptions.writeToJson());

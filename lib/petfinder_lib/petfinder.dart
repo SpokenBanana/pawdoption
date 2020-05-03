@@ -72,7 +72,7 @@ class PetFinderApi implements PetAPI {
   _buildParamsFromOptions(PetSearchOptions options) {
     Map<String, String> params = Map<String, String>();
     if (options.includeBreeds && options.breeds.isNotEmpty) {
-      params['breed'] = options.breeds.join(',');
+      params['breed'] = options.breeds.map((b) => b.toLowerCase()).join(',');
     }
     params['distance'] = options.maxDistance.toString();
     if (options.hasSex()) params['gender'] = options.sex;

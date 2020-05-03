@@ -80,8 +80,8 @@ class _SearchBarState extends State<SearchBar> {
       children: <Widget>[
         Theme(
           data: Theme.of(context).copyWith(
-                primaryColor: Theme.of(context).accentColor,
-              ),
+            primaryColor: Theme.of(context).accentColor,
+          ),
           child: TextField(
             controller: controller,
             decoration: InputDecoration(
@@ -145,13 +145,15 @@ class _SearchBarState extends State<SearchBar> {
     if (text == '') return List<String>();
     List<String> results = List<String>();
     TrieNode current = _trie;
+    String prefix = '';
     for (int i = 0; i < text.length; i++) {
       if (!current.children.containsKey(text[i].toLowerCase())) {
         return List<String>();
       }
       current = current.children[text[i].toLowerCase()];
+      prefix += current.content;
     }
-    _search(current, text, results);
+    _search(current, prefix, results);
     return results;
   }
 

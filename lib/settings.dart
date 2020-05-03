@@ -50,7 +50,7 @@ class _SettingsPage extends State<SettingsPage> {
         }
 
         if (widget.feed.searchOptions != null) {
-          searchOptions = widget.feed.searchOptions;
+          searchOptions = widget.feed.searchOptions.clone();
         } else if (searchJson != null) {
           searchOptions = PetSearchOptions.fromJson(searchJson);
         }
@@ -421,7 +421,9 @@ class _SettingsPage extends State<SettingsPage> {
         prefs.setBool('animalType', _selectedCats);
         prefs.setString('searchOptions', searchOptions.writeToJson());
       });
-      if (searchOptions != widget.feed.searchOptions) {
+      if (searchOptions != widget.feed.searchOptions ||
+          searchOptions.breeds.length !=
+              widget.feed.searchOptions.breeds.length) {
         // TODO: ApiFeed needs its own updateSetting() call.
         widget.feed.reloadFeed = true;
         widget.feed.searchOptions = searchOptions;

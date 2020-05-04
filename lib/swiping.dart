@@ -103,8 +103,8 @@ class _SwipingPageState extends State<SwipingPage>
                   strokeWidth: 1.0,
                 );
               default:
-                if (snapshot.hasError)
-                  return Text('Couldn\'t fetch the feed :( Try again later?');
+                if (snapshot.hasError) return buildErrorPage();
+
                 if (snapshot.data == false) return _buildNoInfoPage();
                 return Column(
                   children: [
@@ -120,6 +120,20 @@ class _SwipingPageState extends State<SwipingPage>
           },
         ),
       ),
+    );
+  }
+
+  Widget buildErrorPage() {
+    return Column(
+      children: <Widget>[
+        Text('Error occurred :( Try again?'),
+        PetButton(
+          child: Icon(Icons.refresh),
+          onPressed: () {
+            setState(() {});
+          },
+        ),
+      ],
     );
   }
 

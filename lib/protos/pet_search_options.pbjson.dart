@@ -18,6 +18,11 @@ const PetSearchOptions$json = const {
     const {'1': 'zip', '3': 8, '4': 1, '5': 9, '10': 'zip'},
     const {'1': 'animal_type', '3': 9, '4': 1, '5': 9, '10': 'animalType'},
     const {'1': 'max_distance', '3': 10, '4': 1, '5': 5, '10': 'maxDistance'},
+    const {'1': 'good_with_children', '3': 11, '4': 1, '5': 8, '10': 'goodWithChildren'},
+    const {'1': 'good_with_dogs', '3': 12, '4': 1, '5': 8, '10': 'goodWithDogs'},
+    const {'1': 'good_with_cats', '3': 13, '4': 1, '5': 8, '10': 'goodWithCats'},
+    const {'1': 'coat', '3': 14, '4': 3, '5': 9, '10': 'coat'},
+    const {'1': 'color', '3': 15, '4': 3, '5': 9, '10': 'color'},
   ],
 };
 

@@ -21,6 +21,11 @@ class PetSearchOptions extends $pb.GeneratedMessage {
     ..aOS(8, 'zip')
     ..aOS(9, 'animalType')
     ..a<$core.int>(10, 'maxDistance', $pb.PbFieldType.O3)
+    ..aOB(11, 'goodWithChildren')
+    ..aOB(12, 'goodWithDogs')
+    ..aOB(13, 'goodWithCats')
+    ..pPS(14, 'coat')
+    ..pPS(15, 'color')
     ..hasRequiredFields = false
   ;
 
@@ -104,5 +109,38 @@ class PetSearchOptions extends $pb.GeneratedMessage {
   $core.bool hasMaxDistance() => $_has(9);
   @$pb.TagNumber(10)
   void clearMaxDistance() => clearField(10);
+
+  @$pb.TagNumber(11)
+  $core.bool get goodWithChildren => $_getBF(10);
+  @$pb.TagNumber(11)
+  set goodWithChildren($core.bool v) { $_setBool(10, v); }
+  @$pb.TagNumber(11)
+  $core.bool hasGoodWithChildren() => $_has(10);
+  @$pb.TagNumber(11)
+  void clearGoodWithChildren() => clearField(11);
+
+  @$pb.TagNumber(12)
+  $core.bool get goodWithDogs => $_getBF(11);
+  @$pb.TagNumber(12)
+  set goodWithDogs($core.bool v) { $_setBool(11, v); }
+  @$pb.TagNumber(12)
+  $core.bool hasGoodWithDogs() => $_has(11);
+  @$pb.TagNumber(12)
+  void clearGoodWithDogs() => clearField(12);
+
+  @$pb.TagNumber(13)
+  $core.bool get goodWithCats => $_getBF(12);
+  @$pb.TagNumber(13)
+  set goodWithCats($core.bool v) { $_setBool(12, v); }
+  @$pb.TagNumber(13)
+  $core.bool hasGoodWithCats() => $_has(12);
+  @$pb.TagNumber(13)
+  void clearGoodWithCats() => clearField(13);
+
+  @$pb.TagNumber(14)
+  $core.List<$core.String> get coat => $_getList(13);
+
+  @$pb.TagNumber(15)
+  $core.List<$core.String> get color => $_getList(14);
 }
 

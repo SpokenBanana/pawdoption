@@ -24,4 +24,10 @@ message PetSearchOptions {
 
     // Not implmented yet but may want to in the future.
     int32 max_distance = 10;
+
+    bool good_with_children =  11;
+    bool good_with_dogs =  12;
+    bool good_with_cats =  13;
+    repeated string coat = 14;
+    repeated string color = 15;
 }

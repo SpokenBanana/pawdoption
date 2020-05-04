@@ -1,9 +1,17 @@
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:petadopt/api.dart';
 
 import 'animals.dart';
 import 'details.dart';
 import 'protos/animals.pb.dart';
+
+enum SavedSort {
+  liked,
+  name,
+  breed,
+}
 
 /// Handles displaying the saved animals to later view.
 class SavedPage extends StatefulWidget {
@@ -15,8 +23,12 @@ class SavedPage extends StatefulWidget {
 
 class _SavedPage extends State<SavedPage> {
   List<Animal> saved;
+  SavedSort sortCriteria;
+  bool reversed;
   _SavedPage() {
     saved = List<Animal>();
+    sortCriteria = SavedSort.liked;
+    reversed = false;
   }
 
   @override
@@ -28,6 +40,31 @@ class _SavedPage extends State<SavedPage> {
         this.saved = animals;
       });
     });
+  }
+
+  List<Animal> sortList(List<Animal> list) {
+    switch (this.sortCriteria) {
+      case SavedSort.name:
+        list.sort((a, b) {
+          return a.info.name.compareTo(b.info.name);
+        });
+        break;
+      case SavedSort.liked:
+        list.sort((a, b) {
+          return a.dbId.compareTo(b.dbId);
+        });
+        break;
+      case SavedSort.breed:
+        list.sort((a, b) {
+          return a.info.breed.compareTo(b.info.breed);
+        });
+        break;
+    }
+
+    if (this.reversed) {
+      return list.reversed.toList();
+    }
+    return list;
   }
 
   @override

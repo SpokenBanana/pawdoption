@@ -25,10 +25,10 @@ class _SwipingCardsState extends State<SwipingCards>
   @override
   void initState() {
     super.initState();
-    widget.feed.notifier.addListener(_onSwipeChange);
+    widget.feed.notifier.addListener(onSwipeChange);
   }
 
-  _onSwipeChange() {
+  onSwipeChange() {
     if (widget.feed.notifier.swiped == Swiped.undo) {
       setState(() {
         widget.feed.getRecentlySkipped();
@@ -38,7 +38,7 @@ class _SwipingCardsState extends State<SwipingCards>
 
   @override
   void dispose() {
-    widget.feed.notifier.removeListener(_onSwipeChange);
+    widget.feed.notifier.removeListener(onSwipeChange);
     super.dispose();
   }
 
@@ -58,7 +58,7 @@ class _SwipingCardsState extends State<SwipingCards>
             ],
           ));
     }
-    if (widget.feed.currentList.isEmpty) return _buildNoPetsLeftPage();
+    if (widget.feed.currentList.isEmpty) return buildNoPetsLeftPage();
     return Stack(
       alignment: Alignment.center,
       children: <Widget>[
@@ -101,7 +101,7 @@ class _SwipingCardsState extends State<SwipingCards>
     );
   }
 
-  _buildNoPetsLeftPage() {
+  buildNoPetsLeftPage() {
     Size screenSize = MediaQuery.of(context).size;
     double _screenWidth = screenSize.width;
     double _screenHeight = screenSize.height;

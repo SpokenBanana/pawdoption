@@ -46,19 +46,19 @@ class _SearchBarState extends State<SearchBar> {
     super.initState();
     if (widget.items == null) {
       widget.listFetcher().then((list) {
-        _buildTrie(list);
+        buildTrie(list);
       });
     } else {
-      _buildTrie(widget.items);
+      buildTrie(widget.items);
     }
     widget.refetchNotifier.addListener(_handleChange);
-    controller.addListener(_handleText);
+    controller.addListener(handleText);
   }
 
   @override
   void dispose() {
     widget.refetchNotifier.removeListener(_handleChange);
-    controller.removeListener(_handleText);
+    controller.removeListener(handleText);
     super.dispose();
   }
 
@@ -67,10 +67,10 @@ class _SearchBarState extends State<SearchBar> {
     _trie = TrieNode();
     if (widget.items == null) {
       widget.listFetcher().then((list) {
-        _buildTrie(list);
+        buildTrie(list);
       });
     } else {
-      _buildTrie(widget.items);
+      buildTrie(widget.items);
     }
   }
 
@@ -102,14 +102,14 @@ class _SearchBarState extends State<SearchBar> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: <Widget>[
                         GestureDetector(
-                          onTap: () => _selectItem(match),
+                          onTap: () => selectItem(match),
                           child: Text(match),
                         ),
                         ButtonTheme(
                           height: 30.0,
                           child: FlatButton(
                             shape: CircleBorder(),
-                            onPressed: () => _selectItem(match),
+                            onPressed: () => selectItem(match),
                             color: kPetThemecolor,
                             child: Icon(Icons.add, color: Colors.white),
                           ),
@@ -127,7 +127,7 @@ class _SearchBarState extends State<SearchBar> {
     );
   }
 
-  _selectItem(String match) {
+  selectItem(String match) {
     if (widget.onSelectedItem != null) widget.onSelectedItem(match);
     setState(() {
       matches.clear();
@@ -135,7 +135,7 @@ class _SearchBarState extends State<SearchBar> {
     });
   }
 
-  _handleText() {
+  handleText() {
     setState(() {
       matches = _getMatches(controller.text);
     });
@@ -153,20 +153,20 @@ class _SearchBarState extends State<SearchBar> {
       current = current.children[text[i].toLowerCase()];
       prefix += current.content;
     }
-    _search(current, prefix, results);
+    search(current, prefix, results);
     return results;
   }
 
-  _search(TrieNode current, String str, List<String> result) {
+  search(TrieNode current, String str, List<String> result) {
     for (TrieNode node in current.children.values) {
       if (node.isEnd) {
         result.add(str + node.content);
       }
-      _search(node, str + node.content, result);
+      search(node, str + node.content, result);
     }
   }
 
-  _buildTrie(List<String> options) {
+  buildTrie(List<String> options) {
     for (String option in options) {
       TrieNode current = _trie;
       for (int i = 0; i < option.length; i++) {

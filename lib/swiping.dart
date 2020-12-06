@@ -37,7 +37,7 @@ class _SwipingPageState extends State<SwipingPage>
       options = null;
     }
 
-    String zip = await _getZip(prefs);
+    String zip = await getZip(prefs);
     if (zip == null) return false;
 
     if (zip != widget.feed.zip ||
@@ -49,7 +49,7 @@ class _SwipingPageState extends State<SwipingPage>
     return true;
   }
 
-  Future<String> _getZip(SharedPreferences prefs) async {
+  Future<String> getZip(SharedPreferences prefs) async {
     if (widget.feed.zip != '') {
       return widget.feed.zip;
     }

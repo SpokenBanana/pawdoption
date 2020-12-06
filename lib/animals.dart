@@ -1,20 +1,13 @@
 import 'protos/animals.pb.dart';
 
+// Wrapper class for the AnimalData proto. Provides some read/write serialize
+// methods for convenience.
 class Animal {
   AnimalData info;
-  DateTime lastUpdated;
   DateTime lastViewed;
+  String status;
   // Only populated if the Animal was liked and has an id in our db.
   int dbId;
-  bool spayedNeutered = false,
-      hasShots = false,
-      specialNeeds = false,
-      houseTrained = false,
-      goodWithChildren = false,
-      goodWithDogs = false,
-      goodWithCats = false,
-      noKids = false;
-  String status;
 
   Animal({AnimalData info}) {
     if (info != null) {
@@ -56,9 +49,9 @@ class Animal {
   }
 
   void readAttributes(dynamic attributes) {
-    this.specialNeeds = attributes['special_needs'] == 'true';
-    this.hasShots = attributes['shots_current'] == 'true';
-    this.spayedNeutered = attributes['spayed_neutered'] == 'true';
+    this.info.specialNeeds = attributes['special_needs'] == 'true';
+    this.info.shotsCurrent = attributes['shots_current'] == 'true';
+    this.info.spayedNeutered = attributes['spayed_neutered'] == 'true';
   }
 
   bool operator ==(other) {
@@ -107,10 +100,9 @@ class ShelterInformation {
       policy,
       policyUrl,
       photo;
-  double lat, lng;
   int distance = -1;
 
-  ShelterInformation(name, phone, location, {this.lat, this.lng}) {
+  ShelterInformation(name, phone, location) {
     this.name = name;
     this.phone = phone;
     this.location = location;

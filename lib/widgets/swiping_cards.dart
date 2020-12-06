@@ -266,7 +266,7 @@ class PetCard extends StatelessWidget {
       height: 30.0,
       child: Row(
         children: <Widget>[
-          pet.spayedNeutered
+          pet.info.spayedNeutered
               ? Padding(
                   padding: const EdgeInsets.only(right: 4.0),
                   child: Text(pet.info.gender == 'Male' ? "Neutered" : "Spayed",

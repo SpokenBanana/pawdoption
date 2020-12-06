@@ -72,11 +72,11 @@ class _DetailsPage extends State<DetailsPage> {
 
   Widget petAtrributeSection() {
     var attributes = new List<Widget>();
-    if (widget.pet.hasShots) {
+    if (widget.pet.info.shotsCurrent) {
       attributes.add(
           attributeChip("Has shots", Icon(Icons.check, color: Colors.green)));
     }
-    if (widget.pet.spayedNeutered) {
+    if (widget.pet.info.spayedNeutered) {
       if (widget.pet.info.gender == "Male") {
         attributes.add(
             attributeChip("Neutered", Icon(Icons.check, color: Colors.green)));
@@ -85,7 +85,7 @@ class _DetailsPage extends State<DetailsPage> {
             attributeChip("Spayed", Icon(Icons.check, color: Colors.green)));
       }
     }
-    if (widget.pet.specialNeeds) {
+    if (widget.pet.info.specialNeeds) {
       attributes.add(attributeChip(
           "Special needs", Icon(Icons.warning, color: Colors.yellow)));
     }

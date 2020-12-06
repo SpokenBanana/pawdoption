@@ -22,22 +22,20 @@ final kDefaultOptions = PetSearchOptions()
 /// Made this extra layer so we can switch APIs and keep the same
 /// expected functionality.
 class AnimalFeed {
-  List<Animal> currentList;
   LikedDb likedDb;
   Set<String> liked;
-
   Queue<Animal> skipped;
-  String zip, animalType;
-  int miles;
+
+  String zip;
   SwipeNotifier notifier;
 
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
-  bool done, reloadFeed, geoLocationEnabled = false;
-  double userLat, userLng;
+  bool done, reloadFeed;
 
   PetAPI petApi;
   PetSearchOptions searchOptions;
 
+  List<Animal> currentList;
   Animal get currentPet => currentList.last;
   Animal get nextPet {
     if (currentList.length < 2) return null;
@@ -46,7 +44,6 @@ class AnimalFeed {
 
   AnimalFeed() {
     this.zip = '';
-    this.miles = -1;
     notifier = SwipeNotifier();
 
     petApi = PetFinderApi();
@@ -61,8 +58,7 @@ class AnimalFeed {
   }
 
   Future<bool> reInitialize() async {
-    return await this.initialize(this.zip,
-        animalType: this.animalType, options: this.searchOptions);
+    return await this.initialize(this.zip, options: this.searchOptions);
   }
 
   removeCurrentPet() {
@@ -74,15 +70,14 @@ class AnimalFeed {
     this.reloadFeed = false;
     this.done = false;
     this.zip = zip;
-    this.animalType = animalType;
 
     this.currentList = List<Animal>();
     this.skipped = Queue<Animal>();
 
     this.searchOptions = options ?? kDefaultOptions;
-    miles = this.searchOptions.maxDistance;
 
-    await petApi.setLocation(zip, miles, animalType: animalType);
+    await petApi.setLocation(zip, this.searchOptions.maxDistance,
+        animalType: animalType);
     var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;
     this.currentList = await petApi.getAnimals(amount, this.liked,
         searchOptions: this.searchOptions);
@@ -94,10 +89,7 @@ class AnimalFeed {
   void updateList() {
     if (this.currentList.length <= this.fetchMoreAt) {
       petApi
-          .getAnimals(25, this.liked,
-              searchOptions: this.searchOptions,
-              usrLat: this.userLat,
-              userLng: this.userLng)
+          .getAnimals(25, this.liked, searchOptions: this.searchOptions)
           .then((list) {
         list.shuffle();
         this.currentList.insertAll(0, list);
@@ -149,8 +141,9 @@ class AnimalFeed {
     }
 
     this.liked = (await this.likedDb.getAll())
-        ?.map((animal) => animal.info.apiId)
-        ?.toSet() ?? Set<String>();
+            ?.map((animal) => animal.info.apiId)
+            ?.toSet() ??
+        Set<String>();
   }
 
   // Just in case some users still have some saved pets, here migrate them to

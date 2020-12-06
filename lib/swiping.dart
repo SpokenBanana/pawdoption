@@ -23,26 +23,24 @@ class SwipingPage extends StatefulWidget {
 
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
-  _SwipingPageState(AnimalFeed feed) {}
+  _SwipingPageState(AnimalFeed feed);
 
   Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
+
     final animalType = prefs.getBool('animalType') ?? false;
-
     final optionsStr = prefs.getString('searchOptions') ?? '';
-    var options = PetSearchOptions.getDefault();
-    if (optionsStr.isNotEmpty) {
-      options = PetSearchOptions.fromJson(optionsStr);
-    } else {
-      options = null;
-    }
-
     String zip = await getZip(prefs);
     if (zip == null) return false;
 
+    var options;
+    if (optionsStr.isNotEmpty) {
+      options = PetSearchOptions.fromJson(optionsStr);
+    }
+
     if (zip != widget.feed.zip ||
         widget.feed.reloadFeed ||
-        animalType != (widget.feed.animalType == 'cat')) {
+        animalType != (widget.feed.searchOptions.animalType == 'cat')) {
       return await widget.feed.initialize(zip,
           animalType: animalType ? 'cat' : 'dog', options: options);
     }
@@ -69,15 +67,12 @@ class _SwipingPageState extends State<SwipingPage>
     location.changeSettings(accuracy: LocationAccuracy.low);
     try {
       var currentLocation = await location.getLocation();
-      widget.feed.userLat = currentLocation.latitude;
-      widget.feed.userLng = currentLocation.longitude;
-      widget.feed.geoLocationEnabled = true;
-      final coords = Coordinates(widget.feed.userLat, widget.feed.userLng);
+      double userLat = currentLocation.latitude;
+      double userLng = currentLocation.longitude;
+      final coords = Coordinates(userLat, userLng);
       var address = await Geocoder.local.findAddressesFromCoordinates(coords);
       return address.first.postalCode;
-    } on Exception {
-      widget.feed.geoLocationEnabled = false;
-    }
+    } on Exception {}
     return zip;
   }
 

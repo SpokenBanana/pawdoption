@@ -12,7 +12,7 @@ ApiClient kClient = new ApiClient();
 
 /// Uses PetFinder API to get animals using the standard API interface defined
 /// in 'animals.dart'.
-class PetFinderApi implements PetAPI {
+class PetFinderApi {
   String _zip, _animalType;
 
   // We want to limit the API calls for this one, so caching is key.

@@ -1,23 +1,4 @@
-import 'dart:async';
-
 import 'protos/animals.pb.dart';
-import 'protos/pet_search_options.pb.dart';
-
-/// Used as sort of an abstract class. Probably a better way of doing this.
-/// This is so that if another API is found to be better or the current
-/// API stops working, then we can switch APIs without being so dependent
-/// on how one API works.
-class PetAPI {
-  void setLocation(String zip, int miles,
-      {String animalType, double lat, double lng}) {}
-  // ignore: missing_return
-  Future<List<Animal>> getAnimals(int amount, Set<String> toSkip,
-      {PetSearchOptions searchOptions, double usrLat, double userLng}) {}
-  // ignore: missing_return
-  static Future<List<String>> getAnimalDetails(Animal animal) {}
-  // ignore: missing_return
-  static Future<ShelterInformation> getShelterInformation(String location) {}
-}
 
 class Animal {
   AnimalData info;

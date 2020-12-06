@@ -32,7 +32,7 @@ class AnimalFeed {
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
   bool reloadFeed;
 
-  PetAPI petApi;
+  PetFinderApi petApi;
   PetSearchOptions searchOptions;
 
   List<Animal> currentList;

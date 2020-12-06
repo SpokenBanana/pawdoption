@@ -72,12 +72,29 @@ class PetFinderApi implements PetAPI {
   _buildParamsFromOptions(PetSearchOptions options) {
     Map<String, String> params = Map<String, String>();
     if (options.includeBreeds && options.breeds.isNotEmpty) {
-      params['breed'] = options.breeds.map((b) => b.toLowerCase()).join(',');
+      params['breed'] = listToParamValue(options.breeds);
+    }
+
+    if (options.goodWithCats) {
+      params['good_with_cats'] = 'true';
+    }
+    if (options.goodWithChildren) {
+      params['good_with_children'] = 'true';
+    }
+    if (options.goodWithDogs) {
+      params['good_with_dogs'] = 'true';
+    }
+    if (options.coat.length > 0) {
+      params['coat'] = listToParamValue(options.coat);
+    }
+    if (options.color.length > 0) {
+      params['color'] = listToParamValue(options.color);
     }
     params['distance'] = options.maxDistance.toString();
     if (options.hasSex()) params['gender'] = options.sex;
-    if (options.ages.isNotEmpty) params['age'] = options.ages.join(',');
-    if (options.sizes.isNotEmpty) params['size'] = options.sizes.join(',');
+    if (options.ages.isNotEmpty) params['age'] = listToParamValue(options.ages);
+    if (options.sizes.isNotEmpty)
+      params['size'] = listToParamValue(options.sizes);
     return params;
   }
 
@@ -88,9 +105,7 @@ class PetFinderApi implements PetAPI {
     var response = await kClient.fetch('types/$animalType/breeds', params);
     var breeds = response['breeds'];
     List<String> list = List<String>();
-    for (String name in breeds.map((breed) => breed['name'])) {
-      list.add(name);
-    }
+    list.addAll(breeds.map((breed) => breed['name']));
     return list;
   }
 

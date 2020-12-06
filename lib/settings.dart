@@ -37,8 +37,9 @@ class _SettingsPage extends State<SettingsPage> {
     _selectedCats = false;
     breeds = List<String>();
     SharedPreferences.getInstance().then((prefs) {
-      var zip = prefs.getString('zip');
       var searchJson = prefs.getString('searchOptions');
+      // TODO: Zip and animal type should go in SearchOptions.
+      var zip = prefs.getString('zip');
       var selectedCat = prefs.getBool('animalType') ?? false;
       setState(() {
         if (widget.feed.zip != null) {

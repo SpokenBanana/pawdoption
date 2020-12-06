@@ -118,3 +118,7 @@ Animal toAnimal(Map animalMap) {
   pet.readAttributes(animalMap['attributes']);
   return pet;
 }
+
+String listToParamValue(List<String> list) {
+  return list.map((l) => l.toLowerCase()).join(',');
+}

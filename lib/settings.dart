@@ -80,7 +80,7 @@ class _SettingsPage extends State<SettingsPage> {
       appBar: AppBar(
         title: Text("Settings"),
       ),
-      body: _buildWholePage(),
+      body: buildWholePage(),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
           color: Theme.of(context).canvasColor,
@@ -106,7 +106,7 @@ class _SettingsPage extends State<SettingsPage> {
                 ),
                 color: kPetThemecolor,
                 textColor: Colors.white,
-                onPressed: () => _updateInfo(),
+                onPressed: () => updateInfo(),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
@@ -123,7 +123,7 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   // TODO: This has become a very long mess, should try to break this up.
-  Widget _buildWholePage() {
+  Widget buildWholePage() {
     final titleStyle = TextStyle(
       fontWeight: FontWeight.bold,
       fontSize: 20.0,
@@ -138,7 +138,7 @@ class _SettingsPage extends State<SettingsPage> {
               'Where do you want to search?',
               style: titleStyle,
             ),
-            _buildZipTextField(),
+            buildZipTextField(),
             FlatButton(
               onPressed: () async {
                 var zip = await getZipFromGeo();
@@ -252,13 +252,13 @@ class _SettingsPage extends State<SettingsPage> {
             Divider(),
             Text('Size', style: titleStyle),
             GroupedOptions(
-              options: _generateOptions("All sizes",
+              options: generateOptions("All sizes",
                   ['small', 'medium', 'large', 'xlarge'], searchOptions.sizes),
             ),
             Divider(),
             Text('Age', style: titleStyle),
             GroupedOptions(
-              options: _generateOptions("All ages",
+              options: generateOptions("All ages",
                   ['Baby', 'Young', 'Adult', 'Senior'], searchOptions.ages),
             ),
             Divider(),
@@ -281,7 +281,7 @@ class _SettingsPage extends State<SettingsPage> {
                 ),
               ],
             ),
-            _createDistanceSlider(titleStyle),
+            createDistanceSlider(titleStyle),
             Divider(),
             Text('Breeds', style: titleStyle),
             Text('Leave empty to use all breeds',
@@ -290,12 +290,12 @@ class _SettingsPage extends State<SettingsPage> {
             SelectableInput(
               refetchNotifier: animalNotifier,
               hintText: 'Type the breeds you want here',
-              listFetcher: _fetchBreedList,
+              listFetcher: fetchBreedList,
               selectedMatches: searchOptions.breeds,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: _buidInfoSection(),
+              child: buidInfoSection(),
             )
           ],
         ),
@@ -303,7 +303,7 @@ class _SettingsPage extends State<SettingsPage> {
     );
   }
 
-  Widget _createDistanceSlider(titleStyle) {
+  Widget createDistanceSlider(titleStyle) {
     return Column(
       children: <Widget>[
         Divider(),
@@ -327,10 +327,10 @@ class _SettingsPage extends State<SettingsPage> {
     );
   }
 
-  Future<List<String>> _fetchBreedList() async =>
+  Future<List<String>> fetchBreedList() async =>
       await getBreedList(animalNotifier.animalType);
 
-  List<Option> _generateOptions(
+  List<Option> generateOptions(
       String allText, List<String> options, List<String> container) {
     List<Option> result = <Option>[
       Option(
@@ -363,7 +363,7 @@ class _SettingsPage extends State<SettingsPage> {
     return result;
   }
 
-  Widget _buidInfoSection() {
+  Widget buidInfoSection() {
     const infoStyle = const TextStyle(
       color: Colors.grey,
     );
@@ -409,7 +409,7 @@ class _SettingsPage extends State<SettingsPage> {
     );
   }
 
-  void _updateInfo() {
+  void updateInfo() {
     var message = 'Location set!';
     if (_zip.length < 5) {
       message = 'Please set a valid zip code';
@@ -434,7 +434,7 @@ class _SettingsPage extends State<SettingsPage> {
     }
   }
 
-  Widget _buildZipTextField() {
+  Widget buildZipTextField() {
     return Theme(
       data: Theme.of(context).copyWith(
         primaryColor: Theme.of(context).accentColor,
@@ -485,7 +485,7 @@ class _SelectableInputState extends State<SelectableInput> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        _buildSelectedItems(),
+        buildSelectedItems(),
         SearchBar(
           refetchNotifier: widget.refetchNotifier,
           hintText: widget.hintText,
@@ -501,7 +501,7 @@ class _SelectableInputState extends State<SelectableInput> {
     );
   }
 
-  Widget _buildSelectedItems() {
+  Widget buildSelectedItems() {
     return Column(
       children: widget.selectedMatches.map((item) {
         return Padding(

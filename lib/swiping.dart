@@ -25,7 +25,7 @@ class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
   _SwipingPageState(AnimalFeed feed) {}
 
-  Future<bool> _initializeAnimalList() async {
+  Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
     final animalType = prefs.getBool('animalType') ?? false;
 
@@ -53,7 +53,7 @@ class _SwipingPageState extends State<SwipingPage>
     if (widget.feed.zip != '') {
       return widget.feed.zip;
     }
-    var zipFromUser = await _getLocationFromUser();
+    var zipFromUser = await getLocationFromUser();
     if (zipFromUser != null) {
       return zipFromUser;
     }
@@ -61,7 +61,7 @@ class _SwipingPageState extends State<SwipingPage>
     return zip;
   }
 
-  Future<String> _getLocationFromUser() async {
+  Future<String> getLocationFromUser() async {
     String zip;
     var location = Location();
     // We only need to get the zip code from the location, don't need
@@ -94,7 +94,7 @@ class _SwipingPageState extends State<SwipingPage>
       ),
       body: Center(
         child: FutureBuilder(
-          future: _initializeAnimalList(),
+          future: initializeAnimalList(),
           builder: (BuildContext context, AsyncSnapshot snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.none:
@@ -105,7 +105,7 @@ class _SwipingPageState extends State<SwipingPage>
               default:
                 if (snapshot.hasError) return buildErrorPage();
 
-                if (snapshot.data == false) return _buildNoInfoPage();
+                if (snapshot.data == false) return buildNoInfoPage();
                 return Column(
                   children: [
                     SizedBox(height: 8.0),
@@ -113,7 +113,7 @@ class _SwipingPageState extends State<SwipingPage>
                       feed: widget.feed,
                     ),
                     SizedBox(height: 15.0),
-                    _buildButtonRow(),
+                    buildButtonRow(),
                   ],
                 );
             }
@@ -137,7 +137,7 @@ class _SwipingPageState extends State<SwipingPage>
     );
   }
 
-  Widget _buildNoInfoPage() {
+  Widget buildNoInfoPage() {
     const infoStyle = TextStyle(fontSize: 15.0);
     return Center(
       child: Column(
@@ -175,7 +175,7 @@ class _SwipingPageState extends State<SwipingPage>
     );
   }
 
-  Widget _buildButtonRow() {
+  Widget buildButtonRow() {
     const num size = 35.0;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,

@@ -78,7 +78,7 @@ class _SavedPage extends State<SavedPage> {
         color: Theme.of(context).canvasColor,
         alignment: Alignment.center,
         child: widget.feed.liked.isEmpty
-            ? _buildNoSavedPage()
+            ? buildNoSavedPage()
             : buildPetList(this.saved),
       ),
     );
@@ -89,11 +89,11 @@ class _SavedPage extends State<SavedPage> {
         itemCount: animals.length,
         physics: const BouncingScrollPhysics(),
         itemBuilder: (BuildContext context, int index) {
-          return _buildPetPreview(animals[index]);
+          return buildPetPreview(animals[index]);
         });
   }
 
-  void _removeDog(Animal dog) async {
+  void removeDog(Animal dog) async {
     await widget.feed.removeFromLiked(dog);
     var newSaved = await widget.feed.likedDb.getAll();
     setState(() {
@@ -101,7 +101,7 @@ class _SavedPage extends State<SavedPage> {
     });
   }
 
-  Widget _buildPetPreview(Animal pet) {
+  Widget buildPetPreview(Animal pet) {
     return GestureDetector(
       onTap: () => Navigator.push(
           context,
@@ -111,10 +111,10 @@ class _SavedPage extends State<SavedPage> {
         dismissThresholds: {
           DismissDirection.endToStart: .4,
         },
-        onDismissed: (direction) => _removeDog(pet),
+        onDismissed: (direction) => removeDog(pet),
         direction: DismissDirection.endToStart,
         key: ObjectKey(pet),
-        child: _buildDogInfo(pet.info),
+        child: buildDogInfo(pet.info),
         background: Container(
             alignment: Alignment.centerRight,
             color: Colors.red,
@@ -126,7 +126,7 @@ class _SavedPage extends State<SavedPage> {
     );
   }
 
-  Widget _buildDogInfo(AnimalData dog) {
+  Widget buildDogInfo(AnimalData dog) {
     return Container(
       height: 80.0,
       child: Row(children: <Widget>[
@@ -170,7 +170,7 @@ class _SavedPage extends State<SavedPage> {
     );
   }
 
-  Widget _buildNoSavedPage() {
+  Widget buildNoSavedPage() {
     const infoStyle = TextStyle(
       color: Colors.grey,
     );

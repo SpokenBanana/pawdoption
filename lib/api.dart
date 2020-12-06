@@ -170,7 +170,7 @@ Future<String> getZipFromGeo() async {
 }
 
 Future<String> getDetailsAbout(Animal animal) async =>
-    await PetFinderApi.getAnimalDetails(animal);
+    await PetFinderApi.fetchAnimalDesciption(animal);
 
 Future<ShelterInformation> getShelterInformation(String location) async =>
     await PetFinderApi.getShelterInformation(location);

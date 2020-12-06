@@ -44,6 +44,56 @@ class Animal {
     return pet;
   }
 
+  factory Animal.fromApi(Map animalMap) {
+    AnimalData data = AnimalData.create();
+
+    for (var img in animalMap['photos']) {
+      data.imgUrl.add(img['large']);
+    }
+    if (data.imgUrl.isEmpty) {
+      // TODO: Add an actual placeholder image.
+      data.imgUrl.add('');
+    }
+
+    // Get city state.
+    var city = animalMap['contact']['address']['city'];
+    var state = animalMap['contact']['address']['state'];
+    data.cityState = '${city.isEmpty ? 'Unknown' : city}, '
+        '${state.isEmpty ? 'Unknown' : state}';
+
+    // Get breed.
+    var breeds = animalMap['breeds'];
+    List<String> breedList = List<String>();
+    if (breeds['primary'] != null) {
+      breedList.add(breeds['primary'].toString());
+    }
+    if (breeds['secondary'] != null) {
+      breedList.add(breeds['secondary'].toString());
+    }
+    data.breed = breedList.join(' / ');
+    if (breeds['unknown'] == 'true') {
+      data.breed = 'Unknown';
+    }
+
+    data.name = animalMap['name'];
+    data.name =
+        '${data.name[0].toUpperCase()}${data.name.substring(1).toLowerCase()}';
+    data.gender = animalMap['gender'];
+    data.age = animalMap['age'];
+    data.shelterId = animalMap['organization_id'];
+    data.apiId = animalMap['id'].toString();
+    data.lastUpdated = animalMap['published_at'];
+    for (String item in animalMap['tags']) {
+      data.options.add(item);
+    }
+    data.size = animalMap['size'];
+
+    Animal pet = Animal(info: data);
+    // TODO: These fields are now in AnimalData, fill it out there.
+    pet.readAttributes(animalMap['attributes']);
+    return pet;
+  }
+
   String toString() {
     return info.writeToJson();
   }

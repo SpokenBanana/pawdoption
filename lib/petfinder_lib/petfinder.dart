@@ -15,17 +15,16 @@ ApiClient kClient = new ApiClient();
 class PetFinderApi {
   String _zip, _animalType;
 
-  // We want to limit the API calls for this one, so caching is key.
+  // We want to limit the API calls for this one, so we'll hold on to results.
   // TODO: Making this static is a bit of bad practice, try to find an
   //       alternative solution
-  static Map<String, ShelterInformation> _shelterCache;
+  static Map<String, ShelterInformation> _shelterMap;
 
-  int _currentOffset = 1;
+  int _currentPage = 1;
 
-  void setLocation(String zip, int miles,
-      {String animalType, double lat, double lng}) async {
-    _currentOffset = 1;
-    _shelterCache = Map<String, ShelterInformation>();
+  void setLocation(String zip, int miles, {String animalType}) async {
+    _currentPage = 1;
+    _shelterMap = Map<String, ShelterInformation>();
     _animalType = animalType;
     Map<String, String> params = {
       'location': zip,
@@ -33,12 +32,11 @@ class PetFinderApi {
       'limit': '50',
     };
     _zip = zip;
-    var data = await kClient.fetch('organizations', params);
+    var data = await kClient.call('organizations', params);
     for (Map shelter in data['organizations']) {
       String id = shelter['id'];
-      if (!_shelterCache.containsKey(id))
-        _shelterCache[id] =
-            toShelterInformation(shelter, usrlat: lat, usrlng: lng);
+      if (!_shelterMap.containsKey(id))
+        _shelterMap[id] = toShelterInformation(shelter);
     }
   }
 
@@ -50,18 +48,18 @@ class PetFinderApi {
       'location': _zip,
       'limit': '$amount',
       'status': 'adoptable',
-      'page': _currentOffset.toString(),
+      'page': '$_currentPage',
     };
     if (searchOptions != null)
       params.addAll(_buildParamsFromOptions(searchOptions));
 
-    _currentOffset++;
+    _currentPage++;
 
-    var jsonResponse = await kClient.fetch('animals', params);
+    var jsonResponse = await kClient.call('animals', params);
     var petList = jsonResponse['animals'];
 
     for (Map pet in petList) {
-      Animal animal = toAnimal(pet);
+      Animal animal = Animal.fromApi(pet);
       if (!toSkip.contains(animal.info.apiId)) {
         animals.add(animal);
       }
@@ -102,34 +100,46 @@ class PetFinderApi {
     Map<String, String> params = {
       'key': kPetFinderToken,
     };
-    var response = await kClient.fetch('types/$animalType/breeds', params);
+    var response = await kClient.call('types/$animalType/breeds', params);
     var breeds = response['breeds'];
     List<String> list = List<String>();
     list.addAll(breeds.map((breed) => breed['name']));
     return list;
   }
 
-  static Future<ShelterInformation> getShelterInformation(String location,
-      {double lat, double lng}) async {
-    if (_shelterCache.containsKey(location)) return _shelterCache[location];
-    var response = await kClient.fetch('organizations/$location', {});
+  static Future<ShelterInformation> getShelterInformation(
+      String location) async {
+    if (_shelterMap.containsKey(location)) return _shelterMap[location];
+    var response = await kClient.call('organizations/$location', {});
     var shelterMap = response['organization'];
-    // Cache it to not make this API call again.
-    ShelterInformation shelter =
-        toShelterInformation(shelterMap, usrlat: lat, usrlng: lng);
-    _shelterCache[location] = shelter;
+    // Save it to not make this API call again.
+    ShelterInformation shelter = toShelterInformation(shelterMap);
+    _shelterMap[location] = shelter;
     return shelter;
   }
 
-  static Future<String> getAnimalDetails(Animal animal) async {
+  // Returns the description of the Animal. While we make this request, we'll
+  // also fetch some additional information on the pet incase something was
+  // updated.
+  // TODO: Refreshing information is only really necessary for saved Animals.
+  static Future<String> fetchAnimalDesciption(Animal animal) async {
+    // NOTE: The new API of PetFinder does not return the full description for
+    // some reason. They only return a portion and then elipses. I emailed them
+    // about this and they said this was intentional and would consider
+    // returning the full desciption in the future, so for now just fall back
+    // to the old API for the full description
     animal.info.description = await getAnimalDescriptionV1(animal.info.apiId);
 
     // Update the rest of the pet information if needed.
-    var response = await kClient.fetch('animals/${animal.info.apiId}', {});
+    var response = await kClient.call('animals/${animal.info.apiId}', {});
+
     var petDoc = response['animal'];
+    // If the V1 API doesn't return anything, then we have no choice than to use
+    // the short description returned in V2.
     if (animal.info.description == null) {
       animal.info.description = petDoc['description'];
     }
+
     animal.info.options.clear();
     for (String item in petDoc['tags']) {
       animal.info.options.add(item);
@@ -144,7 +154,7 @@ class PetFinderApi {
       animal.info.imgUrl.add('');
     }
 
-    // TODO: update pictures, check adoption status.
+    // TODO: Update pictures, check adoption status.
     animal.status = petDoc['status'];
 
     animal.info.age = petDoc['age'];

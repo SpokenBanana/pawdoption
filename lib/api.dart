@@ -30,7 +30,7 @@ class AnimalFeed {
   SwipeNotifier notifier;
 
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
-  bool done, reloadFeed;
+  bool reloadFeed;
 
   PetAPI petApi;
   PetSearchOptions searchOptions;
@@ -52,7 +52,6 @@ class AnimalFeed {
     this.skipped = Queue<Animal>();
     this.liked = Set<String>();
     this.currentList = List<Animal>();
-    this.done = false;
     this.reloadFeed = false;
     this.likedDb = new LikedDb();
   }
@@ -68,7 +67,6 @@ class AnimalFeed {
   Future<bool> initialize(String zip,
       {String animalType, PetSearchOptions options}) async {
     this.reloadFeed = false;
-    this.done = false;
     this.zip = zip;
 
     this.currentList = List<Animal>();
@@ -82,17 +80,16 @@ class AnimalFeed {
     this.currentList = await petApi.getAnimals(amount, this.liked,
         searchOptions: this.searchOptions);
     this.currentList.shuffle();
-    this.done = true;
     return true;
   }
 
-  void updateList() {
+  void maybeFetchMoreAnimals() {
     if (this.currentList.length <= this.fetchMoreAt) {
       petApi
           .getAnimals(25, this.liked, searchOptions: this.searchOptions)
-          .then((list) {
-        list.shuffle();
-        this.currentList.insertAll(0, list);
+          .then((result) {
+        result.shuffle();
+        this.currentList.insertAll(0, result);
       });
     }
   }
@@ -101,7 +98,7 @@ class AnimalFeed {
     Animal pet = currentList.removeLast();
     if (this.skipped.length == _undoMax) this.skipped.removeFirst();
     this.skipped.addLast(pet);
-    this.updateList();
+    this.maybeFetchMoreAnimals();
   }
 
   void getRecentlySkipped() {
@@ -120,7 +117,7 @@ class AnimalFeed {
       liked.add(current.info.apiId);
       likedDb.insert(current);
     }
-    this.updateList();
+    this.maybeFetchMoreAnimals();
   }
 
   void updatePet(Animal pet) {
@@ -133,6 +130,8 @@ class AnimalFeed {
     await this.likedDb.open(path);
 
     // Check if we have previously saved pets in SharedPreferences.
+    // This is because I used to store the saved pets list in SharedPreferences,
+    // but I moved it to a SQL database to allow for more pets stored.
     var prefs = await SharedPreferences.getInstance();
     var fromPrefs = prefs.getStringList('liked');
     if (fromPrefs != null) {

@@ -39,13 +39,13 @@ class _DetailsPage extends State<DetailsPage> {
             widget.pet.info.imgUrl,
             tag: widget.pet.info.apiId,
           ),
-          _buildDogInfo(widget.pet.info),
-          _checkStatus(widget.pet),
+          buildDogInfo(widget.pet.info),
+          checkStatus(widget.pet),
           Divider(),
-          _fetchAndBuildComments(key),
+          fetchAndBuildComments(key),
           Divider(),
-          _buildOptionTagSection(widget.pet.info),
-          _buildAdoptInfo(),
+          buildOptionTagSection(widget.pet.info),
+          buildAdoptInfo(),
           !widget.pet.info.hasId()
               ? SizedBox()
               : Padding(
@@ -61,7 +61,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  _populateUrls(String description) {
+  populateUrls(String description) {
     urls = List<String>();
     var urlMatches =
         RegExp(kUrlRegex, caseSensitive: false).allMatches(description);
@@ -70,23 +70,23 @@ class _DetailsPage extends State<DetailsPage> {
     }
   }
 
-  Widget _petAtrributeSection() {
+  Widget petAtrributeSection() {
     var attributes = new List<Widget>();
     if (widget.pet.hasShots) {
       attributes.add(
-          _attributeChip("Has shots", Icon(Icons.check, color: Colors.green)));
+          attributeChip("Has shots", Icon(Icons.check, color: Colors.green)));
     }
     if (widget.pet.spayedNeutered) {
       if (widget.pet.info.gender == "Male") {
         attributes.add(
-            _attributeChip("Neutered", Icon(Icons.check, color: Colors.green)));
+            attributeChip("Neutered", Icon(Icons.check, color: Colors.green)));
       } else {
         attributes.add(
-            _attributeChip("Spayed", Icon(Icons.check, color: Colors.green)));
+            attributeChip("Spayed", Icon(Icons.check, color: Colors.green)));
       }
     }
     if (widget.pet.specialNeeds) {
-      attributes.add(_attributeChip(
+      attributes.add(attributeChip(
           "Special needs", Icon(Icons.warning, color: Colors.yellow)));
     }
     // if (attributes.isEmpty) {
@@ -103,7 +103,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _attributeChip(String label, Icon icon) {
+  Widget attributeChip(String label, Icon icon) {
     return Chip(
       label: Row(
         children: <Widget>[
@@ -114,10 +114,10 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
+  Widget fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (!widget.pet.shouldCheckOn()) {
-      _populateUrls(widget.pet.info.description);
-      return _buildComments(widget.pet.info.description, urls, key);
+      populateUrls(widget.pet.info.description);
+      return buildComments(widget.pet.info.description, urls, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -133,20 +133,20 @@ class _DetailsPage extends State<DetailsPage> {
                 child: Text('No bio, check with shelter for more information!'),
               );
             else {
-              _populateUrls(snapshot.data);
+              populateUrls(snapshot.data);
               // After fetching details, we may have updated information,
               // so update the list here.
               if (widget.pet.dbId != null) {
                 widget.feed.updatePet(widget.pet);
               }
-              return _buildComments(snapshot.data, urls, key);
+              return buildComments(snapshot.data, urls, key);
             }
         }
       },
     );
   }
 
-  Widget _buildComments(
+  Widget buildComments(
       String comments, List<String> urls, GlobalKey<ScaffoldState> key) {
     return Column(
       children: <Widget>[
@@ -159,12 +159,12 @@ class _DetailsPage extends State<DetailsPage> {
             ),
           ),
         ),
-        _buildLinkSection(urls, key),
+        buildLinkSection(urls, key),
       ],
     );
   }
 
-  Widget _createInfoRow(String title, String item) {
+  Widget createInfoRow(String title, String item) {
     return Row(
       children: <Widget>[
         Padding(
@@ -184,7 +184,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _checkStatus(Animal pet) {
+  Widget checkStatus(Animal pet) {
     Widget adopted = SizedBox();
     if (pet.status != "adoptable") {
       adopted = Chip(
@@ -205,7 +205,7 @@ class _DetailsPage extends State<DetailsPage> {
     return adopted;
   }
 
-  Widget _buildDogInfo(AnimalData pet) {
+  Widget buildDogInfo(AnimalData pet) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(12.0),
@@ -234,18 +234,18 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildOptionTagSection(AnimalData pet) {
+  Widget buildOptionTagSection(AnimalData pet) {
     if (pet.options == null || pet.options.isEmpty) return SizedBox();
     return Column(
       children: <Widget>[
         Text("Pet Tags"),
-        _buildOptionTags(),
+        buildOptionTags(),
         Divider(),
       ],
     );
   }
 
-  Widget _buildOptionTags() {
+  Widget buildOptionTags() {
     return Container(
       height: 40.0,
       child: ListView(
@@ -267,7 +267,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildUrlTags(List<String> urls, GlobalKey<ScaffoldState> key) {
+  Widget buildUrlTags(List<String> urls, GlobalKey<ScaffoldState> key) {
     return Container(
       height: 50.0,
       child: ListView(
@@ -308,7 +308,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildShelterDescription(ShelterInformation shelter) {
+  Widget buildShelterDescription(ShelterInformation shelter) {
     if (shelter == null) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -346,7 +346,7 @@ class _DetailsPage extends State<DetailsPage> {
       );
     }
     if (shelter.policyUrl != null) {
-      policyUrl = _shelterActionChip(
+      policyUrl = shelterActionChip(
           Icon(Icons.language, color: Colors.grey),
           Expanded(
               child: Text(
@@ -412,7 +412,7 @@ class _DetailsPage extends State<DetailsPage> {
                       }),
                 ],
               ),
-        _shelterActionChip(
+        shelterActionChip(
             Icon(
               Icons.location_on,
               color: Colors.green,
@@ -436,7 +436,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _shelterActionChip(Icon icon, Widget body, Function onPressed) {
+  Widget shelterActionChip(Icon icon, Widget body, Function onPressed) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
@@ -458,7 +458,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildAdoptInfo() {
+  Widget buildAdoptInfo() {
     return Column(
       children: <Widget>[
         Text(
@@ -482,7 +482,7 @@ class _DetailsPage extends State<DetailsPage> {
                   return new Text(
                       'Couldn\'t get the information :( ${snapshot.error}');
                 else
-                  return _buildShelterDescription(snapshot.data);
+                  return buildShelterDescription(snapshot.data);
             }
           },
         ),
@@ -490,12 +490,12 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget _buildLinkSection(List<String> urls, key) {
+  Widget buildLinkSection(List<String> urls, key) {
     if (urls.isEmpty) return SizedBox();
     return Column(
       children: <Widget>[
         Divider(),
-        _buildUrlTags(urls, key),
+        buildUrlTags(urls, key),
         Text("Long press link to copy",
             style: const TextStyle(color: Colors.grey, fontSize: 12.0))
       ],

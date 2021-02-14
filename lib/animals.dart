@@ -55,6 +55,8 @@ class Animal {
       data.imgUrl.add('');
     }
 
+    data.url = animalMap['url'];
+
     // Get city state.
     var city = animalMap['contact']['address']['city'];
     var state = animalMap['contact']['address']['state'];
@@ -113,6 +115,7 @@ class Animal {
   // For now, we'll check on pets if it has been more than 3 days since the last
   // recorded lastUpdated date.
   bool shouldCheckOn() {
+    print(info.description);
     bool result = DateTime.now().difference(this.lastViewed).inHours > 12 ||
         info.description == null ||
         info.description.isEmpty;

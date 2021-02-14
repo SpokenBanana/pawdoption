@@ -117,7 +117,8 @@ class _DetailsPage extends State<DetailsPage> {
   Widget fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (!widget.pet.shouldCheckOn()) {
       populateUrls(widget.pet.info.description);
-      return buildComments(widget.pet.info.description, urls, key);
+      return buildComments(
+          widget.pet.info.description, widget.pet.info.url, urls, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -139,17 +140,19 @@ class _DetailsPage extends State<DetailsPage> {
               if (widget.pet.dbId != null) {
                 widget.feed.updatePet(widget.pet);
               }
-              return buildComments(snapshot.data, urls, key);
+              return buildComments(
+                  snapshot.data, widget.pet.info.url, urls, key);
             }
         }
       },
     );
   }
 
-  Widget buildComments(
-      String comments, List<String> urls, GlobalKey<ScaffoldState> key) {
+  Widget buildComments(String comments, String url, List<String> urls,
+      GlobalKey<ScaffoldState> key) {
     return Column(
       children: <Widget>[
+        Text("Preview description:"),
         Padding(
           padding: const EdgeInsets.all(14.0),
           child: SelectableText.rich(
@@ -159,7 +162,6 @@ class _DetailsPage extends State<DetailsPage> {
             ),
           ),
         ),
-        buildLinkSection(urls, key),
       ],
     );
   }

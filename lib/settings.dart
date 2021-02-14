@@ -321,10 +321,6 @@ class _SettingsPage extends State<SettingsPage> {
               listFetcher: fetchBreedList,
               selectedMatches: searchOptions.breeds,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: buidInfoSection(),
-            )
           ],
         ),
       ),
@@ -389,52 +385,6 @@ class _SettingsPage extends State<SettingsPage> {
       ));
     }
     return result;
-  }
-
-  Widget buidInfoSection() {
-    const infoStyle = const TextStyle(
-      color: Colors.grey,
-    );
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Divider(),
-        Icon(Icons.info, color: Colors.grey),
-        Text(
-          "All information was provided by PetFinder",
-          textAlign: TextAlign.center,
-          style: infoStyle,
-        ),
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            text: 'Head over to ',
-            style: infoStyle,
-            children: <TextSpan>[
-              TextSpan(
-                  text: 'petfinder.com',
-                  style: TextStyle(
-                    color: Colors.blue,
-                    decoration: TextDecoration.underline,
-                  ),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () async {
-                      await launch('https://www.petfinder.com/');
-                    }),
-              TextSpan(
-                text: ' to search directly for the pets found here!',
-                style: infoStyle,
-              ),
-            ],
-          ),
-        ),
-        Text(
-          "(then come back)",
-          textAlign: TextAlign.center,
-          style: infoStyle,
-        ),
-      ],
-    );
   }
 
   void updateInfo() {

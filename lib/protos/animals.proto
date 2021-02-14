@@ -32,4 +32,7 @@ message AnimalData {
     bool good_with_cats = 21;
     bool good_with_dogs = 22;
     uint64 liked_usec = 23;
+    // Petfinder url. Since they don't return full descriptions.
+    // We will now absolutely find an alternative API.
+    string url = 24;
 }

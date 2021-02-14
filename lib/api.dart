@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:fixnum/fixnum.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -119,6 +120,7 @@ class AnimalFeed {
 
   void like() {
     Animal current = currentList.removeLast();
+    current.info.likedUsec = Int64(DateTime.now().microsecondsSinceEpoch);
     if (!liked.contains(current.info.apiId)) {
       liked.add(current.info.apiId);
       likedDb.insert(current);

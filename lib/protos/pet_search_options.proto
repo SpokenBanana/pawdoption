@@ -30,4 +30,8 @@ message PetSearchOptions {
     bool good_with_cats =  13;
     repeated string coat = 14;
     repeated string color = 15;
+
+    // Whether or not to enable light mode for the device.
+    // Set to false by default.
+    bool light_mode_enable = 16;
 }

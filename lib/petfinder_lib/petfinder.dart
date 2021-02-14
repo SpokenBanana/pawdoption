@@ -103,7 +103,9 @@ class PetFinderApi {
     var response = await kClient.call('types/$animalType/breeds', params);
     var breeds = response['breeds'];
     List<String> list = List<String>();
-    list.addAll(breeds.map((breed) => breed['name']));
+    for (var breed in breeds) {
+      list.add(breed['name']);
+    }
     return list;
   }
 

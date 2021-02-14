@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../api.dart';
-
 class PetButton extends StatelessWidget {
-  PetButton({this.key, this.child, this.feed, this.padding, this.onPressed})
+  PetButton(
+      {this.key, this.child, this.lightMode, this.padding, this.onPressed})
       : super(key: key);
   final Key key;
 
   final Widget child;
-  final AnimalFeed feed;
+  final bool lightMode;
   final VoidCallback onPressed;
   final EdgeInsetsGeometry padding;
 
   @override
   Widget build(BuildContext context) {
     return RaisedButton(
-      color: Colors.black,
+      color: this.lightMode ? Colors.white : Colors.black,
       elevation: 5.0,
       onPressed: this.onPressed,
       shape: CircleBorder(),

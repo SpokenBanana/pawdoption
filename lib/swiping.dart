@@ -23,7 +23,9 @@ class SwipingPage extends StatefulWidget {
 
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
-  _SwipingPageState(AnimalFeed feed);
+  _SwipingPageState(AnimalFeed feed) {
+    feed.themeNotifier.addListener(loadColors);
+  }
 
   Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
@@ -45,6 +47,11 @@ class _SwipingPageState extends State<SwipingPage>
           animalType: animalType ? 'cat' : 'dog', options: options);
     }
     return true;
+  }
+
+  // When the theme changes, all we really need to do is redraw this screen.
+  loadColors() {
+    setState(() {});
   }
 
   Future<String> getZip(SharedPreferences prefs) async {
@@ -123,6 +130,7 @@ class _SwipingPageState extends State<SwipingPage>
       children: <Widget>[
         Text('Error occurred :( Try again?'),
         PetButton(
+          lightMode: this.widget.feed.themeNotifier.lightModeEnabled,
           child: Icon(Icons.refresh),
           onPressed: () {
             setState(() {});
@@ -145,13 +153,14 @@ class _SwipingPageState extends State<SwipingPage>
               Text('Go to the ', style: infoStyle),
               RaisedButton(
                 elevation: 5.0,
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  bool result = await Navigator.push<bool>(
                       context,
                       PageRouteBuilder(
                           maintainState: false,
                           pageBuilder: (context, _, __) =>
                               SettingsPage(feed: widget.feed)));
+                  if (result) setState(() {});
                 },
                 color: Colors.white,
                 shape: CircleBorder(),
@@ -178,6 +187,7 @@ class _SwipingPageState extends State<SwipingPage>
       children: <Widget>[
         PetButton(
           padding: const EdgeInsets.all(10.0),
+          lightMode: this.widget.feed.themeNotifier.lightModeEnabled,
           onPressed: () {
             if (widget.feed.skipped.isNotEmpty) widget.feed.notifier.undo();
           },
@@ -190,6 +200,7 @@ class _SwipingPageState extends State<SwipingPage>
         PetButton(
           padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.skipCurrent(),
+          lightMode: this.widget.feed.themeNotifier.lightModeEnabled,
           child: Icon(
             Icons.close,
             size: size,
@@ -199,6 +210,7 @@ class _SwipingPageState extends State<SwipingPage>
         PetButton(
           padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.likeCurrent(),
+          lightMode: this.widget.feed.themeNotifier.lightModeEnabled,
           child: Icon(
             Icons.favorite,
             size: size,
@@ -207,10 +219,14 @@ class _SwipingPageState extends State<SwipingPage>
         ),
         PetButton(
           padding: const EdgeInsets.all(10.0),
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SettingsPage(feed: widget.feed))),
+          lightMode: this.widget.feed.themeNotifier.lightModeEnabled,
+          onPressed: () async {
+            bool result = await Navigator.push<bool>(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => SettingsPage(feed: widget.feed)));
+            if (result) setState(() {});
+          },
           child: Icon(
             Icons.settings,
             size: size / 2,

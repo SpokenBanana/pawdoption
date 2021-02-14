@@ -148,7 +148,7 @@ class _SavedPage extends State<SavedPage> {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context)
                           .textTheme
-                          .headline
+                          .headline5
                           .copyWith(fontSize: 18.0)),
                 ),
                 Expanded(

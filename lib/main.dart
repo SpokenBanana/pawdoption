@@ -1,19 +1,40 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'colors.dart';
 import 'saved.dart';
 import 'swiping.dart';
+import 'protos/pet_search_options.pb.dart';
 
 void main() => runApp(new MyApp());
 
 final AnimalFeed feed = AnimalFeed();
+ThemeData mainTheme;
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  bool darkMode = true;
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  _MyAppState() {
+    SharedPreferences.getInstance().then((prefs) {
+      final optionsStr = prefs.getString('searchOptions') ?? '';
+      PetSearchOptions options = kDefaultOptions;
+      if (optionsStr.isNotEmpty)
+        options = PetSearchOptions.fromJson(optionsStr);
+      if (options.lightModeEnable != feed.themeNotifier.lightModeEnabled)
+        feed.themeNotifier.setTheme(options.lightModeEnable);
+    });
+  }
   @override
   Widget build(BuildContext context) {
-    final ThemeData mainTheme = _buildDarkTheme();
+    ThemeData mainTheme =
+        this.widget.darkMode ? _buildDarkTheme() : _buildTheme();
     feed.loadLiked();
+    feed.themeNotifier.addListener(whenThemeChanged);
     return MaterialApp(
         title: 'Pawdoption',
         theme: mainTheme,
@@ -30,6 +51,12 @@ class MyApp extends StatelessWidget {
                 ]),
           ),
         ));
+  }
+
+  void whenThemeChanged() {
+    setState(() {
+      this.widget.darkMode = !feed.themeNotifier.lightModeEnabled;
+    });
   }
 
   Widget _buildTabBar(ThemeData theme) {
@@ -56,6 +83,7 @@ class MyApp extends StatelessWidget {
   ThemeData _buildTheme() {
     final ThemeData base = ThemeData.light();
     return base.copyWith(
+      brightness: Brightness.light,
       primaryColor: Colors.white,
       primaryColorDark: kPetPrimaryText,
       accentColor: Colors.black,
@@ -65,45 +93,8 @@ class MyApp extends StatelessWidget {
       primaryIconTheme: base.iconTheme.copyWith(
         color: Colors.grey,
       ),
-      primaryTextTheme: base.textTheme.copyWith(
-        title: TextStyle(
-          color: kPetPrimaryText,
-          fontFamily: "Raleway",
-          fontSize: 25.0,
-        ),
-        subhead: TextStyle(
-          color: Colors.grey[600],
-          fontFamily: 'Raleway',
-          fontSize: 22.0,
-        ),
-      ),
-      textTheme: base.textTheme.copyWith(
-        title: TextStyle(
-          color: kPetPrimaryText,
-          fontFamily: "LobsterTwo",
-          fontSize: 25.0,
-        ),
-        headline: TextStyle(
-          color: kPetPrimaryText,
-          fontFamily: 'Raleway',
-          fontSize: 22.0,
-          fontWeight: FontWeight.bold,
-        ),
-        subhead: TextStyle(
-          color: Colors.grey[600],
-          fontFamily: 'Raleway',
-          fontSize: 22.0,
-        ),
-        caption: TextStyle(
-          color: Colors.grey,
-          fontFamily: 'OpenSans',
-          fontSize: 14.0,
-        ),
-        body1: TextStyle(
-          color: kPetPrimaryText,
-          fontFamily: 'OpenSans',
-        ),
-      ),
+      primaryTextTheme: base.textTheme.copyWith(),
+      textTheme: base.textTheme.copyWith(),
     );
   }
 
@@ -111,42 +102,10 @@ class MyApp extends StatelessWidget {
     final ThemeData base = ThemeData.dark();
     return base.copyWith(
       indicatorColor: Colors.blue[600],
+      brightness: Brightness.dark,
       accentColor: Colors.white,
-      primaryTextTheme: base.primaryTextTheme.copyWith(
-        title: TextStyle(
-          color: Colors.grey[200],
-          fontFamily: "Raleway",
-          fontSize: 25.0,
-        ),
-      ),
-      textTheme: base.textTheme
-          .copyWith(
-              title: TextStyle(
-                color: Colors.grey[200],
-                fontFamily: "LobsterTwo",
-                fontSize: 25.0,
-              ),
-              headline: TextStyle(
-                fontFamily: 'Raleway',
-                fontSize: 22.0,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey[300],
-              ),
-              subhead: TextStyle(
-                fontFamily: 'Raleway',
-                fontSize: 22.0,
-                color: Colors.grey[400],
-              ),
-              caption: TextStyle(
-                fontFamily: 'OpenSans',
-                fontSize: 14.0,
-                color: Colors.grey,
-              ),
-              body1: TextStyle(
-                fontFamily: 'OpenSans',
-                color: Colors.grey[300],
-              ))
-          .apply(),
+      primaryTextTheme: base.primaryTextTheme.copyWith(),
+      textTheme: base.textTheme.copyWith().apply(),
       buttonColor: Colors.grey[700],
       buttonTheme: base.buttonTheme.copyWith(),
     );

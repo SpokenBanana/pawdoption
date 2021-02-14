@@ -155,7 +155,7 @@ class _DetailsPage extends State<DetailsPage> {
           child: SelectableText.rich(
             TextSpan(
               text: comments,
-              style: Theme.of(context).textTheme.body1,
+              style: Theme.of(context).textTheme.bodyText2,
             ),
           ),
         ),
@@ -370,7 +370,10 @@ class _DetailsPage extends State<DetailsPage> {
             shelter.phone.trim() == ""
                 ? SizedBox()
                 : ActionChip(
-                    backgroundColor: Colors.black,
+                    backgroundColor:
+                        this.widget.feed.themeNotifier.lightModeEnabled
+                            ? Colors.white
+                            : Colors.black,
                     elevation: 1.5,
                     label: Row(
                       children: <Widget>[
@@ -393,7 +396,10 @@ class _DetailsPage extends State<DetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ActionChip(
-                      backgroundColor: Colors.black,
+                      backgroundColor:
+                          this.widget.feed.themeNotifier.lightModeEnabled
+                              ? Colors.white
+                              : Colors.black,
                       elevation: 1.5,
                       label: Row(
                         children: <Widget>[
@@ -441,7 +447,9 @@ class _DetailsPage extends State<DetailsPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         ActionChip(
-          backgroundColor: Colors.black,
+          backgroundColor: this.widget.feed.themeNotifier.lightModeEnabled
+              ? Colors.white
+              : Colors.black,
           elevation: 1.5,
           label: Container(
             constraints: BoxConstraints(maxWidth: 300),

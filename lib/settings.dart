@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -51,7 +52,9 @@ class _SettingsPage extends State<SettingsPage> {
         }
 
         if (widget.feed.searchOptions != null) {
-          searchOptions = widget.feed.searchOptions.clone();
+          searchOptions = GeneratedMessageGenericExtensions<PetSearchOptions>(
+                  widget.feed.searchOptions)
+              .deepCopy();
         } else if (searchJson != null) {
           searchOptions = PetSearchOptions.fromJson(searchJson);
         }
@@ -146,6 +149,7 @@ class _SettingsPage extends State<SettingsPage> {
                   setState(() {
                     _textController.text = zip;
                     _zip = zip;
+                    searchOptions.zip = zip;
                   });
               },
               child: Row(
@@ -157,6 +161,30 @@ class _SettingsPage extends State<SettingsPage> {
                   ),
                 ],
               ),
+            ),
+            Divider(),
+            // Settings to change the theme.
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                Text(
+                  "Toggle light mode ",
+                  style: titleStyle,
+                ),
+                Switch(
+                  value: this.searchOptions.lightModeEnable,
+                  onChanged: (changed) {
+                    setState(() {
+                      this.searchOptions.lightModeEnable = changed;
+                      this
+                          .widget
+                          .feed
+                          .themeNotifier
+                          .setTheme(this.searchOptions.lightModeEnable);
+                    });
+                  },
+                ),
+              ],
             ),
             Divider(),
             Text(
@@ -450,6 +478,7 @@ class _SettingsPage extends State<SettingsPage> {
         onChanged: (text) {
           _errorMessage = '';
           _zip = text;
+          searchOptions.zip = text;
         },
         decoration: InputDecoration(
           labelStyle: TextStyle(color: Theme.of(context).accentColor),

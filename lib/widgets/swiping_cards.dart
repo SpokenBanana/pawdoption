@@ -26,6 +26,7 @@ class _SwipingCardsState extends State<SwipingCards>
   void initState() {
     super.initState();
     widget.feed.notifier.addListener(onSwipeChange);
+    widget.feed.themeNotifier.addListener(onThemeChanged);
   }
 
   onSwipeChange() {
@@ -34,6 +35,10 @@ class _SwipingCardsState extends State<SwipingCards>
         widget.feed.getRecentlySkipped();
       });
     }
+  }
+
+  onThemeChanged() {
+    setState(() {});
   }
 
   @override
@@ -68,7 +73,8 @@ class _SwipingCardsState extends State<SwipingCards>
                 alignment: Alignment.center,
                 transform: Matrix4.identity()
                   ..scale(_backCardScale, _backCardScale),
-                child: PetCard(widget.feed.nextPet),
+                child: PetCard(widget.feed.nextPet,
+                    widget.feed.themeNotifier.lightModeEnabled),
               ),
         DraggableCard(
           onLeftSwipe: () {
@@ -93,9 +99,8 @@ class _SwipingCardsState extends State<SwipingCards>
               MaterialPageRoute(
                   builder: (context) => DetailsPage(
                       pet: widget.feed.currentPet, feed: widget.feed))),
-          child: PetCard(
-            widget.feed.currentPet,
-          ),
+          child: PetCard(widget.feed.currentPet,
+              widget.feed.themeNotifier.lightModeEnabled),
         ),
       ],
     );
@@ -136,7 +141,8 @@ class _SwipingCardsState extends State<SwipingCards>
 /// Widget to allow for better handling of pet cards and swiping them.
 class PetCard extends StatelessWidget {
   final Animal pet;
-  PetCard(this.pet);
+  final bool lightModeEnabled;
+  PetCard(this.pet, this.lightModeEnabled);
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +156,7 @@ class PetCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.grey[900],
+        color: this.lightModeEnabled ? Colors.white : Colors.grey[900],
         boxShadow: [
           BoxShadow(
             offset: const Offset(0.0, 2.0),
@@ -207,7 +213,7 @@ class PetCard extends StatelessWidget {
                       '${pet.info.name},',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: Theme.of(context).textTheme.headline.copyWith(
+                      style: Theme.of(context).textTheme.headline5.copyWith(
                             fontSize: 30,
                           ),
                     ),
@@ -219,7 +225,7 @@ class PetCard extends StatelessWidget {
                     pet.info.age,
                     overflow: TextOverflow.fade,
                     maxLines: 1,
-                    style: Theme.of(context).textTheme.subhead.copyWith(
+                    style: Theme.of(context).textTheme.subtitle1.copyWith(
                           fontSize: 30,
                         ),
                   ),

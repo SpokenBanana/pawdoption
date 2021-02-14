@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:geocoder/geocoder.dart';
 import 'package:location/location.dart';
@@ -9,6 +10,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'animals.dart';
+import 'notifiers/theme_notifier.dart';
 import 'petfinder_lib/petfinder.dart';
 import 'protos/pet_search_options.pb.dart';
 
@@ -16,7 +18,8 @@ final kDefaultOptions = PetSearchOptions()
   ..fixedOnly = false
   ..includeBreeds = true
   ..maxDistance = 50
-  ..animalType = "dog";
+  ..animalType = "dog"
+  ..lightModeEnable = false;
 
 /// The main interface the app uses to get pet information.
 /// Made this extra layer so we can switch APIs and keep the same
@@ -28,6 +31,7 @@ class AnimalFeed {
 
   String zip;
   SwipeNotifier notifier;
+  ThemeNotifier themeNotifier;
 
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
   bool reloadFeed;
@@ -53,7 +57,8 @@ class AnimalFeed {
     this.liked = Set<String>();
     this.currentList = List<Animal>();
     this.reloadFeed = false;
-    this.likedDb = new LikedDb();
+    this.likedDb = LikedDb();
+    this.themeNotifier = ThemeNotifier();
   }
 
   Future<bool> reInitialize() async {
@@ -73,6 +78,7 @@ class AnimalFeed {
     this.skipped = Queue<Animal>();
 
     this.searchOptions = options ?? kDefaultOptions;
+    this.searchOptions.zip = zip;
 
     await petApi.setLocation(zip, this.searchOptions.maxDistance,
         animalType: animalType);

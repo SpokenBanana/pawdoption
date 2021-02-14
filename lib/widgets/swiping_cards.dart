@@ -150,7 +150,7 @@ class PetCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
+        color: Colors.grey[900],
         boxShadow: [
           BoxShadow(
             offset: const Offset(0.0, 2.0),

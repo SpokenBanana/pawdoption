@@ -12,7 +12,7 @@ final AnimalFeed feed = AnimalFeed();
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ThemeData mainTheme = _buildTheme();
+    final ThemeData mainTheme = _buildDarkTheme();
     feed.loadLiked();
     return MaterialApp(
         title: 'Pawdoption',

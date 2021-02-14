@@ -370,7 +370,7 @@ class _DetailsPage extends State<DetailsPage> {
             shelter.phone.trim() == ""
                 ? SizedBox()
                 : ActionChip(
-                    backgroundColor: Colors.white,
+                    backgroundColor: Colors.black,
                     elevation: 1.5,
                     label: Row(
                       children: <Widget>[
@@ -393,7 +393,7 @@ class _DetailsPage extends State<DetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ActionChip(
-                      backgroundColor: Colors.white,
+                      backgroundColor: Colors.black,
                       elevation: 1.5,
                       label: Row(
                         children: <Widget>[
@@ -441,7 +441,7 @@ class _DetailsPage extends State<DetailsPage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         ActionChip(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.black,
           elevation: 1.5,
           label: Container(
             constraints: BoxConstraints(maxWidth: 300),

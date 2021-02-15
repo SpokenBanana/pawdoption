@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:petadopt/notifiers/swiping_notifier.dart';
 
 import '../api.dart';
 

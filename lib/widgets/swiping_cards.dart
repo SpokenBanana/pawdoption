@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petadopt/notifiers/swiping_notifier.dart';
 
 import '../animals.dart';
 import '../api.dart';

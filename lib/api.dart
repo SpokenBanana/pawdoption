@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'animals.dart';
+import 'notifiers/swiping_notifier.dart';
 import 'notifiers/theme_notifier.dart';
 import 'petfinder_lib/petfinder.dart';
 import 'protos/pet_search_options.pb.dart';
@@ -177,6 +178,7 @@ Future<String> getZipFromGeo() async {
   }
 }
 
+// TODO: There's no reason for these to be random static functions.
 Future<String> getDetailsAbout(Animal animal) async =>
     await PetFinderApi.fetchAnimalDesciption(animal);
 
@@ -185,36 +187,3 @@ Future<ShelterInformation> getShelterInformation(String location) async =>
 
 Future<List<String>> getBreedList(String animal) async =>
     await PetFinderApi.getBreeds(animal);
-
-enum Swiped { left, right, undo, none }
-
-class SwipeNotifier extends ChangeNotifier {
-  Swiped swiped = Swiped.none;
-
-  likeCurrent() {
-    swiped = Swiped.right;
-    notifyListeners();
-  }
-
-  skipCurrent() {
-    swiped = Swiped.left;
-    notifyListeners();
-  }
-
-  undo() {
-    swiped = Swiped.undo;
-    notifyListeners();
-  }
-}
-
-// TODO: This is probably overkill for our purposes so maybe find a better
-//       way to do this.
-class AnimalChangeNotifier extends ChangeNotifier {
-  String animalType;
-  AnimalChangeNotifier({this.animalType});
-
-  changeAnimal(String animal) {
-    this.animalType = animal;
-    notifyListeners();
-  }
-}

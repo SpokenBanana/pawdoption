@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'api.dart';
 import 'colors.dart';
+import 'notifiers/animal_change_notifier.dart';
 import 'protos/pet_search_options.pb.dart';
 import 'widgets/search_bar.dart';
 

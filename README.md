@@ -16,8 +16,6 @@ Pawdoption allows you to choose between swiping through dogs or cats.
 
 <img src="screenshots/saved.png" width="500px"/>
 
-
-
 ## Get it for Android
 
 Pawdoption is currently live on the Google Play Store!
@@ -29,23 +27,11 @@ Pawdoption is currently live on the Google Play Store!
 
 **Coming soon!**
 
-
-
 # Development details
 
 ## The Pet API
 
 All pet information was gathered through the [PetFinder](http://www.petfinder.com) API. 
 
-I initially protyped this application by getting pet information from PetHarbor. I would
-just generate the queries I needed and then scrape the page to get the information I needed.
-PetHarbor doesn't have an API and I know scraping a website is generally frowned upon especially for
-production apps so I emailed PetHarbor asking if it was okay if I did.
-
-They said no.
-
-So I ended up finding PetFinder and it saved the application! Luckily, PetFinder had everything I needed
-and basically the same pets as PetHarbor so the app stayed the same, just the working's under the hood
-changed. The only downside is that the API only allows 10k requests a day, anymore requests and you have to 
-ask for special permission from PetFinder to go above that. I suspect you have to start paying at that
-point. 
+NOTE: Petfinder no longer returns full pet descriptions in their API which
+made profiles much less useful. Looking for an alternative.

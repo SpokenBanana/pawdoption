@@ -186,6 +186,7 @@ class _SettingsPage extends State<SettingsPage> {
                             if (value != null) {
                               searchOptions.breeds.clear();
                               animalNotifier.changeAnimal('dog');
+                              searchOptions.animalType = 'dog';
                             }
                             _selectedCats = false;
                           });
@@ -205,6 +206,7 @@ class _SettingsPage extends State<SettingsPage> {
                             if (value != null) {
                               searchOptions.breeds.clear();
                               animalNotifier.changeAnimal('cat');
+                              searchOptions.animalType = 'cat';
                             }
                             _selectedCats = true;
                           });

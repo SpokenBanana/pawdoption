@@ -5,17 +5,14 @@ import 'package:petadopt/petfinder_lib/credentials.dart';
 
 import '../animals.dart';
 
-String buildUrl(String method, Map<String, String> params) {
-  return Uri.https('api.petfinder.com', '/v2/$method', params).toString();
+Uri buildUrl(String method, Map<String, String> params) {
+  return Uri.https('api.petfinder.com', '/v2/$method', params);
 }
 
 // Will make sure we make authorized requests.
 class ApiClient {
-  DateTime tokenExperiation;
-  String _token;
-  ApiClient() {
-    tokenExperiation = new DateTime.now();
-  }
+  DateTime tokenExperiation = DateTime.now();
+  String _token = '';
 
   Future<String> checkToken() async {
     if (tokenExperiation.isBefore(DateTime.now())) {
@@ -45,24 +42,24 @@ class ApiClient {
 /// use the V1 API since it looks like it is still working and does return full
 /// descriptions. We'll save this information once we fetch it.
 Future<String> getAnimalDescriptionV1(String petId) async {
-  String url = Uri.https('api.petfinder.com', 'pet.get', {
+  Uri url = Uri.https('api.petfinder.com', 'pet.get', {
     'format': 'json',
     'output': 'full',
     'key': kV1Token,
     'id': petId,
-  }).toString();
+  });
   var response = await http.get(url);
   var jsonResponse = json.decode(utf8.decode(response.bodyBytes));
   // In case PetFinder actually shuts down this API.
   try {
     return utf8.decode(Latin1Codec()
         .encode(jsonResponse['petfinder']['pet']['description']['\$t']));
-  } catch (Exception) {
-    return null;
+  } catch (exception) {
+    return '';
   }
 }
 
-ShelterInformation toShelterInformation(Map shelter) {
+ShelterInformation? toShelterInformation(Map? shelter) {
   if (shelter == null) {
     return null;
   }

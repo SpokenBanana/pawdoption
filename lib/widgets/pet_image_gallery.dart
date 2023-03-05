@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'photo_view_page.dart';
 
 class PetImageGallery extends StatefulWidget {
-  PetImageGallery(this.images, {this.tag});
+  PetImageGallery(this.images, {required this.tag});
   final List<String> images;
   final String tag;
 
@@ -21,12 +21,12 @@ class _PetImageGallery extends State<PetImageGallery>
   bool get wantKeepAlive => true;
 
   int index = 0;
-  AnimationController finishAnimation;
+  late AnimationController finishAnimation;
   double scrollPercent = 0.0;
-  Offset startDrag;
-  double startPercent;
-  double finishStart;
-  double finishEnd;
+  late Offset startDrag;
+  late double startPercent;
+  late double finishStart;
+  late double finishEnd;
 
   @override
   void initState() {
@@ -37,13 +37,14 @@ class _PetImageGallery extends State<PetImageGallery>
     )..addListener(() {
         setState(() {
           scrollPercent =
-              lerpDouble(finishStart, finishEnd, finishAnimation.value);
+              lerpDouble(finishStart, finishEnd, finishAnimation.value)!;
         });
       });
   }
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return GestureDetector(
       onTap: () {
         showDialog(
@@ -90,7 +91,7 @@ class _PetImageGallery extends State<PetImageGallery>
       translation:
           Offset(index - (scrollPercent / (1 / widget.images.length)), 0.0),
       child: Container(
-        height: 300.0,
+        height: 550.0,
         decoration: BoxDecoration(
           color: Colors.black,
           image: DecorationImage(
@@ -103,7 +104,7 @@ class _PetImageGallery extends State<PetImageGallery>
   }
 
   List<Widget> _buildIndicators() {
-    List<Widget> indicators = List<Widget>();
+    List<Widget> indicators = [];
     for (int i = 0; i < widget.images.length; i++) {
       indicators.add(
         Container(
@@ -152,7 +153,7 @@ class _PetImageGallery extends State<PetImageGallery>
 
   _onPanUpdate(DragUpdateDetails details) {
     final distance = details.globalPosition.dx - startDrag.dx;
-    final dragPercent = distance / context.size.width;
+    final dragPercent = distance / context.size!.width;
     final length = widget.images.length;
 
     setState(() {

@@ -2,39 +2,111 @@
 //  Generated code. Do not modify.
 //  source: pet_search_options.proto
 //
-// @dart = 2.3
-// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class PetSearchOptions extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('PetSearchOptions', package: const $pb.PackageName('pawdoption'), createEmptyInstance: create)
-    ..pPS(1, 'breeds')
-    ..pPS(2, 'ages')
-    ..pPS(3, 'sizes')
-    ..aOB(4, 'fixedOnly')
-    ..aOB(5, 'includeBreeds')
-    ..aOS(6, 'sex')
-    ..pPS(7, 'selectedShelters')
-    ..aOS(8, 'zip')
-    ..aOS(9, 'animalType')
-    ..a<$core.int>(10, 'maxDistance', $pb.PbFieldType.O3)
-    ..aOB(11, 'goodWithChildren')
-    ..aOB(12, 'goodWithDogs')
-    ..aOB(13, 'goodWithCats')
-    ..pPS(14, 'coat')
-    ..pPS(15, 'color')
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'PetSearchOptions', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pawdoption'), createEmptyInstance: create)
+    ..pPS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'breeds')
+    ..pPS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'ages')
+    ..pPS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sizes')
+    ..aOB(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'fixedOnly')
+    ..aOB(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'includeBreeds')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'sex')
+    ..pPS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'selectedShelters')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'zip')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'animalType')
+    ..a<$core.int>(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'maxDistance', $pb.PbFieldType.O3)
+    ..aOB(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithChildren')
+    ..aOB(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithDogs')
+    ..aOB(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithCats')
+    ..pPS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'coat')
+    ..pPS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'color')
     ..hasRequiredFields = false
   ;
 
   PetSearchOptions._() : super();
-  factory PetSearchOptions() => create();
+  factory PetSearchOptions({
+    $core.Iterable<$core.String>? breeds,
+    $core.Iterable<$core.String>? ages,
+    $core.Iterable<$core.String>? sizes,
+    $core.bool? fixedOnly,
+    $core.bool? includeBreeds,
+    $core.String? sex,
+    $core.Iterable<$core.String>? selectedShelters,
+    $core.String? zip,
+    $core.String? animalType,
+    $core.int? maxDistance,
+    $core.bool? goodWithChildren,
+    $core.bool? goodWithDogs,
+    $core.bool? goodWithCats,
+    $core.Iterable<$core.String>? coat,
+    $core.Iterable<$core.String>? color,
+  }) {
+    final _result = create();
+    if (breeds != null) {
+      _result.breeds.addAll(breeds);
+    }
+    if (ages != null) {
+      _result.ages.addAll(ages);
+    }
+    if (sizes != null) {
+      _result.sizes.addAll(sizes);
+    }
+    if (fixedOnly != null) {
+      _result.fixedOnly = fixedOnly;
+    }
+    if (includeBreeds != null) {
+      _result.includeBreeds = includeBreeds;
+    }
+    if (sex != null) {
+      _result.sex = sex;
+    }
+    if (selectedShelters != null) {
+      _result.selectedShelters.addAll(selectedShelters);
+    }
+    if (zip != null) {
+      _result.zip = zip;
+    }
+    if (animalType != null) {
+      _result.animalType = animalType;
+    }
+    if (maxDistance != null) {
+      _result.maxDistance = maxDistance;
+    }
+    if (goodWithChildren != null) {
+      _result.goodWithChildren = goodWithChildren;
+    }
+    if (goodWithDogs != null) {
+      _result.goodWithDogs = goodWithDogs;
+    }
+    if (goodWithCats != null) {
+      _result.goodWithCats = goodWithCats;
+    }
+    if (coat != null) {
+      _result.coat.addAll(coat);
+    }
+    if (color != null) {
+      _result.color.addAll(color);
+    }
+    return _result;
+  }
   factory PetSearchOptions.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory PetSearchOptions.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   PetSearchOptions clone() => PetSearchOptions()..mergeFromMessage(this);
-  PetSearchOptions copyWith(void Function(PetSearchOptions) updates) => super.copyWith((message) => updates(message as PetSearchOptions));
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  PetSearchOptions copyWith(void Function(PetSearchOptions) updates) => super.copyWith((message) => updates(message as PetSearchOptions)) as PetSearchOptions; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static PetSearchOptions create() => PetSearchOptions._();
@@ -42,7 +114,7 @@ class PetSearchOptions extends $pb.GeneratedMessage {
   static $pb.PbList<PetSearchOptions> createRepeated() => $pb.PbList<PetSearchOptions>();
   @$core.pragma('dart2js:noInline')
   static PetSearchOptions getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<PetSearchOptions>(create);
-  static PetSearchOptions _defaultInstance;
+  static PetSearchOptions? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.List<$core.String> get breeds => $_getList(0);

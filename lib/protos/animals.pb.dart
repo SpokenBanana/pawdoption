@@ -2,8 +2,8 @@
 //  Generated code. Do not modify.
 //  source: animals.proto
 //
-// @dart = 2.3
-// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
 import 'dart:core' as $core;
 
@@ -11,39 +11,143 @@ import 'package:fixnum/fixnum.dart' as $fixnum;
 import 'package:protobuf/protobuf.dart' as $pb;
 
 class AnimalData extends $pb.GeneratedMessage {
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo('AnimalData', package: const $pb.PackageName('pawdoption'), createEmptyInstance: create)
-    ..aOS(1, 'name')
-    ..aOS(2, 'gender')
-    ..aOS(3, 'breed')
-    ..aOS(4, 'age')
-    ..pPS(5, 'imgUrl', protoName: 'imgUrl')
-    ..aOS(6, 'id')
-    ..aOS(7, 'shelterId', protoName: 'shelterId')
-    ..aOS(8, 'apiId', protoName: 'apiId')
-    ..aOS(9, 'cityState', protoName: 'cityState')
-    ..pPS(10, 'options')
-    ..aOS(11, 'size')
-    ..aOS(12, 'lastUpdated', protoName: 'lastUpdated')
-    ..aOS(13, 'color')
-    ..aOS(14, 'thumbUrl', protoName: 'thumbUrl')
-    ..aOS(15, 'description')
-    ..aOB(16, 'spayedNeutered')
-    ..aOB(17, 'houseTrained')
-    ..aOB(18, 'specialNeeds')
-    ..aOB(19, 'shotsCurrent')
-    ..aOB(20, 'goodWithChildren')
-    ..aOB(21, 'goodWithCats')
-    ..aOB(22, 'goodWithDogs')
-    ..a<$fixnum.Int64>(23, 'likedUsec', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'AnimalData', package: const $pb.PackageName(const $core.bool.fromEnvironment('protobuf.omit_message_names') ? '' : 'pawdoption'), createEmptyInstance: create)
+    ..aOS(1, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'name')
+    ..aOS(2, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'gender')
+    ..aOS(3, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'breed')
+    ..aOS(4, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'age')
+    ..pPS(5, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'imgUrl', protoName: 'imgUrl')
+    ..aOS(6, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'id')
+    ..aOS(7, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'shelterId', protoName: 'shelterId')
+    ..aOS(8, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'apiId', protoName: 'apiId')
+    ..aOS(9, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'cityState', protoName: 'cityState')
+    ..pPS(10, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'options')
+    ..aOS(11, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'size')
+    ..aOS(12, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'lastUpdated', protoName: 'lastUpdated')
+    ..aOS(13, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'color')
+    ..aOS(14, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'thumbUrl', protoName: 'thumbUrl')
+    ..aOS(15, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'description')
+    ..aOB(16, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'spayedNeutered')
+    ..aOB(17, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'houseTrained')
+    ..aOB(18, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'specialNeeds')
+    ..aOB(19, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'shotsCurrent')
+    ..aOB(20, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithChildren')
+    ..aOB(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithCats')
+    ..aOB(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithDogs')
+    ..a<$fixnum.Int64>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'likedUsec', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
     ..hasRequiredFields = false
   ;
 
   AnimalData._() : super();
-  factory AnimalData() => create();
+  factory AnimalData({
+    $core.String? name,
+    $core.String? gender,
+    $core.String? breed,
+    $core.String? age,
+    $core.Iterable<$core.String>? imgUrl,
+    $core.String? id,
+    $core.String? shelterId,
+    $core.String? apiId,
+    $core.String? cityState,
+    $core.Iterable<$core.String>? options,
+    $core.String? size,
+    $core.String? lastUpdated,
+    $core.String? color,
+    $core.String? thumbUrl,
+    $core.String? description,
+    $core.bool? spayedNeutered,
+    $core.bool? houseTrained,
+    $core.bool? specialNeeds,
+    $core.bool? shotsCurrent,
+    $core.bool? goodWithChildren,
+    $core.bool? goodWithCats,
+    $core.bool? goodWithDogs,
+    $fixnum.Int64? likedUsec,
+  }) {
+    final _result = create();
+    if (name != null) {
+      _result.name = name;
+    }
+    if (gender != null) {
+      _result.gender = gender;
+    }
+    if (breed != null) {
+      _result.breed = breed;
+    }
+    if (age != null) {
+      _result.age = age;
+    }
+    if (imgUrl != null) {
+      _result.imgUrl.addAll(imgUrl);
+    }
+    if (id != null) {
+      _result.id = id;
+    }
+    if (shelterId != null) {
+      _result.shelterId = shelterId;
+    }
+    if (apiId != null) {
+      _result.apiId = apiId;
+    }
+    if (cityState != null) {
+      _result.cityState = cityState;
+    }
+    if (options != null) {
+      _result.options.addAll(options);
+    }
+    if (size != null) {
+      _result.size = size;
+    }
+    if (lastUpdated != null) {
+      _result.lastUpdated = lastUpdated;
+    }
+    if (color != null) {
+      _result.color = color;
+    }
+    if (thumbUrl != null) {
+      _result.thumbUrl = thumbUrl;
+    }
+    if (description != null) {
+      _result.description = description;
+    }
+    if (spayedNeutered != null) {
+      _result.spayedNeutered = spayedNeutered;
+    }
+    if (houseTrained != null) {
+      _result.houseTrained = houseTrained;
+    }
+    if (specialNeeds != null) {
+      _result.specialNeeds = specialNeeds;
+    }
+    if (shotsCurrent != null) {
+      _result.shotsCurrent = shotsCurrent;
+    }
+    if (goodWithChildren != null) {
+      _result.goodWithChildren = goodWithChildren;
+    }
+    if (goodWithCats != null) {
+      _result.goodWithCats = goodWithCats;
+    }
+    if (goodWithDogs != null) {
+      _result.goodWithDogs = goodWithDogs;
+    }
+    if (likedUsec != null) {
+      _result.likedUsec = likedUsec;
+    }
+    return _result;
+  }
   factory AnimalData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
   factory AnimalData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+  'Will be removed in next major version')
   AnimalData clone() => AnimalData()..mergeFromMessage(this);
-  AnimalData copyWith(void Function(AnimalData) updates) => super.copyWith((message) => updates(message as AnimalData));
+  @$core.Deprecated(
+  'Using this can add significant overhead to your binary. '
+  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+  'Will be removed in next major version')
+  AnimalData copyWith(void Function(AnimalData) updates) => super.copyWith((message) => updates(message as AnimalData)) as AnimalData; // ignore: deprecated_member_use
   $pb.BuilderInfo get info_ => _i;
   @$core.pragma('dart2js:noInline')
   static AnimalData create() => AnimalData._();
@@ -51,7 +155,7 @@ class AnimalData extends $pb.GeneratedMessage {
   static $pb.PbList<AnimalData> createRepeated() => $pb.PbList<AnimalData>();
   @$core.pragma('dart2js:noInline')
   static AnimalData getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AnimalData>(create);
-  static AnimalData _defaultInstance;
+  static AnimalData? _defaultInstance;
 
   @$pb.TagNumber(1)
   $core.String get name => $_getSZ(0);

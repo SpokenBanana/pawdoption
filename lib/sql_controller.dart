@@ -2,7 +2,7 @@ import 'package:petadopt/animals.dart';
 import 'package:sqflite/sqflite.dart';
 
 class LikedDb {
-  Database db;
+  late Database db;
 
   Future open(String path) async {
     db = await openDatabase(path, version: 1,
@@ -16,14 +16,12 @@ class LikedDb {
   }
 
   Future<List<Animal>> getAll() async {
-    List<Map> maps = await db.query('Liked', columns: ['id', 'protoString']);
-    if (maps == null) {
-      return null;
-    }
+    List<Map<String, dynamic>> maps =
+        await db.query('Liked', columns: ['id', 'protoString']);
     if (maps.length > 0) {
-      return maps.map((map) => Animal.fromMap(map)).toList();
+      return maps.map((m) => Animal.fromMap(m)).toList();
     }
-    return null;
+    return [];
   }
 
   Future insert(Animal liked) async {

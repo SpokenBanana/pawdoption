@@ -2,12 +2,10 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
-import '../colors.dart';
-
 /// A callback to retrieve the list of items to be used.
 typedef Future<List<String>> ItemCallback();
 
-/// Let's user search from a list of items by typing then selecting the items
+/// Lets the user search from a list of items by typing then selecting the items
 /// that show up.
 ///
 /// Either item or listFetcher must be supplied, but not both. Items get's
@@ -17,14 +15,11 @@ typedef Future<List<String>> ItemCallback();
 /// other things (like maybe for shelters).
 class SearchBar extends StatefulWidget {
   SearchBar(
-      {this.key,
-      this.items,
-      this.listFetcher,
-      this.onSelectedItem,
-      this.hintText,
-      this.refetchNotifier})
-      : super(key: key);
-  final Key key;
+      {required this.items,
+      required this.listFetcher,
+      required this.onSelectedItem,
+      required this.hintText,
+      required this.refetchNotifier});
   final ChangeNotifier refetchNotifier;
   final List<String> items;
   final Function(String selected) onSelectedItem;
@@ -36,15 +31,15 @@ class SearchBar extends StatefulWidget {
 }
 
 class _SearchBarState extends State<SearchBar> {
-  List<String> matches = List<String>();
-  TrieNode _trie = TrieNode();
-  List<String> items;
+  List<String> matches = [];
+  TrieNode _trie = TrieNode(content: '');
+  List<String> items = [];
   TextEditingController controller = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    if (widget.items == null) {
+    if (widget.items.isEmpty) {
       widget.listFetcher().then((list) {
         buildTrie(list);
       });
@@ -64,8 +59,8 @@ class _SearchBarState extends State<SearchBar> {
 
   _handleChange() {
     matches.clear();
-    _trie = TrieNode();
-    if (widget.items == null) {
+    _trie = TrieNode(content: "");
+    if (widget.items.isEmpty) {
       widget.listFetcher().then((list) {
         buildTrie(list);
       });
@@ -80,7 +75,7 @@ class _SearchBarState extends State<SearchBar> {
       children: <Widget>[
         Theme(
           data: Theme.of(context).copyWith(
-            primaryColor: Theme.of(context).accentColor,
+            primaryColor: Theme.of(context).secondaryHeaderColor,
           ),
           child: TextField(
             controller: controller,
@@ -107,10 +102,10 @@ class _SearchBarState extends State<SearchBar> {
                         ),
                         ButtonTheme(
                           height: 30.0,
-                          child: FlatButton(
-                            shape: CircleBorder(),
+                          child: TextButton(
                             onPressed: () => selectItem(match),
-                            color: kPetThemecolor,
+                            // color: kPetThemecolor,
+                            // shape: CircleBorder(),
                             child: Icon(Icons.add, color: Colors.white),
                           ),
                         ),
@@ -128,7 +123,7 @@ class _SearchBarState extends State<SearchBar> {
   }
 
   selectItem(String match) {
-    if (widget.onSelectedItem != null) widget.onSelectedItem(match);
+    widget.onSelectedItem(match);
     setState(() {
       matches.clear();
       controller.text = '';
@@ -142,15 +137,15 @@ class _SearchBarState extends State<SearchBar> {
   }
 
   List<String> _getMatches(String text) {
-    if (text == '') return List<String>();
-    List<String> results = List<String>();
+    if (text == '') return [];
+    List<String> results = [];
     TrieNode current = _trie;
     String prefix = '';
     for (int i = 0; i < text.length; i++) {
       if (!current.children.containsKey(text[i].toLowerCase())) {
-        return List<String>();
+        return [];
       }
-      current = current.children[text[i].toLowerCase()];
+      current = current.children[text[i].toLowerCase()]!;
       prefix += current.content;
     }
     search(current, prefix, results);
@@ -173,7 +168,7 @@ class _SearchBarState extends State<SearchBar> {
         var char = option[i].toLowerCase();
         if (!current.children.containsKey(char))
           current.children[char] = TrieNode(content: option[i]);
-        current = current.children[char];
+        current = current.children[char]!;
       }
       current.isEnd = true;
     }
@@ -184,5 +179,5 @@ class TrieNode {
   Map<String, TrieNode> children = Map<String, TrieNode>();
   String content;
   bool isEnd = false;
-  TrieNode({this.content});
+  TrieNode({required this.content});
 }

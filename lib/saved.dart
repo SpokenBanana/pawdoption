@@ -1,5 +1,3 @@
-import 'dart:html';
-
 import 'package:flutter/material.dart';
 import 'package:petadopt/api.dart';
 
@@ -15,21 +13,16 @@ enum SavedSort {
 
 /// Handles displaying the saved animals to later view.
 class SavedPage extends StatefulWidget {
-  SavedPage({this.feed});
+  SavedPage({required this.feed});
   final AnimalFeed feed;
   @override
   _SavedPage createState() => _SavedPage();
 }
 
 class _SavedPage extends State<SavedPage> {
-  List<Animal> saved;
-  SavedSort sortCriteria;
-  bool reversed;
-  _SavedPage() {
-    saved = List<Animal>();
-    sortCriteria = SavedSort.liked;
-    reversed = false;
-  }
+  List<Animal> saved = [];
+  SavedSort sortCriteria = SavedSort.liked;
+  bool reversed = false;
 
   @override
   void initState() {
@@ -51,7 +44,8 @@ class _SavedPage extends State<SavedPage> {
         break;
       case SavedSort.liked:
         list.sort((a, b) {
-          return a.dbId.compareTo(b.dbId);
+          if (a.dbId == null || b.dbId == null) return -1;
+          return a.dbId!.compareTo(b.dbId!);
         });
         break;
       case SavedSort.breed:
@@ -148,16 +142,14 @@ class _SavedPage extends State<SavedPage> {
                 Expanded(
                   child: Text(dog.name,
                       overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headline
-                          .copyWith(fontSize: 18.0)),
+                      style: Theme.of(context).textTheme.displayLarge?.copyWith(
+                          fontWeight: FontWeight.bold, fontSize: 18.0)),
                 ),
                 Expanded(
                   child: Text(
                     dog.breed,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.caption.copyWith(
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           fontSize: 14.0,
                         ),
                   ),

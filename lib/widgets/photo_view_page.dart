@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:photo_view/photo_view.dart';
 
 class ViewImagePage extends StatefulWidget {
-  ViewImagePage({this.images, this.initialIndex});
+  ViewImagePage({required this.images, required this.initialIndex});
 
   final List<String> images;
   final int initialIndex;
@@ -38,7 +38,7 @@ class _ViewImagePageState extends State<ViewImagePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   setState(() {
                     index = index == 0 ? 0 : index - 1;
@@ -46,7 +46,7 @@ class _ViewImagePageState extends State<ViewImagePage> {
                 },
                 child: Icon(Icons.arrow_left, color: Colors.white, size: 45.0),
               ),
-              FlatButton(
+              TextButton(
                 onPressed: () {
                   setState(() {
                     index =

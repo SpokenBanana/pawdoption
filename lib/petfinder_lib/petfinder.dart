@@ -13,19 +13,19 @@ ApiClient kClient = new ApiClient();
 /// Uses PetFinder API to get animals using the standard API interface defined
 /// in 'animals.dart'.
 class PetFinderApi {
-  String _zip, _animalType;
+  String _zip = '', _animalType = '';
 
   // We want to limit the API calls for this one, so we'll hold on to results.
   // TODO: Making this static is a bit of bad practice, try to find an
   //       alternative solution
-  static Map<String, ShelterInformation> _shelterMap;
+  static Map<String, ShelterInformation> _shelterMap = Map();
 
   int _currentPage = 1;
 
-  void setLocation(String zip, int miles, {String animalType}) async {
+  Future setLocation(String zip, int miles, {String? animalType}) async {
     _currentPage = 1;
     _shelterMap = Map<String, ShelterInformation>();
-    _animalType = animalType;
+    _animalType = animalType!;
     Map<String, String> params = {
       'location': zip,
       'distance': '$miles',
@@ -36,15 +36,17 @@ class PetFinderApi {
     for (Map shelter in data['organizations']) {
       String id = shelter['id'];
       if (!_shelterMap.containsKey(id))
-        _shelterMap[id] = toShelterInformation(shelter);
+        _shelterMap[id] = toShelterInformation(shelter)!;
     }
   }
 
   Future<List<Animal>> getAnimals(int amount, Set<String> toSkip,
-      {PetSearchOptions searchOptions, double usrLat, double userLng}) async {
-    List<Animal> animals = List<Animal>();
+      {PetSearchOptions? searchOptions,
+      double? usrLat,
+      double? userLng}) async {
+    List<Animal> animals = [];
     Map<String, String> params = {
-      'type': _animalType != null ? _animalType : 'dog',
+      'type': _animalType.isNotEmpty ? _animalType : 'dog',
       'location': _zip,
       'limit': '$amount',
       'status': 'adoptable',
@@ -102,18 +104,20 @@ class PetFinderApi {
     };
     var response = await kClient.call('types/$animalType/breeds', params);
     var breeds = response['breeds'];
-    List<String> list = List<String>();
-    list.addAll(breeds.map((breed) => breed['name']));
+    List<String> list = [];
+    for (dynamic b in breeds) {
+      list.add(b['name']);
+    }
     return list;
   }
 
   static Future<ShelterInformation> getShelterInformation(
       String location) async {
-    if (_shelterMap.containsKey(location)) return _shelterMap[location];
+    if (_shelterMap.containsKey(location)) return _shelterMap[location]!;
     var response = await kClient.call('organizations/$location', {});
     var shelterMap = response['organization'];
     // Save it to not make this API call again.
-    ShelterInformation shelter = toShelterInformation(shelterMap);
+    ShelterInformation shelter = toShelterInformation(shelterMap)!;
     _shelterMap[location] = shelter;
     return shelter;
   }
@@ -136,7 +140,7 @@ class PetFinderApi {
     var petDoc = response['animal'];
     // If the V1 API doesn't return anything, then we have no choice than to use
     // the short description returned in V2.
-    if (animal.info.description == null) {
+    if (animal.info.description.isEmpty) {
       animal.info.description = petDoc['description'];
     }
 

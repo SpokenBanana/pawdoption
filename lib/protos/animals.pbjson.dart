@@ -2,9 +2,13 @@
 //  Generated code. Do not modify.
 //  source: animals.proto
 //
-// @dart = 2.3
-// ignore_for_file: camel_case_types,non_constant_identifier_names,library_prefixes,unused_import,unused_shown_name,return_of_invalid_type
+// @dart = 2.12
+// ignore_for_file: annotate_overrides,camel_case_types,constant_identifier_names,deprecated_member_use_from_same_package,directives_ordering,library_prefixes,non_constant_identifier_names,prefer_final_fields,return_of_invalid_type,unnecessary_const,unnecessary_import,unnecessary_this,unused_import,unused_shown_name
 
+import 'dart:core' as $core;
+import 'dart:convert' as $convert;
+import 'dart:typed_data' as $typed_data;
+@$core.Deprecated('Use animalDataDescriptor instead')
 const AnimalData$json = const {
   '1': 'AnimalData',
   '2': const [
@@ -34,3 +38,5 @@ const AnimalData$json = const {
   ],
 };
 
+/// Descriptor for `AnimalData`. Decode as a `google.protobuf.DescriptorProto`.
+final $typed_data.Uint8List animalDataDescriptor = $convert.base64Decode('CgpBbmltYWxEYXRhEhIKBG5hbWUYASABKAlSBG5hbWUSFgoGZ2VuZGVyGAIgASgJUgZnZW5kZXISFAoFYnJlZWQYAyABKAlSBWJyZWVkEhAKA2FnZRgEIAEoCVIDYWdlEhYKBmltZ1VybBgFIAMoCVIGaW1nVXJsEg4KAmlkGAYgASgJUgJpZBIcCglzaGVsdGVySWQYByABKAlSCXNoZWx0ZXJJZBIUCgVhcGlJZBgIIAEoCVIFYXBpSWQSHAoJY2l0eVN0YXRlGAkgASgJUgljaXR5U3RhdGUSGAoHb3B0aW9ucxgKIAMoCVIHb3B0aW9ucxISCgRzaXplGAsgASgJUgRzaXplEiAKC2xhc3RVcGRhdGVkGAwgASgJUgtsYXN0VXBkYXRlZBIUCgVjb2xvchgNIAEoCVIFY29sb3ISGgoIdGh1bWJVcmwYDiABKAlSCHRodW1iVXJsEiAKC2Rlc2NyaXB0aW9uGA8gASgJUgtkZXNjcmlwdGlvbhInCg9zcGF5ZWRfbmV1dGVyZWQYECABKAhSDnNwYXllZE5ldXRlcmVkEiMKDWhvdXNlX3RyYWluZWQYESABKAhSDGhvdXNlVHJhaW5lZBIjCg1zcGVjaWFsX25lZWRzGBIgASgIUgxzcGVjaWFsTmVlZHMSIwoNc2hvdHNfY3VycmVudBgTIAEoCFIMc2hvdHNDdXJyZW50EiwKEmdvb2Rfd2l0aF9jaGlsZHJlbhgUIAEoCFIQZ29vZFdpdGhDaGlsZHJlbhIkCg5nb29kX3dpdGhfY2F0cxgVIAEoCFIMZ29vZFdpdGhDYXRzEiQKDmdvb2Rfd2l0aF9kb2dzGBYgASgIUgxnb29kV2l0aERvZ3MSHQoKbGlrZWRfdXNlYxgXIAEoBFIJbGlrZWRVc2Vj');

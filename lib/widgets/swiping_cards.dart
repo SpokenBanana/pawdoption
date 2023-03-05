@@ -7,7 +7,7 @@ import '../details.dart';
 import 'draggable_card.dart';
 
 class SwipingCards extends StatefulWidget {
-  SwipingCards({this.feed});
+  SwipingCards({required this.feed});
   final AnimalFeed feed;
   @override
   _SwipingCardsState createState() => _SwipingCardsState();
@@ -44,6 +44,7 @@ class _SwipingCardsState extends State<SwipingCards>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     if (loading) {
       Size screenSize = MediaQuery.of(context).size;
       double _screenWidth = screenSize.width;
@@ -68,7 +69,7 @@ class _SwipingCardsState extends State<SwipingCards>
                 alignment: Alignment.center,
                 transform: Matrix4.identity()
                   ..scale(_backCardScale, _backCardScale),
-                child: PetCard(widget.feed.nextPet),
+                child: PetCard(widget.feed.nextPet!),
               ),
         DraggableCard(
           onLeftSwipe: () {
@@ -76,6 +77,7 @@ class _SwipingCardsState extends State<SwipingCards>
               widget.feed.skip();
             });
           },
+          onSlideBack: () {},
           onRightSwipe: () {
             setState(() {
               widget.feed.like();
@@ -113,7 +115,7 @@ class _SwipingCardsState extends State<SwipingCards>
         children: <Widget>[
           Icon(Icons.sentiment_dissatisfied, size: 90.0),
           Text("No more pets"),
-          FlatButton(
+          TextButton(
             onPressed: () {
               setState(() {
                 loading = true;
@@ -144,13 +146,13 @@ class PetCard extends StatelessWidget {
     double _screenWidth = screenSize.width;
     double _screenHeight = screenSize.height;
 
-    var sideInfo = TextStyle(
-      color: Colors.grey[600],
-    );
+    var sideInfo = Theme.of(context).textTheme.bodySmall?.copyWith(
+          fontSize: 15,
+        );
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        color: Colors.white,
+        color: Colors.grey.shade900,
         boxShadow: [
           BoxShadow(
             offset: const Offset(0.0, 2.0),
@@ -198,8 +200,9 @@ class PetCard extends StatelessWidget {
             ],
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.all(5.0),
             child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: <Widget>[
                 Flexible(
                   child: Container(
@@ -207,21 +210,23 @@ class PetCard extends StatelessWidget {
                       '${pet.info.name},',
                       overflow: TextOverflow.ellipsis,
                       maxLines: 1,
-                      style: Theme.of(context).textTheme.headline.copyWith(
-                            fontSize: 30,
-                          ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleLarge
+                          ?.copyWith(fontSize: 26),
                     ),
                   ),
                 ),
-                SizedBox(width: 5.0),
+                SizedBox(width: 6.0),
                 Expanded(
                   child: Text(
                     pet.info.age,
                     overflow: TextOverflow.fade,
                     maxLines: 1,
-                    style: Theme.of(context).textTheme.subhead.copyWith(
-                          fontSize: 30,
-                        ),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontSize: 22),
                   ),
                 ),
               ],

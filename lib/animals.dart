@@ -1,15 +1,15 @@
-import 'protos/animals.pb.dart';
+import './protos/animals.pb.dart';
 
 // Wrapper class for the AnimalData proto. Provides some read/write serialize
 // methods for convenience.
 class Animal {
-  AnimalData info;
-  DateTime lastViewed;
-  String status;
+  AnimalData info = AnimalData.create();
+  DateTime? lastViewed;
+  String status = '';
   // Only populated if the Animal was liked and has an id in our db.
-  int dbId;
+  int? dbId;
 
-  Animal({AnimalData info}) {
+  Animal({AnimalData? info}) {
     if (info != null) {
       this.info = info;
       this.lastViewed = DateTime.parse(info.lastUpdated);
@@ -23,7 +23,7 @@ class Animal {
     try {
       Animal pet = Animal(info: AnimalData.fromJson(animalStr));
       return pet;
-    } catch (Exception) {}
+    } catch (ignored) {}
 
     // Support old way of serializing, which was a very bad idea.
     List<String> parts = animalStr.split('|');
@@ -47,6 +47,7 @@ class Animal {
   factory Animal.fromApi(Map animalMap) {
     AnimalData data = AnimalData.create();
 
+    data.imgUrl.clear();
     for (var img in animalMap['photos']) {
       data.imgUrl.add(img['large']);
     }
@@ -63,7 +64,7 @@ class Animal {
 
     // Get breed.
     var breeds = animalMap['breeds'];
-    List<String> breedList = List<String>();
+    List<String> breedList = [];
     if (breeds['primary'] != null) {
       breedList.add(breeds['primary'].toString());
     }
@@ -113,11 +114,11 @@ class Animal {
   // For now, we'll check on pets if it has been more than 3 days since the last
   // recorded lastUpdated date.
   bool shouldCheckOn() {
-    bool result = DateTime.now().difference(this.lastViewed).inHours > 12 ||
-        info.description == null ||
+    if (this.lastViewed == null) return true;
+    bool result = DateTime.now().difference(this.lastViewed!).inHours > 12 ||
         info.description.isEmpty;
     this.lastViewed = DateTime.now();
-    info.lastUpdated = this.lastViewed.toIso8601String();
+    info.lastUpdated = this.lastViewed!.toIso8601String();
     return result;
   }
 
@@ -141,15 +142,8 @@ class Animal {
 }
 
 class ShelterInformation {
-  String name,
-      phone,
-      location,
-      id,
-      email,
-      missionStatement,
-      policy,
-      policyUrl,
-      photo;
+  String? name, phone, location, id, email, missionStatement, policy, policyUrl;
+  String? photo;
   int distance = -1;
 
   ShelterInformation(name, phone, location) {

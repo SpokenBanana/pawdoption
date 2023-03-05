@@ -1,7 +1,8 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:geocoder/geocoder.dart';
+import 'package:flutter_geocoder/geocoder.dart';
 import 'package:location/location.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,7 +14,7 @@ import 'widgets/swiping_cards.dart';
 
 /// The swiping page of the application.
 class SwipingPage extends StatefulWidget {
-  SwipingPage({Key key, this.feed}) : super(key: key);
+  SwipingPage({required Key key, required this.feed}) : super(key: key);
 
   final AnimalFeed feed;
 
@@ -27,53 +28,60 @@ class _SwipingPageState extends State<SwipingPage>
 
   Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
-
-    final animalType = prefs.getBool('animalType') ?? false;
-    final optionsStr = prefs.getString('searchOptions') ?? '';
     String zip = await getZip(prefs);
-    if (zip == null) return false;
+    // If we can't get a zip, we can't search. Have user go and enter their zip
+    // in the settings page.
+    if (zip.isEmpty) return false;
 
-    var options;
+    PetSearchOptions? options;
+    final optionsStr = prefs.getString('searchOptions') ?? '';
     if (optionsStr.isNotEmpty) {
       options = PetSearchOptions.fromJson(optionsStr);
     }
 
-    if (zip != widget.feed.zip ||
-        widget.feed.reloadFeed ||
-        animalType != (widget.feed.searchOptions.animalType == 'cat')) {
+    bool animalType = prefs.getBool('animalType') ?? false;
+    if (needsRefresh(zip, animalType)) {
       return await widget.feed.initialize(zip,
           animalType: animalType ? 'cat' : 'dog', options: options);
     }
     return true;
   }
 
+  bool needsRefresh(String zip, bool animalType) {
+    return zip != widget.feed.zip ||
+        widget.feed.reloadFeed ||
+        animalType != (widget.feed.searchOptions.animalType == 'cat');
+  }
+
   Future<String> getZip(SharedPreferences prefs) async {
-    if (widget.feed.zip != '') {
+    if (widget.feed.zip.isNotEmpty) {
       return widget.feed.zip;
     }
     var zipFromUser = await getLocationFromUser();
-    if (zipFromUser != null) {
+    if (zipFromUser.isEmpty) {
       return zipFromUser;
     }
-    String zip = prefs.getString('zip');
-    return zip;
+    return prefs.getString('zip') ?? '';
   }
 
   Future<String> getLocationFromUser() async {
-    String zip;
     var location = Location();
     // We only need to get the zip code from the location, don't need
     // high accuracy for now.
     location.changeSettings(accuracy: LocationAccuracy.low);
     try {
+      if (await location.hasPermission() != PermissionStatus.granted) {
+        var service = await location.requestService();
+        if (!service) return '';
+        var permission = await location.requestPermission();
+        if (permission == PermissionStatus.denied) return '';
+      }
       var currentLocation = await location.getLocation();
-      double userLat = currentLocation.latitude;
-      double userLng = currentLocation.longitude;
-      final coords = Coordinates(userLat, userLng);
-      var address = await Geocoder.local.findAddressesFromCoordinates(coords);
-      return address.first.postalCode;
+      var address = await Geocoder.local.findAddressesFromCoordinates(
+          Coordinates(currentLocation.latitude!, currentLocation.longitude!));
+      return address.first.postalCode!;
     } on Exception {}
-    return zip;
+    return '';
   }
 
   @override
@@ -99,7 +107,6 @@ class _SwipingPageState extends State<SwipingPage>
                 );
               default:
                 if (snapshot.hasError) return buildErrorPage();
-
                 if (snapshot.data == false) return buildNoInfoPage();
                 return Column(
                   children: [
@@ -123,6 +130,8 @@ class _SwipingPageState extends State<SwipingPage>
       children: <Widget>[
         Text('Error occurred :( Try again?'),
         PetButton(
+          color: Colors.white,
+          padding: const EdgeInsets.all(12.0),
           child: Icon(Icons.refresh),
           onPressed: () {
             setState(() {});
@@ -143,26 +152,28 @@ class _SwipingPageState extends State<SwipingPage>
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Text('Go to the ', style: infoStyle),
-              RaisedButton(
-                elevation: 5.0,
+              ElevatedButton(
                 onPressed: () {
                   Navigator.push(
                       context,
                       PageRouteBuilder(
                           maintainState: false,
-                          pageBuilder: (context, _, __) =>
-                              SettingsPage(feed: widget.feed)));
+                          pageBuilder: (context, _, __) => SettingsPage(
+                              key: UniqueKey(), feed: widget.feed)));
                 },
-                color: Colors.white,
-                shape: CircleBorder(),
-                padding: const EdgeInsets.all(10.0),
+                style: ElevatedButton.styleFrom(
+                  elevation: 5.0,
+                  backgroundColor: Colors.green.shade900,
+                  shape: CircleBorder(),
+                  padding: const EdgeInsets.all(10.0),
+                ),
                 child: Icon(
                   Icons.settings,
                   size: 15.0,
                   color: Colors.grey,
                 ),
               ),
-              Text("page and set your location", style: infoStyle),
+              Text(" page and set your location", style: infoStyle),
             ],
           ),
         ],
@@ -171,50 +182,76 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   Widget buildButtonRow() {
-    const num size = 35.0;
+    const double baseSize = 35.0;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        PetButton(
-          padding: const EdgeInsets.all(10.0),
-          onPressed: () {
-            if (widget.feed.skipped.isNotEmpty) widget.feed.notifier.undo();
-          },
-          child: Icon(
-            Icons.replay,
-            size: size / 2,
-            color: Colors.yellow[700],
+        Container(
+          padding: EdgeInsets.only(
+            left: 3,
+            right: 3,
+            bottom: 12,
           ),
+          width: 60,
+          child: PetButton(
+              padding: const EdgeInsets.all(10.0),
+              onPressed: () {
+                if (widget.feed.skipped.isNotEmpty) widget.feed.notifier.undo();
+              },
+              child: Icon(
+                Icons.replay,
+                size: baseSize / 2,
+              ),
+              color: Colors.yellow.shade800),
         ),
         PetButton(
           padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.skipCurrent(),
-          child: Icon(
-            Icons.close,
-            size: size,
-            color: Colors.red,
+          color: Color.fromARGB(255, 42, 107, 168),
+          child: Transform(
+            transform: Matrix4.rotationY(pi),
+            alignment: Alignment.center,
+            child: Icon(
+              Icons.next_plan,
+              size: baseSize,
+            ),
           ),
         ),
         PetButton(
           padding: const EdgeInsets.all(12.0),
           onPressed: () => widget.feed.notifier.likeCurrent(),
+          color: Colors.green.shade500,
           child: Icon(
             Icons.favorite,
-            size: size,
-            color: Colors.green[400],
+            size: baseSize,
           ),
         ),
-        PetButton(
-          padding: const EdgeInsets.all(10.0),
-          onPressed: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => SettingsPage(feed: widget.feed))),
-          child: Icon(
-            Icons.settings,
-            size: size / 2,
-            color: Colors.grey,
+        Container(
+          width: 60,
+          padding: EdgeInsets.only(
+            left: 3,
+            right: 3,
+            top: 17,
+          ),
+          child: PetButton(
+            padding: const EdgeInsets.all(10.0),
+            onPressed: () async {
+              if (await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          SettingsPage(key: UniqueKey(), feed: widget.feed)))) {
+                setState(() {
+                  // Options changed so we should re-fresh the feed.
+                });
+              }
+            },
+            color: Colors.grey.shade700,
+            child: Icon(
+              Icons.settings,
+              size: baseSize / 2,
+            ),
           ),
         ),
       ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'animals.dart';
 import 'api.dart';
@@ -12,7 +13,7 @@ import 'widgets/pet_image_gallery.dart';
 
 /// Shows detailed profile for the animal.
 class DetailsPage extends StatefulWidget {
-  DetailsPage({Key key, this.pet, this.feed}) : super(key: key);
+  DetailsPage({required this.pet, required this.feed});
 
   final Animal pet;
   final AnimalFeed feed;
@@ -22,7 +23,7 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsPage extends State<DetailsPage> {
-  List<String> urls;
+  List<String> urls = [];
   @override
   Widget build(BuildContext context) {
     final key = GlobalKey<ScaffoldState>();
@@ -43,7 +44,7 @@ class _DetailsPage extends State<DetailsPage> {
           checkStatus(widget.pet),
           Divider(),
           fetchAndBuildComments(key),
-          Divider(),
+          SizedBox(height: 30),
           buildOptionTagSection(widget.pet.info),
           buildAdoptInfo(),
           !widget.pet.info.hasId()
@@ -62,16 +63,16 @@ class _DetailsPage extends State<DetailsPage> {
   }
 
   populateUrls(String description) {
-    urls = List<String>();
+    urls = [];
     var urlMatches =
         RegExp(kUrlRegex, caseSensitive: false).allMatches(description);
     for (Match m in urlMatches) {
-      urls.add(m.group(0));
+      urls.add(m.group(0)!);
     }
   }
 
   Widget petAtrributeSection() {
-    var attributes = new List<Widget>();
+    List<Widget> attributes = [];
     if (widget.pet.info.shotsCurrent) {
       attributes.add(
           attributeChip("Has shots", Icon(Icons.check, color: Colors.green)));
@@ -89,9 +90,6 @@ class _DetailsPage extends State<DetailsPage> {
       attributes.add(attributeChip(
           "Special needs", Icon(Icons.warning, color: Colors.yellow)));
     }
-    // if (attributes.isEmpty) {
-    //   return SizedBox();
-    // }
     return Column(
       children: <Widget>[
         Text("Attributes"),
@@ -130,7 +128,7 @@ class _DetailsPage extends State<DetailsPage> {
           default:
             if (snapshot.hasError)
               return Center(
-                child: Text('No bio, check with shelter for more information!'),
+                child: Text('Check with shelter for more information!'),
               );
             else {
               populateUrls(snapshot.data);
@@ -155,7 +153,7 @@ class _DetailsPage extends State<DetailsPage> {
           child: SelectableText.rich(
             TextSpan(
               text: comments,
-              style: Theme.of(context).textTheme.body1,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
         ),
@@ -235,7 +233,7 @@ class _DetailsPage extends State<DetailsPage> {
   }
 
   Widget buildOptionTagSection(AnimalData pet) {
-    if (pet.options == null || pet.options.isEmpty) return SizedBox();
+    if (pet.options.isEmpty) return SizedBox();
     return Column(
       children: <Widget>[
         Text("Pet Tags"),
@@ -278,13 +276,13 @@ class _DetailsPage extends State<DetailsPage> {
             padding: const EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () async {
-                if (await canLaunch(url)) {
-                  await launch(url);
+                if (await canLaunchUrlString(url)) {
+                  await launchUrlString(url);
                 }
               },
               onLongPress: () {
                 Clipboard.setData(ClipboardData(text: url));
-                key.currentState.showSnackBar(SnackBar(
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                   content: Text("Copied!"),
                 ));
               },
@@ -308,7 +306,7 @@ class _DetailsPage extends State<DetailsPage> {
     );
   }
 
-  Widget buildShelterDescription(ShelterInformation shelter) {
+  Widget buildShelterDescription(ShelterInformation? shelter) {
     if (shelter == null) {
       return Padding(
         padding: const EdgeInsets.all(8.0),
@@ -326,7 +324,7 @@ class _DetailsPage extends State<DetailsPage> {
             child: CircleAvatar(
               radius: 35.0,
               child: CachedNetworkImage(
-                imageUrl: shelter.photo,
+                imageUrl: shelter.photo!,
                 placeholder: (context, url) => CircularProgressIndicator(),
                 errorWidget: (context, url, error) => Icon(Icons.error),
               ),
@@ -334,7 +332,7 @@ class _DetailsPage extends State<DetailsPage> {
           ),
           Flexible(
             child: Text(
-              shelter.name,
+              shelter.name ?? 'Unavailable',
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontFamily: "Raleway",
@@ -350,11 +348,11 @@ class _DetailsPage extends State<DetailsPage> {
           Icon(Icons.language, color: Colors.grey),
           Expanded(
               child: Text(
-            shelter.policyUrl,
+            shelter.policyUrl!,
             overflow: TextOverflow.ellipsis,
           )), () async {
-        if (await canLaunch(shelter.policyUrl)) {
-          await launch(shelter.policyUrl);
+        if (await canLaunchUrl(Uri.parse(shelter.policyUrl!))) {
+          await launchUrlString(shelter.policyUrl!);
         }
       });
     }
@@ -367,10 +365,9 @@ class _DetailsPage extends State<DetailsPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            shelter.phone.trim() == ""
+            shelter.phone?.trim() == ""
                 ? SizedBox()
                 : ActionChip(
-                    backgroundColor: Colors.white,
                     elevation: 1.5,
                     label: Row(
                       children: <Widget>[
@@ -378,12 +375,12 @@ class _DetailsPage extends State<DetailsPage> {
                           Icons.phone,
                           color: Colors.blue,
                         ),
-                        Text(shelter.phone),
+                        Text(shelter.phone!),
                       ],
                     ),
                     onPressed: () async {
                       String url = "tel://${shelter.phone}";
-                      if (await canLaunch(url)) launch(url);
+                      if (await canLaunchUrlString(url)) launchUrlString(url);
                     }),
           ],
         ),
@@ -393,7 +390,6 @@ class _DetailsPage extends State<DetailsPage> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
                   ActionChip(
-                      backgroundColor: Colors.white,
                       elevation: 1.5,
                       label: Row(
                         children: <Widget>[
@@ -401,14 +397,14 @@ class _DetailsPage extends State<DetailsPage> {
                             Icons.email,
                             color: Colors.red,
                           ),
-                          Text(shelter.email),
+                          Text(shelter.email!),
                         ],
                       ),
                       onPressed: () async {
                         var subject = Uri.encodeFull(
                             'I want to adopt ${widget.pet.info.name}!');
                         String url = "mailto:${shelter.email}?subject=$subject";
-                        if (await canLaunch(url)) launch(url);
+                        if (await canLaunchUrlString(url)) launchUrlString(url);
                       }),
                 ],
               ),
@@ -426,22 +422,22 @@ class _DetailsPage extends State<DetailsPage> {
           String search = Uri.encodeComponent("${shelter.name}, "
               "${shelter.location}");
           String url = "geo:0,0?q=$search";
-          if (await canLaunch(url)) launch(url);
+          if (await canLaunchUrlString(url)) launchUrlString(url);
         }),
         policyUrl,
         shelter.distance != -1
-            ? Text('${shelter.distance} miles away.')
+            ? Text('${shelter.distance} miles away')
             : SizedBox(),
+        SizedBox(height: 20),
       ],
     );
   }
 
-  Widget shelterActionChip(Icon icon, Widget body, Function onPressed) {
+  Widget shelterActionChip(Icon icon, Widget body, Function() onPressed) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         ActionChip(
-          backgroundColor: Colors.white,
           elevation: 1.5,
           label: Container(
             constraints: BoxConstraints(maxWidth: 300),
@@ -496,8 +492,7 @@ class _DetailsPage extends State<DetailsPage> {
       children: <Widget>[
         Divider(),
         buildUrlTags(urls, key),
-        Text("Long press link to copy",
-            style: const TextStyle(color: Colors.grey, fontSize: 12.0))
+        Text("Long press link to copy", style: const TextStyle(fontSize: 12.0))
       ],
     );
   }

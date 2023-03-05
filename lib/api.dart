@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
-import 'package:geocoder/geocoder.dart';
+import 'package:flutter_geocoder/geocoder.dart';
 import 'package:location/location.dart';
 import 'package:petadopt/sql_controller.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -22,38 +22,24 @@ final kDefaultOptions = PetSearchOptions()
 /// Made this extra layer so we can switch APIs and keep the same
 /// expected functionality.
 class AnimalFeed {
-  LikedDb likedDb;
-  Set<String> liked;
-  Queue<Animal> skipped;
+  LikedDb likedDb = LikedDb();
+  Set<String> liked = Set();
+  Queue<Animal> skipped = Queue();
 
-  String zip;
-  SwipeNotifier notifier;
+  String zip = '';
+  SwipeNotifier notifier = SwipeNotifier();
 
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
-  bool reloadFeed;
+  bool reloadFeed = false;
 
-  PetFinderApi petApi;
-  PetSearchOptions searchOptions;
+  PetFinderApi petApi = PetFinderApi();
+  PetSearchOptions searchOptions = kDefaultOptions;
 
-  List<Animal> currentList;
+  List<Animal> currentList = [];
   Animal get currentPet => currentList.last;
-  Animal get nextPet {
+  Animal? get nextPet {
     if (currentList.length < 2) return null;
     return currentList[currentList.length - 2];
-  }
-
-  AnimalFeed() {
-    this.zip = '';
-    notifier = SwipeNotifier();
-
-    petApi = PetFinderApi();
-    searchOptions = kDefaultOptions;
-
-    this.skipped = Queue<Animal>();
-    this.liked = Set<String>();
-    this.currentList = List<Animal>();
-    this.reloadFeed = false;
-    this.likedDb = new LikedDb();
   }
 
   Future<bool> reInitialize() async {
@@ -65,11 +51,11 @@ class AnimalFeed {
   }
 
   Future<bool> initialize(String zip,
-      {String animalType, PetSearchOptions options}) async {
+      {String? animalType, PetSearchOptions? options}) async {
     this.reloadFeed = false;
     this.zip = zip;
 
-    this.currentList = List<Animal>();
+    this.currentList = [];
     this.skipped = Queue<Animal>();
 
     this.searchOptions = options ?? kDefaultOptions;
@@ -140,9 +126,8 @@ class AnimalFeed {
     }
 
     this.liked = (await this.likedDb.getAll())
-            ?.map((animal) => animal.info.apiId)
-            ?.toSet() ??
-        Set<String>();
+        .map((animal) => animal.info.apiId)
+        .toSet();
   }
 
   // Just in case some users still have some saved pets, here migrate them to
@@ -163,9 +148,9 @@ Future<String> getZipFromGeo() async {
     final userLng = currentLocation.longitude;
     final coords = Coordinates(userLat, userLng);
     var address = await Geocoder.local.findAddressesFromCoordinates(coords);
-    return address.first.postalCode;
+    return address.first.postalCode!;
   } on Exception {
-    return null;
+    return '';
   }
 }
 
@@ -203,7 +188,7 @@ class SwipeNotifier extends ChangeNotifier {
 //       way to do this.
 class AnimalChangeNotifier extends ChangeNotifier {
   String animalType;
-  AnimalChangeNotifier({this.animalType});
+  AnimalChangeNotifier({required this.animalType});
 
   changeAnimal(String animal) {
     this.animalType = animal;

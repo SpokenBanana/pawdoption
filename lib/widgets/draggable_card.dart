@@ -6,21 +6,21 @@ import '../api.dart';
 
 class DraggableCard extends StatefulWidget {
   DraggableCard({
-    this.child,
-    this.onLeftSwipe,
-    this.onRightSwipe,
-    this.onSwipe,
-    this.onSlideBack,
-    this.onTap,
-    this.notifier,
+    required this.child,
+    required this.onLeftSwipe,
+    required this.onRightSwipe,
+    required this.onSwipe,
+    required this.onSlideBack,
+    required this.onTap,
+    required this.notifier,
   });
   final Widget child;
   final SwipeNotifier notifier;
   final Function(Offset delta) onSwipe;
-  final Function onLeftSwipe;
-  final Function onSlideBack;
-  final Function onTap;
-  final Function onRightSwipe;
+  final Function() onLeftSwipe;
+  final Function() onSlideBack;
+  final Function() onTap;
+  final Function() onRightSwipe;
   @override
   _DraggableCardState createState() => new _DraggableCardState();
 }
@@ -28,21 +28,21 @@ class DraggableCard extends StatefulWidget {
 class _DraggableCardState extends State<DraggableCard>
     with TickerProviderStateMixin {
   double swipSensitivity = 0.15;
-  Offset dragStart;
-  Offset dragPosition;
+  Offset? dragStart;
+  Offset dragPosition = Offset(0.0, 0.0);
   Offset card = const Offset(0.0, 0.0);
-  Offset start;
+  Offset start = Offset(0.0, 0.0);
   GlobalKey cardKey = GlobalKey(debugLabel: 'cardKey');
 
-  Tween slideTween;
+  Tween slideTween = Tween();
 
   double likeOpacity = 0.0;
   double skipOpacity = 0.0;
-  AnimationController slideBack;
-  AnimationController slideOut;
-  AnimationController undoAnimation;
-  bool swipedRight;
-  RenderBox currentBox;
+  late AnimationController slideBack;
+  late AnimationController slideOut;
+  late AnimationController undoAnimation;
+  bool swipedRight = false;
+  late RenderBox currentBox;
 
   @override
   void initState() {
@@ -54,8 +54,8 @@ class _DraggableCardState extends State<DraggableCard>
       ..addListener(() {
         setState(() {
           card = Offset.lerp(dragStart, const Offset(0.0, 0.0),
-              Curves.elasticOut.transform(slideBack.value));
-          if (widget.onSwipe != null) widget.onSwipe(card);
+              Curves.elasticOut.transform(slideBack.value))!;
+          widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
@@ -64,7 +64,7 @@ class _DraggableCardState extends State<DraggableCard>
             dragStart = null;
             likeOpacity = 0.0;
             skipOpacity = 0.0;
-            if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
+            widget.onSwipe(const Offset(0.0, 0.0));
           });
         }
       });
@@ -75,8 +75,8 @@ class _DraggableCardState extends State<DraggableCard>
     )
       ..addListener(() {
         setState(() {
-          card = slideTween.evaluate(slideOut);
-          if (widget.onSwipe != null) widget.onSwipe(card);
+          card = slideTween.evaluate(slideOut) as Offset;
+          widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
@@ -85,7 +85,7 @@ class _DraggableCardState extends State<DraggableCard>
             widget.onRightSwipe();
           else
             widget.onLeftSwipe();
-          if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
+          widget.onSwipe(const Offset(0.0, 0.0));
           setState(() {
             dragStart = null;
             card = const Offset(0.0, 0.0);
@@ -102,15 +102,15 @@ class _DraggableCardState extends State<DraggableCard>
       ..addListener(() {
         setState(() {
           card = Offset.lerp(
-              Offset(-2 * context.size.width, 0.0),
+              Offset(-2 * context.size!.width, 0.0),
               const Offset(0.0, 0.0),
-              Curves.decelerate.transform(undoAnimation.value));
-          if (widget.onSwipe != null) widget.onSwipe(card);
+              Curves.decelerate.transform(undoAnimation.value))!;
+          widget.onSwipe(card);
         });
       })
       ..addStatusListener((AnimationStatus status) {
         if (status == AnimationStatus.completed) {
-          if (widget.onSwipe != null) widget.onSwipe(const Offset(0.0, 0.0));
+          widget.onSwipe(const Offset(0.0, 0.0));
           setState(() {
             card = const Offset(0.0, 0.0);
             likeOpacity = 0.0;
@@ -118,18 +118,14 @@ class _DraggableCardState extends State<DraggableCard>
           });
         }
       });
-    if (widget.notifier != null) {
-      widget.notifier.addListener(_onSwipeChange);
-    }
+    widget.notifier.addListener(_onSwipeChange);
   }
 
   @override
   void dispose() {
     slideOut.dispose();
     slideBack.dispose();
-    if (widget.notifier != null) {
-      widget.notifier.removeListener(_onSwipeChange);
-    }
+    widget.notifier.removeListener(_onSwipeChange);
     super.dispose();
   }
 
@@ -156,7 +152,7 @@ class _DraggableCardState extends State<DraggableCard>
                 SwipeIndicator(
                   text: "LIKE",
                   rotation: -pi / 6,
-                  color: Colors.green[400],
+                  color: Colors.green,
                   alignment: Alignment.topLeft,
                   opacity: likeOpacity,
                   dx: 40.0,
@@ -166,7 +162,7 @@ class _DraggableCardState extends State<DraggableCard>
                 SwipeIndicator(
                   text: "SKIP",
                   rotation: pi / 6,
-                  color: Colors.red,
+                  color: Color.fromARGB(255, 42, 107, 168),
                   dx: -20.0,
                   dy: 10.0,
                   alignment: Alignment.topRight,
@@ -182,31 +178,29 @@ class _DraggableCardState extends State<DraggableCard>
   }
 
   double _getRotation(height) {
-    if (dragPosition != null) {
-      final rotation = dragPosition.dy >= (height / 2) ? -1 : 1;
-      return (pi / 8.0) * (card.dx / 300) * rotation;
-    }
-    return 0.0;
+    final rotation = dragPosition.dy >= (height / 2) ? -1 : 1;
+    return (pi / 8.0) * (card.dx / 300) * rotation;
   }
 
   Offset _getOrigin() {
-    return dragPosition == null ? const Offset(0.0, 0.0) : dragPosition;
+    return dragPosition;
   }
 
   Offset _getRandomDragPosition() {
     var context = cardKey.currentContext;
-    RenderBox box = context.findRenderObject() as RenderBox;
+    RenderBox box = context?.findRenderObject() as RenderBox;
     var topLeft = box.localToGlobal(const Offset(0.0, 0.0));
-    final dy = context.size.height * (Random().nextDouble() < .5 ? .25 : .75) +
-        topLeft.dy;
-    return Offset(context.size.width / 2 + topLeft.dx, dy);
+    final dy =
+        context!.size!.height * (Random().nextDouble() < .5 ? .25 : .75) +
+            topLeft.dy;
+    return Offset(context.size!.width / 2 + topLeft.dx, dy);
   }
 
   _onSwipeChange() {
     if (slideBack.isAnimating ||
         slideOut.isAnimating ||
         undoAnimation.isAnimating) return;
-    var width = context.size.width;
+    var width = context.size!.width;
     if (widget.notifier.swiped == Swiped.left) {
       dragPosition = _getRandomDragPosition();
       swipedRight = false;
@@ -229,7 +223,7 @@ class _DraggableCardState extends State<DraggableCard>
 
   _onPanStart(BuildContext context, DragStartDetails details) {
     start = details.globalPosition;
-    currentBox = context.findRenderObject();
+    currentBox = context.findRenderObject() as RenderBox;
     dragPosition = currentBox.globalToLocal(details.globalPosition);
     if (slideBack.isAnimating) {
       slideBack.stop(canceled: true);
@@ -238,18 +232,18 @@ class _DraggableCardState extends State<DraggableCard>
 
   _onPanEnd(DragEndDetails details) {
     final dragDirection = card / card.distance;
-    final inLeft = (card.dx / context.size.width) < -this.swipSensitivity;
-    final inRight = (card.dx / context.size.width) > this.swipSensitivity;
+    final inLeft = (card.dx / context.size!.width) < -this.swipSensitivity;
+    final inRight = (card.dx / context.size!.width) > this.swipSensitivity;
     setState(() {
       if (inLeft || inRight) {
         swipedRight = inRight;
         slideTween =
-            Tween(begin: card, end: dragDirection * (2 * context.size.width));
+            Tween(begin: card, end: dragDirection * (2 * context.size!.width));
         slideOut.forward(from: 0.0);
       } else {
         dragStart = card;
         slideBack.forward(from: 0.0);
-        if (widget.onSlideBack != null) widget.onSlideBack();
+        widget.onSlideBack();
         likeOpacity = 0.0;
         skipOpacity = 0.0;
       }
@@ -259,7 +253,7 @@ class _DraggableCardState extends State<DraggableCard>
   _onPanUpdate(BuildContext context, DragUpdateDetails details) {
     setState(() {
       card = details.globalPosition - start;
-      if (widget.onSwipe != null) widget.onSwipe(card);
+      widget.onSwipe(card);
       if (card.direction.abs() < 1) {
         likeOpacity = (card.distance / 200).clamp(0.0, 1.0);
         skipOpacity = 0.0;
@@ -273,14 +267,14 @@ class _DraggableCardState extends State<DraggableCard>
 
 class SwipeIndicator extends StatelessWidget {
   SwipeIndicator({
-    this.text,
-    this.alignment,
-    this.color,
-    this.opacity,
-    this.margin,
-    this.rotation,
-    this.dx,
-    this.dy,
+    required this.text,
+    required this.alignment,
+    required this.color,
+    required this.opacity,
+    required this.margin,
+    required this.rotation,
+    required this.dx,
+    required this.dy,
   });
   final String text;
   final Alignment alignment;

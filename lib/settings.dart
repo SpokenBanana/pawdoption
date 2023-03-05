@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import 'api.dart';
 import 'colors.dart';
@@ -13,7 +14,7 @@ import 'widgets/search_bar.dart';
 /// Handles the settings of the application as well as providiing general
 /// information ahout the app.
 class SettingsPage extends StatefulWidget {
-  SettingsPage({Key key, this.feed}) : super(key: key);
+  SettingsPage({required Key key, required this.feed}) : super(key: key);
 
   final AnimalFeed feed;
 
@@ -22,27 +23,22 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPage extends State<SettingsPage> {
-  String _zip;
-  PetSearchOptions searchOptions;
+  String _zip = '';
+  PetSearchOptions searchOptions = kDefaultOptions;
   AnimalChangeNotifier animalNotifier = AnimalChangeNotifier(animalType: 'dog');
-  List<String> breeds;
-  bool _selectedCats;
-  String _errorMessage;
+  List<String> breeds = [];
+  bool _selectedCats = false;
+  String _errorMessage = '';
 
   TextEditingController _textController = TextEditingController();
 
   _SettingsPage() {
-    _errorMessage = '';
-    _zip = '';
-    _selectedCats = false;
-    breeds = List<String>();
     SharedPreferences.getInstance().then((prefs) {
-      var searchJson = prefs.getString('searchOptions');
       // TODO: Zip and animal type should go in SearchOptions.
       var zip = prefs.getString('zip');
       var selectedCat = prefs.getBool('animalType') ?? false;
       setState(() {
-        if (widget.feed.zip != null) {
+        if (widget.feed.zip.isNotEmpty) {
           _zip = widget.feed.zip;
           _textController.text = _zip;
         } else if (zip != null) {
@@ -50,10 +46,11 @@ class _SettingsPage extends State<SettingsPage> {
           _textController.text = zip;
         }
 
-        if (widget.feed.searchOptions != null) {
-          searchOptions = widget.feed.searchOptions.clone();
-        } else if (searchJson != null) {
+        var searchJson = prefs.getString('searchOptions');
+        if (searchJson != null) {
           searchOptions = PetSearchOptions.fromJson(searchJson);
+        } else {
+          searchOptions = widget.feed.searchOptions.deepCopy();
         }
 
         _selectedCats = selectedCat;
@@ -70,7 +67,7 @@ class _SettingsPage extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    searchOptions = widget.feed.searchOptions.clone();
+    searchOptions = widget.feed.searchOptions.deepCopy();
   }
 
   @override
@@ -99,19 +96,27 @@ class _SettingsPage extends State<SettingsPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _errorMessage != '' ? Text(_errorMessage) : SizedBox(),
-              FlatButton(
-                padding: const EdgeInsets.all(4.0),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.all(Radius.circular(4.0)),
-                ),
-                color: kPetThemecolor,
-                textColor: Colors.white,
+              TextButton(
+                style: TextButton.styleFrom(
+                    backgroundColor: kPetThemecolor,
+                    padding: EdgeInsets.all(4.0),
+                    textStyle: TextStyle(color: Colors.white),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(4.0)))),
                 onPressed: () => updateInfo(),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Icon(Icons.check),
-                    Text("Done"),
+                    Icon(
+                      Icons.check,
+                      color: Colors.white,
+                    ),
+                    Text(
+                      "Done",
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               )
@@ -139,10 +144,10 @@ class _SettingsPage extends State<SettingsPage> {
               style: titleStyle,
             ),
             buildZipTextField(),
-            FlatButton(
+            TextButton(
               onPressed: () async {
                 var zip = await getZipFromGeo();
-                if (zip != null)
+                if (zip.isNotEmpty)
                   setState(() {
                     _textController.text = zip;
                     _zip = zip;
@@ -178,7 +183,7 @@ class _SettingsPage extends State<SettingsPage> {
                         activeColor: kPetThemecolor,
                         onChanged: (value) {
                           setState(() {
-                            if (value) {
+                            if (value != null) {
                               searchOptions.breeds.clear();
                               animalNotifier.changeAnimal('dog');
                             }
@@ -197,7 +202,7 @@ class _SettingsPage extends State<SettingsPage> {
                         activeColor: kPetThemecolor,
                         onChanged: (value) {
                           setState(() {
-                            if (value) {
+                            if (value != null) {
                               searchOptions.breeds.clear();
                               animalNotifier.changeAnimal('cat');
                             }
@@ -213,6 +218,7 @@ class _SettingsPage extends State<SettingsPage> {
             Divider(),
             Text("Gender", style: titleStyle),
             GroupedOptions(
+              key: ValueKey('gender'),
               options: <Option>[
                 Option(
                   text: "Both",
@@ -252,12 +258,14 @@ class _SettingsPage extends State<SettingsPage> {
             Divider(),
             Text('Size', style: titleStyle),
             GroupedOptions(
+              key: ValueKey('sizes'),
               options: generateOptions("All sizes",
                   ['small', 'medium', 'large', 'xlarge'], searchOptions.sizes),
             ),
             Divider(),
             Text('Age', style: titleStyle),
             GroupedOptions(
+              key: ValueKey('ages'),
               options: generateOptions("All ages",
                   ['Baby', 'Young', 'Adult', 'Senior'], searchOptions.ages),
             ),
@@ -288,8 +296,9 @@ class _SettingsPage extends State<SettingsPage> {
                 style: TextStyle(color: Colors.grey)),
             SizedBox(height: 10.0),
             SelectableInput(
+              key: ValueKey('input'),
               refetchNotifier: animalNotifier,
-              hintText: 'Type the breeds you want here',
+              hintText: 'Search breeds',
               listFetcher: fetchBreedList,
               selectedMatches: searchOptions.breeds,
             ),
@@ -391,7 +400,7 @@ class _SettingsPage extends State<SettingsPage> {
                   ),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () async {
-                      await launch('https://www.petfinder.com/');
+                      await launchUrlString('https://www.petfinder.com/');
                     }),
               TextSpan(
                 text: ' to search directly for the pets found here!',
@@ -430,19 +439,19 @@ class _SettingsPage extends State<SettingsPage> {
         widget.feed.searchOptions = searchOptions;
         widget.feed.zip = _zip;
       }
-      Navigator.pop(context, true);
+      Navigator.pop(context, widget.feed.reloadFeed);
     }
   }
 
   Widget buildZipTextField() {
     return Theme(
       data: Theme.of(context).copyWith(
-        primaryColor: Theme.of(context).accentColor,
+        primaryColor: Theme.of(context).secondaryHeaderColor,
       ),
       child: TextField(
         style: TextStyle(
             fontFamily: 'OpenSans',
-            color: Theme.of(context).accentColor,
+            color: Theme.of(context).secondaryHeaderColor,
             fontSize: 20.0),
         controller: _textController,
         keyboardType: TextInputType.number,
@@ -452,8 +461,8 @@ class _SettingsPage extends State<SettingsPage> {
           _zip = text;
         },
         decoration: InputDecoration(
-          labelStyle: TextStyle(color: Theme.of(context).accentColor),
-          fillColor: Theme.of(context).accentColor,
+          labelStyle: TextStyle(color: Theme.of(context).secondaryHeaderColor),
+          fillColor: Theme.of(context).secondaryHeaderColor,
           labelText: "Zip Code",
           suffixIcon: Icon(Icons.location_on),
         ),
@@ -465,11 +474,11 @@ class _SettingsPage extends State<SettingsPage> {
 /// Let user select from what can possibily be a large list of items.
 class SelectableInput extends StatefulWidget {
   SelectableInput(
-      {this.key,
-      this.listFetcher,
-      this.selectedMatches,
-      this.hintText,
-      this.refetchNotifier})
+      {required this.key,
+      required this.listFetcher,
+      required this.selectedMatches,
+      required this.hintText,
+      required this.refetchNotifier})
       : super(key: key);
   final Key key;
   final ItemCallback listFetcher;
@@ -487,6 +496,7 @@ class _SelectableInputState extends State<SelectableInput> {
       children: <Widget>[
         buildSelectedItems(),
         SearchBar(
+          items: [],
           refetchNotifier: widget.refetchNotifier,
           hintText: widget.hintText,
           onSelectedItem: (item) {
@@ -508,19 +518,23 @@ class _SelectableInputState extends State<SelectableInput> {
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Row(
             children: <Widget>[
-              ButtonTheme(
-                height: 14.0,
-                child: FlatButton(
-                  shape: CircleBorder(),
-                  color: kPetThemecolor,
+              Container(
+                width: 30,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    shape: CircleBorder(),
+                    backgroundColor: kPetThemecolor,
+                  ),
                   onPressed: () {
                     setState(() {
                       widget.selectedMatches.remove(item);
                     });
                   },
-                  child: Icon(Icons.remove, color: Colors.white),
+                  child: Center(
+                      child: Icon(Icons.close, size: 10, color: Colors.white)),
                 ),
               ),
+              SizedBox(width: 10),
               Text(item),
             ],
           ),
@@ -532,7 +546,7 @@ class _SelectableInputState extends State<SelectableInput> {
 
 /// Used to list options that the user can select from.
 class GroupedOptions extends StatefulWidget {
-  GroupedOptions({Key key, this.options}) : super(key: key);
+  GroupedOptions({required Key key, required this.options}) : super(key: key);
   final List<Option> options;
   @override
   _GroupedOptionsState createState() => _GroupedOptionsState();
@@ -556,7 +570,9 @@ class _GroupedOptionsState extends State<GroupedOptions> {
                     )),
                 Checkbox(
                   value: option.value,
-                  onChanged: option.onChange,
+                  onChanged: (val) {
+                    option.onChange(val!);
+                  },
                   activeColor: kPetThemecolor,
                 ),
               ],
@@ -574,5 +590,5 @@ class Option {
   final String text;
   final bool value;
   final Function(bool change) onChange;
-  Option({this.text, this.onChange, this.value});
+  Option({required this.text, required this.onChange, required this.value});
 }

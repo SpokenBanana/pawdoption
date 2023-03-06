@@ -23,9 +23,9 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPage extends State<SettingsPage> {
-  PetSearchOptions searchOptions = kDefaultOptions;
-  AnimalChangeNotifier animalNotifier = AnimalChangeNotifier(animalType: 'dog');
-  List<String> breeds = [];
+  PetSearchOptions _searchOptions = kDefaultOptions;
+  AnimalChangeNotifier _animalNotifier =
+      AnimalChangeNotifier(animalType: 'dog');
   String _errorMessage = '';
 
   TextEditingController _textController = TextEditingController();
@@ -33,24 +33,22 @@ class _SettingsPage extends State<SettingsPage> {
   @override
   void initState() {
     super.initState();
-    searchOptions = widget.feed.searchOptions.deepCopy();
+    _searchOptions = widget.feed.searchOptions.deepCopy();
     SharedPreferences.getInstance().then((prefs) {
       setState(() {
         var searchJson = prefs.getString('searchOptions');
         if (searchJson != null) {
-          searchOptions = PetSearchOptions.fromJson(searchJson);
+          _searchOptions = PetSearchOptions.fromJson(searchJson);
         } else {
-          searchOptions = widget.feed.searchOptions.deepCopy();
+          _searchOptions = widget.feed.searchOptions.deepCopy();
         }
-        _textController.text = searchOptions.zip;
-        if (searchOptions.animalType == 'cat')
-          animalNotifier.changeAnimal('cat');
+        _textController.text = _searchOptions.zip;
+        if (_searchOptions.animalType == 'cat')
+          _animalNotifier.changeAnimal('cat');
       });
     });
-    getBreedList(searchOptions.animalType).then((breeds) {
-      setState(() {
-        this.breeds = breeds;
-      });
+    getBreedList(_searchOptions.animalType).then((breeds) {
+      setState(() {});
     });
   }
 
@@ -134,7 +132,7 @@ class _SettingsPage extends State<SettingsPage> {
                 if (zip.isNotEmpty)
                   setState(() {
                     _textController.text = zip;
-                    searchOptions.zip = zip;
+                    _searchOptions.zip = zip;
                   });
               },
               child: Row(
@@ -155,8 +153,8 @@ class _SettingsPage extends State<SettingsPage> {
               child: Center(
                 child: ToggleButtons(
                   isSelected: [
-                    searchOptions.animalType == 'dog',
-                    searchOptions.animalType == 'cat'
+                    _searchOptions.animalType == 'dog',
+                    _searchOptions.animalType == 'cat'
                   ],
                   borderRadius: BorderRadius.circular(8),
                   fillColor: kPetThemecolor,
@@ -165,13 +163,13 @@ class _SettingsPage extends State<SettingsPage> {
                   onPressed: (index) {
                     setState(() {
                       if (index == 0) {
-                        searchOptions.breeds.clear();
-                        animalNotifier.changeAnimal('dog');
-                        searchOptions.animalType = 'dog';
+                        _searchOptions.breeds.clear();
+                        _animalNotifier.changeAnimal('dog');
+                        _searchOptions.animalType = 'dog';
                       } else {
-                        searchOptions.breeds.clear();
-                        animalNotifier.changeAnimal('cat');
-                        searchOptions.animalType = 'cat';
+                        _searchOptions.breeds.clear();
+                        _animalNotifier.changeAnimal('cat');
+                        _searchOptions.animalType = 'cat';
                       }
                     });
                   },
@@ -186,28 +184,28 @@ class _SettingsPage extends State<SettingsPage> {
               options: <Option>[
                 Option(
                   text: "Both",
-                  value: () => !searchOptions.hasSex(),
+                  value: () => !_searchOptions.hasSex(),
                   onChange: (change) {
                     setState(() {
-                      searchOptions.clearSex();
+                      _searchOptions.clearSex();
                     });
                   },
                 ),
                 Option(
                   text: "Male",
-                  value: () => searchOptions.sex == 'male',
+                  value: () => _searchOptions.sex == 'male',
                   onChange: (change) {
                     setState(() {
-                      searchOptions.sex = 'male';
+                      _searchOptions.sex = 'male';
                     });
                   },
                 ),
                 Option(
                   text: "Female",
-                  value: () => searchOptions.sex == 'female',
+                  value: () => _searchOptions.sex == 'female',
                   onChange: (change) {
                     setState(() {
-                      searchOptions.sex = 'female';
+                      _searchOptions.sex = 'female';
                     });
                   },
                 ),
@@ -218,14 +216,14 @@ class _SettingsPage extends State<SettingsPage> {
             GroupedOptions(
               key: UniqueKey(),
               options: generateOptions("All",
-                  ['small', 'medium', 'large', 'xlarge'], searchOptions.sizes),
+                  ['small', 'medium', 'large', 'xlarge'], _searchOptions.sizes),
             ),
             Divider(),
             Text('Age', style: titleStyle),
             GroupedOptions(
               key: ValueKey('ages'),
               options: generateOptions("All",
-                  ['Baby', 'Young', 'Adult', 'Senior'], searchOptions.ages),
+                  ['Baby', 'Young', 'Adult', 'Senior'], _searchOptions.ages),
             ),
             Divider(),
             Row(
@@ -238,10 +236,10 @@ class _SettingsPage extends State<SettingsPage> {
                     )),
                 Switch(
                   activeColor: kPetThemecolor,
-                  value: searchOptions.fixedOnly,
+                  value: _searchOptions.fixedOnly,
                   onChanged: (value) {
                     setState(() {
-                      searchOptions.fixedOnly = value;
+                      _searchOptions.fixedOnly = value;
                     });
                   },
                 ),
@@ -255,10 +253,10 @@ class _SettingsPage extends State<SettingsPage> {
             SizedBox(height: 10.0),
             SelectableInput(
               key: ValueKey('input'),
-              refetchNotifier: animalNotifier,
+              refetchNotifier: _animalNotifier,
               hintText: 'Search breeds',
               listFetcher: fetchBreedList,
-              selectedMatches: searchOptions.breeds,
+              selectedMatches: _searchOptions.breeds,
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
@@ -277,15 +275,15 @@ class _SettingsPage extends State<SettingsPage> {
         Text('Max distance', style: titleStyle),
         // TODO: There is currently a bug that doesn't let the label render
         //       so use the label field once it is fixed.
-        Center(child: Text('${searchOptions.maxDistance} miles')),
+        Center(child: Text('${_searchOptions.maxDistance} miles')),
         Slider(
-          value: searchOptions.maxDistance.toDouble(),
+          value: _searchOptions.maxDistance.toDouble(),
           min: 1.0,
           max: 100.0,
           divisions: 100,
           onChanged: (value) {
             setState(() {
-              searchOptions.maxDistance = value.round();
+              _searchOptions.maxDistance = value.round();
             });
           },
           activeColor: kPetThemecolor,
@@ -295,7 +293,7 @@ class _SettingsPage extends State<SettingsPage> {
   }
 
   Future<List<String>> fetchBreedList() async =>
-      await getBreedList(animalNotifier.animalType);
+      await getBreedList(_animalNotifier.animalType);
 
   List<Option> generateOptions(
       String allText, List<String> options, List<String> container) {
@@ -378,21 +376,21 @@ class _SettingsPage extends State<SettingsPage> {
 
   void updateInfo() {
     var message = 'Location set!';
-    if (searchOptions.zip.length < 5) {
+    if (_searchOptions.zip.length < 5) {
       message = 'Please set a valid zip code';
       setState(() {
         _errorMessage = message;
       });
     } else {
       SharedPreferences.getInstance().then((prefs) {
-        prefs.setString('searchOptions', searchOptions.writeToJson());
+        prefs.setString('searchOptions', _searchOptions.writeToJson());
       });
-      if (searchOptions != widget.feed.searchOptions ||
-          searchOptions.breeds.length !=
+      if (_searchOptions != widget.feed.searchOptions ||
+          _searchOptions.breeds.length !=
               widget.feed.searchOptions.breeds.length) {
         // TODO: ApiFeed needs its own updateSetting() call.
         widget.feed.reloadFeed = true;
-        widget.feed.searchOptions = searchOptions;
+        widget.feed.searchOptions = _searchOptions;
       }
       Navigator.pop(context, widget.feed.reloadFeed);
     }
@@ -410,7 +408,7 @@ class _SettingsPage extends State<SettingsPage> {
         maxLength: 5,
         onChanged: (text) {
           _errorMessage = '';
-          searchOptions.zip = text;
+          _searchOptions.zip = text;
         },
         decoration: InputDecoration(
           labelStyle: TextStyle(color: Theme.of(context).secondaryHeaderColor),

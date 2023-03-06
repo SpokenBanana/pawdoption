@@ -11,18 +11,18 @@ Uri buildUrl(String method, Map<String, String> params) {
 
 // Will make sure we make authorized requests.
 class ApiClient {
-  DateTime tokenExperiation = DateTime.now();
+  DateTime _tokenExperiation = DateTime.now();
   String _token = '';
 
   Future<String> checkToken() async {
-    if (tokenExperiation.isBefore(DateTime.now())) {
+    if (_tokenExperiation.isBefore(DateTime.now())) {
       var response = await http.post(buildUrl('oauth2/token', {}), body: {
         'grant_type': 'client_credentials',
         'client_id': '$kPetFinderToken',
         'client_secret': '$kPetFinderSecret',
       });
       var parsed = json.decode(response.body);
-      tokenExperiation =
+      _tokenExperiation =
           new DateTime.now().add(new Duration(seconds: parsed['expires_in']));
       _token = parsed['access_token'];
       return _token;

@@ -18,7 +18,7 @@ class _SwipingCardsState extends State<SwipingCards>
   @override
   bool get wantKeepAlive => true;
 
-  bool loading = false;
+  bool _loading = false;
 
   double _backCardScale = 0.9;
 
@@ -45,7 +45,7 @@ class _SwipingCardsState extends State<SwipingCards>
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    if (loading) {
+    if (_loading) {
       Size screenSize = MediaQuery.of(context).size;
       double _screenWidth = screenSize.width;
       double _screenHeight = screenSize.height;
@@ -118,11 +118,11 @@ class _SwipingCardsState extends State<SwipingCards>
           TextButton(
             onPressed: () {
               setState(() {
-                loading = true;
+                _loading = true;
                 widget.feed.reInitialize().then((result) {
                   if (result)
                     setState(() {
-                      loading = false;
+                      _loading = false;
                     });
                 });
               });

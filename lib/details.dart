@@ -23,7 +23,7 @@ class DetailsPage extends StatefulWidget {
 }
 
 class _DetailsPage extends State<DetailsPage> {
-  List<String> urls = [];
+  List<String> _urls = [];
   @override
   Widget build(BuildContext context) {
     final key = GlobalKey<ScaffoldState>();
@@ -63,11 +63,11 @@ class _DetailsPage extends State<DetailsPage> {
   }
 
   populateUrls(String description) {
-    urls = [];
+    _urls = [];
     var urlMatches =
         RegExp(kUrlRegex, caseSensitive: false).allMatches(description);
     for (Match m in urlMatches) {
-      urls.add(m.group(0)!);
+      _urls.add(m.group(0)!);
     }
   }
 
@@ -115,7 +115,7 @@ class _DetailsPage extends State<DetailsPage> {
   Widget fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (!widget.pet.shouldCheckOn()) {
       populateUrls(widget.pet.info.description);
-      return buildComments(widget.pet.info.description, urls, key);
+      return buildComments(widget.pet.info.description, _urls, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -137,7 +137,7 @@ class _DetailsPage extends State<DetailsPage> {
               if (widget.pet.dbId != null) {
                 widget.feed.updatePet(widget.pet);
               }
-              return buildComments(snapshot.data, urls, key);
+              return buildComments(snapshot.data, _urls, key);
             }
         }
       },
@@ -474,8 +474,7 @@ class _DetailsPage extends State<DetailsPage> {
                 return Text('Loading shleter information...');
               default:
                 if (snapshot.hasError)
-                  return new Text(
-                      'Couldn\'t get the information :( ${snapshot.error}');
+                  return new Text('Couldn\'t get the information :(');
                 else
                   return buildShelterDescription(snapshot.data);
             }

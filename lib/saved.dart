@@ -21,10 +21,10 @@ class SavedPage extends StatefulWidget {
 }
 
 class _SavedPage extends State<SavedPage> {
-  List<Animal> saved = [];
-  List<Animal> searched = [];
-  SavedSort sortCriteria = SavedSort.liked;
-  bool reversed = false;
+  List<Animal> _saved = [];
+  List<Animal> _searched = [];
+  SavedSort _sortCriteria = SavedSort.liked;
+  bool _reversed = false;
 
   @override
   void initState() {
@@ -32,13 +32,13 @@ class _SavedPage extends State<SavedPage> {
     widget.feed.likedDb.getAll().then((animals) {
       // TODO: Add sorting and sort them here.
       setState(() {
-        this.saved = animals;
+        this._saved = animals;
       });
     });
   }
 
   List<Animal> sortList(List<Animal> list) {
-    switch (this.sortCriteria) {
+    switch (this._sortCriteria) {
       case SavedSort.name:
         list.sort((a, b) {
           return a.info.name.compareTo(b.info.name);
@@ -57,7 +57,7 @@ class _SavedPage extends State<SavedPage> {
         break;
     }
 
-    if (this.reversed) {
+    if (this._reversed) {
       return list.reversed.toList();
     }
     return list;
@@ -75,7 +75,7 @@ class _SavedPage extends State<SavedPage> {
         alignment: Alignment.center,
         child: widget.feed.liked.isEmpty
             ? buildNoSavedPage()
-            : buildPetList(this.saved),
+            : buildPetList(this._saved),
       ),
     );
   }
@@ -90,9 +90,9 @@ class _SavedPage extends State<SavedPage> {
           onChanged: (text) {
             setState(() {
               if (text.isEmpty) {
-                searched.clear();
+                _searched.clear();
               } else {
-                searched = saved
+                _searched = _saved
                     .where((element) => element.info.name
                         .toLowerCase()
                         .contains(text.toLowerCase()))
@@ -107,7 +107,7 @@ class _SavedPage extends State<SavedPage> {
                     icon: Icon(Icons.close),
                     onPressed: () {
                       setState(() {
-                        searched.clear();
+                        _searched.clear();
                         _searchController.clear();
                       });
                     },
@@ -118,12 +118,12 @@ class _SavedPage extends State<SavedPage> {
         ),
         Flexible(
           child: ListView.builder(
-              itemCount: searched.isEmpty ? animals.length : searched.length,
+              itemCount: _searched.isEmpty ? animals.length : _searched.length,
               physics: const BouncingScrollPhysics(),
               itemBuilder: (BuildContext context, int index) {
-                if (searched.isNotEmpty) {
-                  return buildPetPreview(searched[index]);
-                } else if (searched.isEmpty &&
+                if (_searched.isNotEmpty) {
+                  return buildPetPreview(_searched[index]);
+                } else if (_searched.isEmpty &&
                     _searchController.text.isNotEmpty) {
                   // no matches
                   return null;
@@ -139,7 +139,7 @@ class _SavedPage extends State<SavedPage> {
     await widget.feed.removeFromLiked(dog);
     var newSaved = await widget.feed.likedDb.getAll();
     setState(() {
-      this.saved = newSaved;
+      this._saved = newSaved;
     });
   }
 

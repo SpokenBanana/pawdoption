@@ -11,12 +11,12 @@ class ViewImagePage extends StatefulWidget {
 }
 
 class _ViewImagePageState extends State<ViewImagePage> {
-  int index = 0;
+  int _index = 0;
 
   @override
   void initState() {
     super.initState();
-    index = widget.initialIndex;
+    _index = widget.initialIndex;
   }
 
   @override
@@ -24,10 +24,10 @@ class _ViewImagePageState extends State<ViewImagePage> {
     return Stack(
       children: <Widget>[
         PhotoView(
-          imageProvider: NetworkImage(widget.images[index]),
+          imageProvider: NetworkImage(widget.images[_index]),
         ),
         GestureDetector(
-          onTap: () => Navigator.pop(context, index),
+          onTap: () => Navigator.pop(context, _index),
           child: Padding(
             padding: const EdgeInsets.all(8.0),
             child: Icon(Icons.close, color: Colors.white, size: 35.0),
@@ -41,7 +41,7 @@ class _ViewImagePageState extends State<ViewImagePage> {
               TextButton(
                 onPressed: () {
                   setState(() {
-                    index = index == 0 ? 0 : index - 1;
+                    _index = _index == 0 ? 0 : _index - 1;
                   });
                 },
                 child: Icon(Icons.arrow_left, color: Colors.white, size: 45.0),
@@ -49,8 +49,9 @@ class _ViewImagePageState extends State<ViewImagePage> {
               TextButton(
                 onPressed: () {
                   setState(() {
-                    index =
-                        index == widget.images.length - 1 ? index : index + 1;
+                    _index = _index == widget.images.length - 1
+                        ? _index
+                        : _index + 1;
                   });
                 },
                 child: Icon(Icons.arrow_right, color: Colors.white, size: 45.0),

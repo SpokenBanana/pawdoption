@@ -25,16 +25,13 @@ class AnimalFeed {
   LikedDb likedDb = LikedDb();
   Set<String> liked = Set();
   Queue<Animal> skipped = Queue();
-
   SwipeNotifier notifier = SwipeNotifier();
-
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
   bool reloadFeed = false;
-
   PetFinderApi petApi = PetFinderApi();
   PetSearchOptions searchOptions = kDefaultOptions;
-
   List<Animal> currentList = [];
+
   Animal get currentPet => currentList.last;
   Animal? get nextPet {
     if (currentList.length < 2) return null;

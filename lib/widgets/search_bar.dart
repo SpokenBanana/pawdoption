@@ -31,10 +31,9 @@ class SearchBar extends StatefulWidget {
 }
 
 class _SearchBarState extends State<SearchBar> {
-  List<String> matches = [];
+  List<String> _matches = [];
   TrieNode _trie = TrieNode(content: '');
-  List<String> items = [];
-  TextEditingController controller = TextEditingController();
+  TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -47,18 +46,18 @@ class _SearchBarState extends State<SearchBar> {
       buildTrie(widget.items);
     }
     widget.refetchNotifier.addListener(_handleChange);
-    controller.addListener(handleText);
+    _controller.addListener(handleText);
   }
 
   @override
   void dispose() {
     widget.refetchNotifier.removeListener(_handleChange);
-    controller.removeListener(handleText);
+    _controller.removeListener(handleText);
     super.dispose();
   }
 
   _handleChange() {
-    matches.clear();
+    _matches.clear();
     _trie = TrieNode(content: "");
     if (widget.items.isEmpty) {
       widget.listFetcher().then((list) {
@@ -78,7 +77,7 @@ class _SearchBarState extends State<SearchBar> {
             primaryColor: Theme.of(context).secondaryHeaderColor,
           ),
           child: TextField(
-            controller: controller,
+            controller: _controller,
             decoration: InputDecoration(
               hintText: widget.hintText,
             ),
@@ -87,7 +86,7 @@ class _SearchBarState extends State<SearchBar> {
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Column(
-            children: matches.map((match) {
+            children: _matches.map((match) {
               return Container(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -103,8 +102,6 @@ class _SearchBarState extends State<SearchBar> {
                           height: 30.0,
                           child: TextButton(
                             onPressed: () => selectItem(match),
-                            // color: kPetThemecolor,
-                            // shape: CircleBorder(),
                             child: Icon(Icons.add, color: Colors.white),
                           ),
                         ),
@@ -124,19 +121,19 @@ class _SearchBarState extends State<SearchBar> {
   selectItem(String match) {
     widget.onSelectedItem(match);
     setState(() {
-      matches.clear();
-      controller.text = '';
+      _matches.clear();
+      _controller.text = '';
     });
   }
 
   handleText() {
     setState(() {
-      matches = _getMatches(controller.text);
+      _matches = _getMatches(_controller.text);
     });
   }
 
   List<String> _getMatches(String text) {
-    if (text == '') return [];
+    if (text.isEmpty) return [];
     List<String> results = [];
     TrieNode current = _trie;
     String prefix = '';

@@ -114,7 +114,6 @@ class _SavedPage extends State<SavedPage> {
             labelText: 'Search saved pets by name',
           ),
         ),
-        SizedBox(height: 10),
         Flexible(
           child: ListView.builder(
               itemCount: searched.isEmpty ? animals.length : searched.length,

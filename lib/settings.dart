@@ -23,51 +23,35 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPage extends State<SettingsPage> {
-  String _zip = '';
   PetSearchOptions searchOptions = kDefaultOptions;
   AnimalChangeNotifier animalNotifier = AnimalChangeNotifier(animalType: 'dog');
   List<String> breeds = [];
-  bool _selectedCats = false;
   String _errorMessage = '';
 
   TextEditingController _textController = TextEditingController();
 
-  _SettingsPage() {
+  @override
+  void initState() {
+    super.initState();
+    searchOptions = widget.feed.searchOptions.deepCopy();
     SharedPreferences.getInstance().then((prefs) {
-      // TODO: Zip and animal type should go in SearchOptions.
-      var zip = prefs.getString('zip');
-      var selectedCat = prefs.getBool('animalType') ?? false;
       setState(() {
-        if (widget.feed.zip.isNotEmpty) {
-          _zip = widget.feed.zip;
-          _textController.text = _zip;
-        } else if (zip != null) {
-          _zip = zip;
-          _textController.text = zip;
-        }
-
         var searchJson = prefs.getString('searchOptions');
         if (searchJson != null) {
           searchOptions = PetSearchOptions.fromJson(searchJson);
         } else {
           searchOptions = widget.feed.searchOptions.deepCopy();
         }
-
-        _selectedCats = selectedCat;
-        if (_selectedCats == true) animalNotifier.changeAnimal('cat');
+        _textController.text = searchOptions.zip;
+        if (searchOptions.animalType == 'cat')
+          animalNotifier.changeAnimal('cat');
       });
     });
-    var animalType = _selectedCats ? 'cat' : 'dog';
-    getBreedList(animalType).then((breeds) {
+    getBreedList(searchOptions.animalType).then((breeds) {
       setState(() {
         this.breeds = breeds;
       });
     });
-  }
-  @override
-  void initState() {
-    super.initState();
-    searchOptions = widget.feed.searchOptions.deepCopy();
   }
 
   @override
@@ -130,8 +114,8 @@ class _SettingsPage extends State<SettingsPage> {
   // TODO: This has become a very long mess, should try to break this up.
   Widget buildWholePage() {
     final titleStyle = TextStyle(
-      fontWeight: FontWeight.bold,
-      fontSize: 20.0,
+      // fontWeight: FontWeight.bold,
+      fontSize: 17.0,
       fontFamily: 'Open Sans',
     );
     return Padding(
@@ -150,7 +134,7 @@ class _SettingsPage extends State<SettingsPage> {
                 if (zip.isNotEmpty)
                   setState(() {
                     _textController.text = zip;
-                    _zip = zip;
+                    searchOptions.zip = zip;
                   });
               },
               child: Row(
@@ -164,95 +148,67 @@ class _SettingsPage extends State<SettingsPage> {
               ),
             ),
             Divider(),
-            Text(
-              "What do you want to search for?",
-              style: titleStyle,
-            ),
-            // TOOO: Make this use the GroupedOptions.
+            Text("Pet type", style: titleStyle),
+            SizedBox(height: 10),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 15.0),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text("Dogs"),
-                      Checkbox(
-                        value: !_selectedCats,
-                        activeColor: kPetThemecolor,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value != null) {
-                              searchOptions.breeds.clear();
-                              animalNotifier.changeAnimal('dog');
-                              searchOptions.animalType = 'dog';
-                            }
-                            _selectedCats = false;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: <Widget>[
-                      Text("Cats"),
-                      Checkbox(
-                        value: _selectedCats,
-                        activeColor: kPetThemecolor,
-                        onChanged: (value) {
-                          setState(() {
-                            if (value != null) {
-                              searchOptions.breeds.clear();
-                              animalNotifier.changeAnimal('cat');
-                              searchOptions.animalType = 'cat';
-                            }
-                            _selectedCats = true;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
+              child: Center(
+                child: ToggleButtons(
+                  isSelected: [
+                    searchOptions.animalType == 'dog',
+                    searchOptions.animalType == 'cat'
+                  ],
+                  borderRadius: BorderRadius.circular(8),
+                  fillColor: kPetThemecolor,
+                  color: Colors.white,
+                  selectedColor: Colors.white,
+                  onPressed: (index) {
+                    setState(() {
+                      if (index == 0) {
+                        searchOptions.breeds.clear();
+                        animalNotifier.changeAnimal('dog');
+                        searchOptions.animalType = 'dog';
+                      } else {
+                        searchOptions.breeds.clear();
+                        animalNotifier.changeAnimal('cat');
+                        searchOptions.animalType = 'cat';
+                      }
+                    });
+                  },
+                  children: [Text('Dogs'), Text('Cats')],
+                ),
               ),
             ),
             Divider(),
             Text("Gender", style: titleStyle),
             GroupedOptions(
-              key: ValueKey('gender'),
+              key: UniqueKey(),
               options: <Option>[
                 Option(
                   text: "Both",
-                  value: !searchOptions.hasSex(),
+                  value: () => !searchOptions.hasSex(),
                   onChange: (change) {
-                    if (change) {
-                      setState(() {
-                        searchOptions.clearSex();
-                      });
-                    }
+                    setState(() {
+                      searchOptions.clearSex();
+                    });
                   },
                 ),
                 Option(
                   text: "Male",
-                  value: searchOptions.sex == 'male',
+                  value: () => searchOptions.sex == 'male',
                   onChange: (change) {
-                    if (change) {
-                      setState(() {
-                        searchOptions.sex = 'male';
-                      });
-                    }
+                    setState(() {
+                      searchOptions.sex = 'male';
+                    });
                   },
                 ),
                 Option(
                   text: "Female",
-                  value: searchOptions.sex == 'female',
+                  value: () => searchOptions.sex == 'female',
                   onChange: (change) {
-                    if (change) {
-                      setState(() {
-                        searchOptions.sex = 'female';
-                      });
-                    }
+                    setState(() {
+                      searchOptions.sex = 'female';
+                    });
                   },
                 ),
               ],
@@ -260,15 +216,15 @@ class _SettingsPage extends State<SettingsPage> {
             Divider(),
             Text('Size', style: titleStyle),
             GroupedOptions(
-              key: ValueKey('sizes'),
-              options: generateOptions("All sizes",
+              key: UniqueKey(),
+              options: generateOptions("All",
                   ['small', 'medium', 'large', 'xlarge'], searchOptions.sizes),
             ),
             Divider(),
             Text('Age', style: titleStyle),
             GroupedOptions(
               key: ValueKey('ages'),
-              options: generateOptions("All ages",
+              options: generateOptions("All",
                   ['Baby', 'Young', 'Adult', 'Senior'], searchOptions.ages),
             ),
             Divider(),
@@ -346,7 +302,7 @@ class _SettingsPage extends State<SettingsPage> {
     List<Option> result = <Option>[
       Option(
         text: allText,
-        value: container.isEmpty,
+        value: () => container.isEmpty,
         onChange: (value) {
           if (value)
             setState(() {
@@ -359,7 +315,7 @@ class _SettingsPage extends State<SettingsPage> {
     for (String option in options) {
       result.add(Option(
         text: option,
-        value: container.contains(option),
+        value: () => container.contains(option),
         onChange: (value) {
           setState(() {
             if (value)
@@ -422,15 +378,13 @@ class _SettingsPage extends State<SettingsPage> {
 
   void updateInfo() {
     var message = 'Location set!';
-    if (_zip.length < 5) {
+    if (searchOptions.zip.length < 5) {
       message = 'Please set a valid zip code';
       setState(() {
         _errorMessage = message;
       });
     } else {
       SharedPreferences.getInstance().then((prefs) {
-        prefs.setString('zip', _zip);
-        prefs.setBool('animalType', _selectedCats);
         prefs.setString('searchOptions', searchOptions.writeToJson());
       });
       if (searchOptions != widget.feed.searchOptions ||
@@ -439,7 +393,6 @@ class _SettingsPage extends State<SettingsPage> {
         // TODO: ApiFeed needs its own updateSetting() call.
         widget.feed.reloadFeed = true;
         widget.feed.searchOptions = searchOptions;
-        widget.feed.zip = _zip;
       }
       Navigator.pop(context, widget.feed.reloadFeed);
     }
@@ -451,16 +404,13 @@ class _SettingsPage extends State<SettingsPage> {
         primaryColor: Theme.of(context).secondaryHeaderColor,
       ),
       child: TextField(
-        style: TextStyle(
-            fontFamily: 'OpenSans',
-            color: Theme.of(context).secondaryHeaderColor,
-            fontSize: 20.0),
+        style: TextStyle(fontFamily: 'OpenSans', fontSize: 20.0),
         controller: _textController,
         keyboardType: TextInputType.number,
         maxLength: 5,
         onChanged: (text) {
           _errorMessage = '';
-          _zip = text;
+          searchOptions.zip = text;
         },
         decoration: InputDecoration(
           labelStyle: TextStyle(color: Theme.of(context).secondaryHeaderColor),
@@ -558,29 +508,41 @@ class _GroupedOptionsState extends State<GroupedOptions> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 15.0),
-        child: Column(
-          children: widget.options.map((option) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(option.text,
-                    style: TextStyle(
-                      fontFamily: 'Open Sans',
-                      fontSize: 17.0,
-                    )),
-                Checkbox(
-                  value: option.value,
-                  onChanged: (val) {
-                    option.onChange(val!);
-                  },
-                  activeColor: kPetThemecolor,
-                ),
-              ],
-            );
-          }).toList(),
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0),
+          child: asToggles(),
         ),
+      ),
+    );
+  }
+
+  List<bool> _selected = [];
+  @override
+  void initState() {
+    super.initState();
+    _selected = widget.options.map((e) => e.value()).toList();
+  }
+
+  Widget asToggles() {
+    return Container(
+      child: ToggleButtons(
+        isSelected: _selected,
+        borderRadius: BorderRadius.circular(8),
+        fillColor: kPetThemecolor,
+        color: Colors.white,
+        selectedColor: Colors.white,
+        onPressed: (index) {
+          setState(() {
+            widget.options[index].onChange(!_selected[index]);
+            for (var i = 0; i < _selected.length; i++) {
+              _selected[i] = widget.options[i].value();
+            }
+          });
+        },
+        children: widget.options.map((option) {
+          return Text(option.text);
+        }).toList(),
       ),
     );
   }
@@ -590,7 +552,7 @@ class _GroupedOptionsState extends State<GroupedOptions> {
 /// widget so we want at least have a uniform way to define an option.
 class Option {
   final String text;
-  final bool value;
+  final bool Function() value;
   final Function(bool change) onChange;
   Option({required this.text, required this.onChange, required this.value});
 }

@@ -13,8 +13,6 @@ ApiClient kClient = new ApiClient();
 /// Uses PetFinder API to get animals using the standard API interface defined
 /// in 'animals.dart'.
 class PetFinderApi {
-  String _zip = '', _animalType = '';
-
   // We want to limit the API calls for this one, so we'll hold on to results.
   // TODO: Making this static is a bit of bad practice, try to find an
   //       alternative solution
@@ -25,13 +23,11 @@ class PetFinderApi {
   Future setLocation(String zip, int miles, {String? animalType}) async {
     _currentPage = 1;
     _shelterMap = Map<String, ShelterInformation>();
-    _animalType = animalType!;
     Map<String, String> params = {
       'location': zip,
       'distance': '$miles',
       'limit': '50',
     };
-    _zip = zip;
     var data = await kClient.call('organizations', params);
     for (Map shelter in data['organizations']) {
       String id = shelter['id'];
@@ -45,9 +41,10 @@ class PetFinderApi {
       double? usrLat,
       double? userLng}) async {
     List<Animal> animals = [];
+    String animalType = searchOptions?.animalType ?? 'dog';
     Map<String, String> params = {
-      'type': _animalType.isNotEmpty ? _animalType : 'dog',
-      'location': _zip,
+      'type': animalType.isNotEmpty ? animalType : 'dog',
+      'location': searchOptions?.zip ?? '',
       'limit': '$amount',
       'status': 'adoptable',
       'page': '$_currentPage',
@@ -99,6 +96,7 @@ class PetFinderApi {
   }
 
   static Future<List<String>> getBreeds(String animalType) async {
+    if (animalType.isEmpty) return [];
     Map<String, String> params = {
       'key': kPetFinderToken,
     };
@@ -125,7 +123,6 @@ class PetFinderApi {
   // Returns the description of the Animal. While we make this request, we'll
   // also fetch some additional information on the pet incase something was
   // updated.
-  // TODO: Refreshing information is only really necessary for saved Animals.
   static Future<String> fetchAnimalDesciption(Animal animal) async {
     // NOTE: The new API of PetFinder does not return the full description for
     // some reason. They only return a portion and then elipses. I emailed them

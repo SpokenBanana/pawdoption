@@ -48,14 +48,14 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   bool needsRefresh(String zip, bool animalType) {
-    return zip != widget.feed.zip ||
+    return zip != widget.feed.searchOptions.zip ||
         widget.feed.reloadFeed ||
         animalType != (widget.feed.searchOptions.animalType == 'cat');
   }
 
   Future<String> getZip(SharedPreferences prefs) async {
-    if (widget.feed.zip.isNotEmpty) {
-      return widget.feed.zip;
+    if (widget.feed.searchOptions.zip.isNotEmpty) {
+      return widget.feed.searchOptions.zip;
     }
     var zipFromUser = await getLocationFromUser();
     if (zipFromUser.isEmpty) {

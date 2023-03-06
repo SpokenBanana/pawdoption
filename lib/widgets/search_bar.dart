@@ -89,7 +89,6 @@ class _SearchBarState extends State<SearchBar> {
           child: Column(
             children: matches.map((match) {
               return Container(
-                color: Colors.white,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[

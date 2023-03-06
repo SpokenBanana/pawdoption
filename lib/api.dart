@@ -26,7 +26,6 @@ class AnimalFeed {
   Set<String> liked = Set();
   Queue<Animal> skipped = Queue();
 
-  String zip = '';
   SwipeNotifier notifier = SwipeNotifier();
 
   final int fetchMoreAt = 5, storeLimit = 25, _undoMax = 20;
@@ -43,7 +42,8 @@ class AnimalFeed {
   }
 
   Future<bool> reInitialize() async {
-    return await this.initialize(this.zip, options: this.searchOptions);
+    return await this
+        .initialize(this.searchOptions.zip, options: this.searchOptions);
   }
 
   removeCurrentPet() {
@@ -53,13 +53,12 @@ class AnimalFeed {
   Future<bool> initialize(String zip,
       {String? animalType, PetSearchOptions? options}) async {
     this.reloadFeed = false;
-    this.zip = zip;
 
     this.currentList = [];
     this.skipped = Queue<Animal>();
 
     this.searchOptions = options ?? kDefaultOptions;
-
+    this.searchOptions.zip = zip;
     await petApi.setLocation(zip, this.searchOptions.maxDistance,
         animalType: animalType);
     var amount = searchOptions == kDefaultOptions ? this.storeLimit : 25;

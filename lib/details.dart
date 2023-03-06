@@ -316,7 +316,7 @@ class _DetailsPage extends State<DetailsPage> {
     Widget policyUrl = SizedBox();
     Widget photoAvatar = SizedBox();
     if (shelter.photo != null) {
-      photoAvatar = Row(
+      photoAvatar = Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Padding(
@@ -330,14 +330,12 @@ class _DetailsPage extends State<DetailsPage> {
               ),
             ),
           ),
-          Flexible(
-            child: Text(
-              shelter.name ?? 'Unavailable',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                fontFamily: "Raleway",
-                fontWeight: FontWeight.bold,
-              ),
+          Text(
+            shelter.name ?? 'Unavailable',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              fontFamily: "Raleway",
+              fontWeight: FontWeight.bold,
             ),
           ),
         ],
@@ -362,6 +360,7 @@ class _DetailsPage extends State<DetailsPage> {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         photoAvatar,
+        SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[

@@ -102,15 +102,17 @@ class _SavedPage extends State<SavedPage> {
           },
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.search),
-            suffixIcon: IconButton(
-              icon: Icon(Icons.close),
-              onPressed: () {
-                setState(() {
-                  searched.clear();
-                  _searchController.clear();
-                });
-              },
-            ),
+            suffixIcon: _searchController.text.isNotEmpty
+                ? IconButton(
+                    icon: Icon(Icons.close),
+                    onPressed: () {
+                      setState(() {
+                        searched.clear();
+                        _searchController.clear();
+                      });
+                    },
+                  )
+                : null,
             labelText: 'Search saved pets by name',
           ),
         ),

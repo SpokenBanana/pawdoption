@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:petadopt/api.dart';
 
 import 'animals.dart';
@@ -21,6 +22,7 @@ class SavedPage extends StatefulWidget {
 
 class _SavedPage extends State<SavedPage> {
   List<Animal> saved = [];
+  List<Animal> searched = [];
   SavedSort sortCriteria = SavedSort.liked;
   bool reversed = false;
 
@@ -78,13 +80,58 @@ class _SavedPage extends State<SavedPage> {
     );
   }
 
+  TextEditingController _searchController = TextEditingController();
+
   Widget buildPetList(List<Animal> animals) {
-    return ListView.builder(
-        itemCount: animals.length,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (BuildContext context, int index) {
-          return buildPetPreview(animals[index]);
-        });
+    return Column(
+      children: [
+        TextField(
+          controller: _searchController,
+          onChanged: (text) {
+            setState(() {
+              if (text.isEmpty) {
+                searched.clear();
+              } else {
+                searched = saved
+                    .where((element) => element.info.name
+                        .toLowerCase()
+                        .contains(text.toLowerCase()))
+                    .toList();
+              }
+            });
+          },
+          decoration: InputDecoration(
+            prefixIcon: Icon(Icons.search),
+            suffixIcon: IconButton(
+              icon: Icon(Icons.close),
+              onPressed: () {
+                setState(() {
+                  searched.clear();
+                  _searchController.clear();
+                });
+              },
+            ),
+            labelText: 'Search saved pets by name',
+          ),
+        ),
+        SizedBox(height: 10),
+        Flexible(
+          child: ListView.builder(
+              itemCount: searched.isEmpty ? animals.length : searched.length,
+              physics: const BouncingScrollPhysics(),
+              itemBuilder: (BuildContext context, int index) {
+                if (searched.isNotEmpty) {
+                  return buildPetPreview(searched[index]);
+                } else if (searched.isEmpty &&
+                    _searchController.text.isNotEmpty) {
+                  // no matches
+                  return null;
+                }
+                return buildPetPreview(animals[index]);
+              }),
+        ),
+      ],
+    );
   }
 
   void removeDog(Animal dog) async {

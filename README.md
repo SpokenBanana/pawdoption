@@ -1,6 +1,8 @@
 # Pawdoption
 
 This app helps you find your next pet from local animal shelters!
+Built with Flutter and uses a swiping interface to search through pets
+from local shelters.
 
 All pets have information such as age, breed, and which shelter
 they are located in! It gives you the contact and general information 

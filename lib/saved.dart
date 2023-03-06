@@ -128,7 +128,8 @@ class _SavedPage extends State<SavedPage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: CircleAvatar(
             radius: 35.0,
-            backgroundImage: NetworkImage(dog.imgUrl[0]),
+            backgroundImage:
+                dog.imgUrl[0].isEmpty ? null : NetworkImage(dog.imgUrl[0]),
           ),
         ),
         Expanded(

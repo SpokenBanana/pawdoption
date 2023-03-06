@@ -177,10 +177,12 @@ class PetCard extends StatelessWidget {
                     topRight: Radius.circular(12),
                   ),
                   color: Colors.black,
-                  image: DecorationImage(
-                    fit: BoxFit.cover,
-                    image: NetworkImage(pet.info.imgUrl[0]),
-                  ),
+                  image: pet.info.imgUrl[0].isEmpty
+                      ? null
+                      : DecorationImage(
+                          fit: BoxFit.cover,
+                          image: NetworkImage(pet.info.imgUrl[0]),
+                        ),
                 ),
               ),
               Row(

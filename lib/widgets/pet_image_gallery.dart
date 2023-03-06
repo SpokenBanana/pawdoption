@@ -47,18 +47,20 @@ class _PetImageGallery extends State<PetImageGallery>
     super.build(context);
     return GestureDetector(
       onTap: () {
-        showDialog(
-          context: context,
-          builder: (context) {
-            return ViewImagePage(images: widget.images, initialIndex: index);
-          },
-        ).then((lastIndex) {
-          if (lastIndex != null)
-            setState(() {
-              index = lastIndex;
-              scrollPercent = index / widget.images.length;
-            });
-        });
+        if (widget.images.isNotEmpty && widget.images[0].isNotEmpty) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return ViewImagePage(images: widget.images, initialIndex: index);
+            },
+          ).then((lastIndex) {
+            if (lastIndex != null)
+              setState(() {
+                index = lastIndex;
+                scrollPercent = index / widget.images.length;
+              });
+          });
+        }
       },
       onHorizontalDragStart: _onPanStart,
       onHorizontalDragUpdate: _onPanUpdate,
@@ -94,10 +96,12 @@ class _PetImageGallery extends State<PetImageGallery>
         height: 550.0,
         decoration: BoxDecoration(
           color: Colors.black,
-          image: DecorationImage(
-            fit: BoxFit.fitHeight,
-            image: NetworkImage(widget.images[index]),
-          ),
+          image: widget.images[index].isEmpty
+              ? null
+              : DecorationImage(
+                  fit: BoxFit.fitHeight,
+                  image: NetworkImage(widget.images[index]),
+                ),
         ),
       ),
     );

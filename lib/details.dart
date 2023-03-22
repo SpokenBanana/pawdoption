@@ -151,6 +151,7 @@ class _DetailsPage extends State<DetailsPage> {
     comments = HtmlUnescape().convert(comments);
     return Column(
       children: <Widget>[
+        Text("Preview description:"),
         Padding(
           padding: const EdgeInsets.all(14.0),
           child: SelectableText.rich(

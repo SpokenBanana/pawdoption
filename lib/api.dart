@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:collection';
+import 'package:fixnum/fixnum.dart';
 
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_geocoder/geocoder.dart';
 import 'package:location/location.dart';
@@ -9,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sqflite/sqflite.dart';
 
 import 'animals.dart';
+import 'notifiers/swiping_notifier.dart';
+import 'notifiers/theme_notifier.dart';
 import 'petfinder_lib/petfinder.dart';
 import 'protos/pet_search_options.pb.dart';
 
@@ -16,7 +20,8 @@ final kDefaultOptions = PetSearchOptions()
   ..fixedOnly = false
   ..includeBreeds = true
   ..maxDistance = 50
-  ..animalType = "dog";
+  ..animalType = "dog"
+  ..lightModeEnable = false;
 
 /// The main interface the app uses to get pet information.
 /// Made this extra layer so we can switch APIs and keep the same
@@ -95,6 +100,7 @@ class AnimalFeed {
 
   void like() {
     Animal current = currentList.removeLast();
+    current.info.likedUsec = Int64(DateTime.now().microsecondsSinceEpoch);
     if (!liked.contains(current.info.apiId)) {
       liked.add(current.info.apiId);
       likedDb.insert(current);
@@ -157,6 +163,7 @@ Future<String> getZipFromGeo() async {
   return '';
 }
 
+// TODO: There's no reason for these to be random static functions.
 Future<String> getDetailsAbout(Animal animal) async =>
     await PetFinderApi.fetchAnimalDesciption(animal);
 

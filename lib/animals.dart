@@ -59,6 +59,8 @@ class Animal {
       data.imgUrl.add('');
     }
 
+    data.url = animalMap['url'];
+
     // Get city state.
     var city = animalMap['contact']['address']['city'];
     var state = animalMap['contact']['address']['state'];

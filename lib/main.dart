@@ -1,18 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'api.dart';
 import 'colors.dart';
 import 'saved.dart';
 import 'swiping.dart';
+import 'protos/pet_search_options.pb.dart';
 
 void main() => runApp(new MyApp());
 
 final AnimalFeed feed = AnimalFeed();
+ThemeData mainTheme;
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  bool darkMode = true;
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  _MyAppState() {
+    SharedPreferences.getInstance().then((prefs) {
+      final optionsStr = prefs.getString('searchOptions') ?? '';
+      PetSearchOptions options = kDefaultOptions;
+      if (optionsStr.isNotEmpty)
+        options = PetSearchOptions.fromJson(optionsStr);
+      if (options.lightModeEnable != feed.themeNotifier.lightModeEnabled)
+        feed.themeNotifier.setTheme(options.lightModeEnable);
+    });
+  }
   @override
   Widget build(BuildContext context) {
     feed.loadLiked();
+    feed.themeNotifier.addListener(whenThemeChanged);
     return MaterialApp(
         title: 'Pawdoption',
         theme: ThemeData.dark(),

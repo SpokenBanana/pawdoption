@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:petadopt/notifiers/swiping_notifier.dart';
 
 import '../animals.dart';
 import '../api.dart';
@@ -26,6 +27,7 @@ class _SwipingCardsState extends State<SwipingCards>
   void initState() {
     super.initState();
     widget.feed.notifier.addListener(onSwipeChange);
+    widget.feed.themeNotifier.addListener(onThemeChanged);
   }
 
   onSwipeChange() {
@@ -34,6 +36,10 @@ class _SwipingCardsState extends State<SwipingCards>
         widget.feed.getRecentlySkipped();
       });
     }
+  }
+
+  onThemeChanged() {
+    setState(() {});
   }
 
   @override
@@ -95,9 +101,8 @@ class _SwipingCardsState extends State<SwipingCards>
               MaterialPageRoute(
                   builder: (context) => DetailsPage(
                       pet: widget.feed.currentPet, feed: widget.feed))),
-          child: PetCard(
-            widget.feed.currentPet,
-          ),
+          child: PetCard(widget.feed.currentPet,
+              widget.feed.themeNotifier.lightModeEnabled),
         ),
       ],
     );
@@ -138,7 +143,8 @@ class _SwipingCardsState extends State<SwipingCards>
 /// Widget to allow for better handling of pet cards and swiping them.
 class PetCard extends StatelessWidget {
   final Animal pet;
-  PetCard(this.pet);
+  final bool lightModeEnabled;
+  PetCard(this.pet, this.lightModeEnabled);
 
   @override
   Widget build(BuildContext context) {

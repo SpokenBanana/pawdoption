@@ -1,13 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:protobuf/protobuf.dart';
 import 'package:protobuf/protobuf.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 import 'api.dart';
 import 'colors.dart';
+import 'notifiers/animal_change_notifier.dart';
 import 'protos/pet_search_options.pb.dart';
 import 'widgets/search_bar.dart';
 
@@ -258,10 +259,6 @@ class _SettingsPage extends State<SettingsPage> {
               listFetcher: fetchBreedList,
               selectedMatches: _searchOptions.breeds,
             ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: buidInfoSection(),
-            )
           ],
         ),
       ),

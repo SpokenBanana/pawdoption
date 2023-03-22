@@ -50,7 +50,7 @@ Future<String> getAnimalDescriptionV1(String petId) async {
   });
   var response = await http.get(url);
   var jsonResponse = json.decode(utf8.decode(response.bodyBytes));
-  // In case PetFinder actually shuts down this API.
+  // WOW THEY ACTUALLY SHUT DOWN THE API.
   try {
     return utf8.decode(Latin1Codec()
         .encode(jsonResponse['petfinder']['pet']['description']['\$t']));

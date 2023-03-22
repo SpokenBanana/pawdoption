@@ -24,7 +24,9 @@ class SwipingPage extends StatefulWidget {
 
 class _SwipingPageState extends State<SwipingPage>
     with SingleTickerProviderStateMixin {
-  _SwipingPageState(AnimalFeed feed);
+  _SwipingPageState(AnimalFeed feed) {
+    feed.themeNotifier.addListener(loadColors);
+  }
 
   Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();

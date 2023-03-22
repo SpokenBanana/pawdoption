@@ -137,17 +137,24 @@ class AnimalFeed {
 }
 
 Future<String> getZipFromGeo() async {
-  var location = Location();
   try {
+    var location = Location();
+    // We only need to get the zip code from the location, don't need
+    // high accuracy for now.
+    if (await location.hasPermission() != PermissionStatus.granted) {
+      var service = await location.requestService();
+      if (!service) return '';
+      var permission = await location.requestPermission();
+      if (permission == PermissionStatus.denied ||
+          permission == PermissionStatus.deniedForever) return '';
+      location.changeSettings(accuracy: LocationAccuracy.low);
+    }
     var currentLocation = await location.getLocation();
-    final userLat = currentLocation.latitude;
-    final userLng = currentLocation.longitude;
-    final coords = Coordinates(userLat, userLng);
-    var address = await Geocoder.local.findAddressesFromCoordinates(coords);
+    var address = await Geocoder.local.findAddressesFromCoordinates(
+        Coordinates(currentLocation.latitude!, currentLocation.longitude!));
     return address.first.postalCode!;
-  } on Exception {
-    return '';
-  }
+  } on Exception {}
+  return '';
 }
 
 Future<String> getDetailsAbout(Animal animal) async =>

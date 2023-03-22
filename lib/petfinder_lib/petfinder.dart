@@ -124,12 +124,13 @@ class PetFinderApi {
   // also fetch some additional information on the pet incase something was
   // updated.
   static Future<String> fetchAnimalDesciption(Animal animal) async {
+    if (animal.info.description.isNotEmpty) return animal.info.description;
     // NOTE: The new API of PetFinder does not return the full description for
     // some reason. They only return a portion and then elipses. I emailed them
     // about this and they said this was intentional and would consider
     // returning the full desciption in the future, so for now just fall back
     // to the old API for the full description
-    animal.info.description = await getAnimalDescriptionV1(animal.info.apiId);
+    String v1Description = await getAnimalDescriptionV1(animal.info.apiId);
 
     // Update the rest of the pet information if needed.
     var response = await kClient.call('animals/${animal.info.apiId}', {});
@@ -137,7 +138,7 @@ class PetFinderApi {
     var petDoc = response['animal'];
     // If the V1 API doesn't return anything, then we have no choice than to use
     // the short description returned in V2.
-    if (animal.info.description.isEmpty) {
+    if (v1Description.isEmpty) {
       animal.info.description = petDoc['description'];
     }
 

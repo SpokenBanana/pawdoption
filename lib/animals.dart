@@ -1,3 +1,6 @@
+import 'package:flutter/widgets.dart';
+import 'package:html_unescape/html_unescape.dart';
+
 import './protos/animals.pb.dart';
 
 // Wrapper class for the AnimalData proto. Provides some read/write serialize
@@ -88,6 +91,11 @@ class Animal {
       data.options.add(item);
     }
     data.size = animalMap['size'];
+    data.description = animalMap['description'] ?? '';
+    if (data.description.isNotEmpty) {
+      data.description = HtmlUnescape().convert(data.description);
+    }
+    data.petfinderUrl = animalMap['url'] ?? '';
 
     Animal pet = Animal(info: data);
     pet.readAttributes(animalMap['attributes']);

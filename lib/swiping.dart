@@ -29,15 +29,16 @@ class _SwipingPageState extends State<SwipingPage>
   Future<bool> initializeAnimalList() async {
     var prefs = await SharedPreferences.getInstance();
     String zip = await getZip(prefs);
-    // If we can't get a zip, we can't search. Have user go and enter their zip
-    // in the settings page.
-    if (zip.isEmpty) return false;
 
     PetSearchOptions? options;
     final optionsStr = prefs.getString('searchOptions') ?? '';
     if (optionsStr.isNotEmpty) {
       options = PetSearchOptions.fromJson(optionsStr);
+      zip = options.zip;
     }
+    // If we can't get a zip, we can't search. Have user go and enter their zip
+    // in the settings page.
+    if (zip.isEmpty) return false;
 
     bool animalType = prefs.getBool('animalType') ?? false;
     if (needsRefresh(zip, animalType)) {
@@ -65,16 +66,17 @@ class _SwipingPageState extends State<SwipingPage>
   }
 
   Future<String> getLocationFromUser() async {
-    var location = Location();
-    // We only need to get the zip code from the location, don't need
-    // high accuracy for now.
-    location.changeSettings(accuracy: LocationAccuracy.low);
     try {
+      var location = Location();
+      // We only need to get the zip code from the location, don't need
+      // high accuracy for now.
       if (await location.hasPermission() != PermissionStatus.granted) {
         var service = await location.requestService();
         if (!service) return '';
         var permission = await location.requestPermission();
-        if (permission == PermissionStatus.denied) return '';
+        if (permission == PermissionStatus.denied ||
+            permission == PermissionStatus.deniedForever) return '';
+        location.changeSettings(accuracy: LocationAccuracy.low);
       }
       var currentLocation = await location.getLocation();
       var address = await Geocoder.local.findAddressesFromCoordinates(
@@ -153,17 +155,20 @@ class _SwipingPageState extends State<SwipingPage>
             children: <Widget>[
               Text('Go to the ', style: infoStyle),
               ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
+                onPressed: () async {
+                  if (await Navigator.push(
                       context,
-                      PageRouteBuilder(
-                          maintainState: false,
-                          pageBuilder: (context, _, __) => SettingsPage(
-                              key: UniqueKey(), feed: widget.feed)));
+                      MaterialPageRoute(
+                          builder: (context) => SettingsPage(
+                              key: UniqueKey(), feed: widget.feed)))) {
+                    setState(() {
+                      // Options changed so we should re-fresh the feed.
+                    });
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 5.0,
-                  backgroundColor: Colors.green.shade900,
+                  backgroundColor: Colors.grey.shade900,
                   shape: CircleBorder(),
                   padding: const EdgeInsets.all(10.0),
                 ),

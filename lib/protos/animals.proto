@@ -32,4 +32,5 @@ message AnimalData {
     bool good_with_cats = 21;
     bool good_with_dogs = 22;
     uint64 liked_usec = 23;
+    string petfinder_url = 24;
 }

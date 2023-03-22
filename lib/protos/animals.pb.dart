@@ -35,6 +35,7 @@ class AnimalData extends $pb.GeneratedMessage {
     ..aOB(21, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithCats')
     ..aOB(22, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'goodWithDogs')
     ..a<$fixnum.Int64>(23, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'likedUsec', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+    ..aOS(24, const $core.bool.fromEnvironment('protobuf.omit_field_names') ? '' : 'petfinderUrl')
     ..hasRequiredFields = false
   ;
 
@@ -63,6 +64,7 @@ class AnimalData extends $pb.GeneratedMessage {
     $core.bool? goodWithCats,
     $core.bool? goodWithDogs,
     $fixnum.Int64? likedUsec,
+    $core.String? petfinderUrl,
   }) {
     final _result = create();
     if (name != null) {
@@ -133,6 +135,9 @@ class AnimalData extends $pb.GeneratedMessage {
     }
     if (likedUsec != null) {
       _result.likedUsec = likedUsec;
+    }
+    if (petfinderUrl != null) {
+      _result.petfinderUrl = petfinderUrl;
     }
     return _result;
   }
@@ -351,5 +356,14 @@ class AnimalData extends $pb.GeneratedMessage {
   $core.bool hasLikedUsec() => $_has(22);
   @$pb.TagNumber(23)
   void clearLikedUsec() => clearField(23);
+
+  @$pb.TagNumber(24)
+  $core.String get petfinderUrl => $_getSZ(23);
+  @$pb.TagNumber(24)
+  set petfinderUrl($core.String v) { $_setString(23, v); }
+  @$pb.TagNumber(24)
+  $core.bool hasPetfinderUrl() => $_has(23);
+  @$pb.TagNumber(24)
+  void clearPetfinderUrl() => clearField(24);
 }
 

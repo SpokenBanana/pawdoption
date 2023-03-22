@@ -1,6 +1,8 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:html_unescape/html_unescape.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -114,8 +116,8 @@ class _DetailsPage extends State<DetailsPage> {
 
   Widget fetchAndBuildComments(GlobalKey<ScaffoldState> key) {
     if (!widget.pet.shouldCheckOn()) {
-      populateUrls(widget.pet.info.description);
-      return buildComments(widget.pet.info.description, _urls, key);
+      return buildComments(
+          widget.pet.info.description, widget.pet.info.petfinderUrl, key);
     }
     return FutureBuilder(
       future: getDetailsAbout(widget.pet),
@@ -126,18 +128,18 @@ class _DetailsPage extends State<DetailsPage> {
           case ConnectionState.waiting:
             return Center(child: Text('Loading...'));
           default:
-            if (snapshot.hasError)
+            if (snapshot.hasError || (snapshot.data as String).isEmpty)
               return Center(
                 child: Text('Check with shelter for more information!'),
               );
             else {
-              populateUrls(snapshot.data);
               // After fetching details, we may have updated information,
               // so update the list here.
               if (widget.pet.dbId != null) {
                 widget.feed.updatePet(widget.pet);
               }
-              return buildComments(snapshot.data, _urls, key);
+              return buildComments(
+                  snapshot.data, widget.pet.info.petfinderUrl, key);
             }
         }
       },
@@ -145,19 +147,40 @@ class _DetailsPage extends State<DetailsPage> {
   }
 
   Widget buildComments(
-      String comments, List<String> urls, GlobalKey<ScaffoldState> key) {
+      String comments, String url, GlobalKey<ScaffoldState> key) {
+    comments = HtmlUnescape().convert(comments);
     return Column(
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.all(14.0),
           child: SelectableText.rich(
             TextSpan(
-              text: comments,
-              style: Theme.of(context).textTheme.bodyMedium,
+              text: '"$comments"',
+              style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                    fontStyle: FontStyle.italic,
+                  ),
             ),
           ),
         ),
-        buildLinkSection(urls, key),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            text: 'See ',
+            children: <TextSpan>[
+              TextSpan(
+                  text: 'here',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () async {
+                      await launchUrlString(url);
+                    }),
+              TextSpan(text: ' or check with the shelter for more information!')
+            ],
+          ),
+        ),
       ],
     );
   }

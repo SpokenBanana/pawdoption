@@ -370,6 +370,26 @@ class _SettingsPage extends State<SettingsPage> {
           textAlign: TextAlign.center,
           style: infoStyle,
         ),
+        RichText(
+          textAlign: TextAlign.center,
+          text: TextSpan(
+            text: 'View our ',
+            style: infoStyle,
+            children: <TextSpan>[
+              TextSpan(
+                  text: 'privacy policy here.',
+                  style: TextStyle(
+                    color: Colors.blue,
+                    decoration: TextDecoration.underline,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () async {
+                      await launchUrlString(
+                          'https://sites.google.com/view/pawdoption-privacy-policy/home');
+                    }),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -385,7 +405,8 @@ class _SettingsPage extends State<SettingsPage> {
       SharedPreferences.getInstance().then((prefs) {
         prefs.setString('searchOptions', _searchOptions.writeToJson());
       });
-      if (_searchOptions != widget.feed.searchOptions ||
+      if (_searchOptions.zip != widget.feed.searchOptions.zip ||
+          _searchOptions != widget.feed.searchOptions ||
           _searchOptions.breeds.length !=
               widget.feed.searchOptions.breeds.length) {
         // TODO: ApiFeed needs its own updateSetting() call.
